@@ -17,7 +17,7 @@ function getMondayWeek(baseDateStr: string, offsetWeeks: number = 0): Date[] {
 
   const dow = (baseDate.getDay() + 6) % 7;
   const mon = new Date(baseDate);
-  mon.setDate(baseDate.getDate() - dow + (offsetWeeks * 7));
+  mon.setDate(baseDate.getDate() - dow + offsetWeeks * 7);
 
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(mon);
@@ -43,31 +43,29 @@ export default function WeekStrip() {
   const lastDayKey = `${days[6].getFullYear()}-${String(days[6].getMonth() + 1).padStart(2, "0")}-${String(days[6].getDate()).padStart(2, "0")}`;
   const disableNextWeek = lastDayKey >= today;
 
-  const hasLoggedToday = 
+  const hasLoggedToday =
     (state.meals[today] || []).length > 0 ||
     (state.workouts[today] || []).length > 0;
 
   return (
     <>
       <div className="flex justify-between mb-6 items-center w-full">
-
         {/* Left Side: Nav, Strip, Calendar */}
-        <div className="flex items-center w-2/3 gap-2 overflow-x-auto hide-scrollbar">
-
+        <div className="flex items-center flex-1 min-w-0 gap-2 overflow-x-auto scrollbar-hide pb-1">
           {/* Navigation Chevrons */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <button
-              onClick={() => setWeekOffset(w => w - 1)}
-              className="w-10 h-10 rounded-xl border border-[#E8E7E4] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1916] flex items-center justify-center text-[#9B9895] hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] transition-colors cursor-pointer shadow-sm"
+              onClick={() => setWeekOffset((w) => w - 1)}
+              className="w-10 h-10 rounded-xl border border-border bg-card flex items-center justify-center text-[#9B9895] hover:bg-background transition-colors cursor-pointer shadow-sm"
               title="Previous week"
               aria-label="Previous week">
               <ChevronLeft size={18} />
             </button>
 
             <button
-              onClick={() => setWeekOffset(w => w + 1)}
+              onClick={() => setWeekOffset((w) => w + 1)}
               disabled={disableNextWeek}
-              className="w-10 h-10 rounded-xl border border-[#E8E7E4] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1916] flex items-center justify-center text-[#9B9895] hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] transition-colors cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-10 h-10 rounded-xl border border-border bg-card flex items-center justify-center text-[#9B9895] hover:bg-background transition-colors cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               title="Next week"
               aria-label="Next week">
               <ChevronRight size={18} />
@@ -93,25 +91,36 @@ export default function WeekStrip() {
                   aria-pressed={key === state.selDate}
                   className={[
                     "flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-full transition-all duration-150 border-2 min-w-[36px]",
-                    isFuture ? "opacity-20 cursor-not-allowed" : "cursor-pointer",
+                    isFuture
+                      ? "opacity-20 cursor-not-allowed"
+                      : "cursor-pointer",
                     isToday && "bg-[#1A1916] dark:bg-[#f7f6f3] ",
-                    isSel && !isToday && "border-black border-dotted bg-foreground/5",
+                    isSel &&
+                      !isToday &&
+                      "border-black border-dotted bg-foreground/5",
                     !isSel && "border-transparent",
-                    !isToday && !isSel && !isFuture && "bg-transparent hover:bg-foreground/20 opacity-40",
+                    !isToday &&
+                      !isSel &&
+                      !isFuture &&
+                      "bg-transparent hover:bg-foreground/20 opacity-40",
                   ]
                     .filter(Boolean)
                     .join(" ")}>
                   <span
                     className={[
                       "text-[9px] font-bold tracking-wider uppercase",
-                      isToday ? "text-white dark:text-[#1a1916]" : "text-[#9B9895]",
+                      isToday
+                        ? "text-white dark:text-[#1a1916]"
+                        : "text-[#9B9895]",
                     ].join(" ")}>
                     {DAY_LABELS[i]}
                   </span>
                   <span
                     className={[
                       "font-mono text-sm font-semibold",
-                      isToday ? "text-white dark:text-[#1a1916]" : "text-[#1A1916] dark:text-[#f7f6f3]",
+                      isToday
+                        ? "text-white dark:text-[#1a1916]"
+                        : "text-[#1A1916] dark:text-[#f7f6f3]",
                     ].join(" ")}>
                     {d.getDate()}
                   </span>
@@ -129,7 +138,7 @@ export default function WeekStrip() {
           {/* Calendar button */}
           <button
             onClick={() => setShowPicker(true)}
-            className="w-10 h-10 rounded-xl flex-shrink-0 border border-[#E8E7E4] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1916] flex items-center justify-center text-[#9B9895] hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] transition-colors cursor-pointer shadow-sm"
+            className="w-10 h-10 rounded-xl flex-shrink-0 border border-border bg-card flex items-center justify-center text-[#9B9895] hover:bg-background transition-colors cursor-pointer shadow-sm"
             title="Pick any date"
             aria-label="Pick any date">
             <svg
@@ -151,12 +160,17 @@ export default function WeekStrip() {
 
         {/* Right Side: Streak Box */}
         <div className="flex-shrink-0 ml-2">
-          <div className="flex items-center justify-center gap-1.5 px-2.5 h-14 w-14 rounded-full border border-[#E8E7E4] dark:border-[#3a3a3a] bg-white dark:bg-[#1a1916] shadow-md">
-            <Flame size={20} className={hasLoggedToday ? "text-[#F97316]" : "text-[#9B9895]"} fill={hasLoggedToday ? "#F97316" : "#E8E7E4"} />
-            <span className="font-mono text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3]">{streak}</span>
+          <div className="flex items-center justify-center gap-1.5 px-2.5 h-14 w-14 rounded-full border border-border bg-card shadow-md">
+            <Flame
+              size={20}
+              className={hasLoggedToday ? "text-[#F97316]" : "text-[#9B9895]"}
+              fill={hasLoggedToday ? "#F97316" : "#E8E7E4"}
+            />
+            <span className="font-mono text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+              {streak}
+            </span>
           </div>
         </div>
-
       </div>
 
       {showPicker && <DatePicker onClose={() => setShowPicker(false)} />}

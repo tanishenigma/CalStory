@@ -89,9 +89,11 @@ export default function NutritionPage() {
   return (
     <>
       <WeekStrip />
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="my-8 text-6xl font-bold text-ink">Nutrition</h1>
-        <div className="flex flex-col items-end gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h1 className="my-4 sm:my-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-ink">
+          Nutrition
+        </h1>
+        <div className="flex flex-col items-start sm:items-end gap-3">
           <div className="text-xs font-semibold text-muted-foreground">
             {fmtDate(selDate)}
           </div>
@@ -101,7 +103,7 @@ export default function NutritionPage() {
                 setShowRecipeForm(!showRecipeForm);
                 setShowSearch(false);
               }}
-              className="px-4 py-2.5 bg-white dark:bg-[#1a1916] text-ink border border-border rounded-xl text-sm font-bold shadow-sm hover:bg-bg transition-colors active:scale-[0.98]">
+              className="px-4 py-2.5 bg-card text-ink dark:text-[#f7f6f3] border border-border rounded-xl text-sm font-bold shadow-sm hover:bg-bg dark:hover:bg-[#0f0f0e] transition-colors active:scale-[0.98]">
               {showRecipeForm ? "Cancel" : "Manual Entry"}
             </button>
             <button
@@ -130,22 +132,24 @@ export default function NutritionPage() {
               Target ➔
             </span>
           </h2>
-          <div className="flex justify-between items-center px-4">
-            <div className="flex flex-col items-center">
-              <div className="w-24 h-24 rounded-full border-[8px] border-primary flex flex-col items-center justify-center">
-                <span className="font-bold text-xl">{agg.cal}</span>
-                <span className="text-[10px] text-muted-foreground font-bold">
+          <div className="flex justify-between items-center gap-2 overflow-x-hidden pb-2 px-2 sm:px-4 md:px-0 md:gap-0">
+            <div className="flex flex-col items-center shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[6px] sm:border-[8px] border-primary flex flex-col items-center justify-center">
+                <span className="font-bold text-base sm:text-xl">
+                  {agg.cal}
+                </span>
+                <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold">
                   kcal
                 </span>
               </div>
               <span className="text-xs font-bold text-ink mt-3">Consumed</span>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="w-24 h-24 rounded-full border-[8px] border-blue-500 flex flex-col items-center justify-center">
-                <span className="font-bold text-xl">
+            <div className="flex flex-col items-center shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[6px] sm:border-[8px] border-blue-500 flex flex-col items-center justify-center">
+                <span className="font-bold text-base sm:text-xl">
                   {profile.tdee || calTarget}
                 </span>
-                <span className="text-[10px] text-muted-foreground font-bold">
+                <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold">
                   kcal
                 </span>
               </div>
@@ -153,12 +157,12 @@ export default function NutritionPage() {
                 Expenditure
               </span>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="w-24 h-24 rounded-full border-[8px] border-border flex flex-col items-center justify-center">
-                <span className="font-bold text-xl">
+            <div className="flex flex-col items-center shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[6px] sm:border-[8px] border-border flex flex-col items-center justify-center">
+                <span className="font-bold text-base sm:text-xl">
                   {Math.max(0, calTarget - agg.cal)}
                 </span>
-                <span className="text-[10px] text-muted-foreground font-bold">
+                <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold">
                   kcal
                 </span>
               </div>
@@ -280,7 +284,7 @@ export default function NutritionPage() {
       <div className="mt-8 mb-12">
         <button
           onClick={() => setShowDetailedBreakdown(!showDetailedBreakdown)}
-          className="w-full px-4 py-3 bg-foreground text-background border border-border rounded-xl text-sm font-bold shadow-sm transition-colors flex items-center justify-center gap-2">
+          className="w-full px-4 py-3 bg-card text-foreground border border-border rounded-xl text-sm font-bold shadow-sm transition-colors flex items-center justify-center gap-2">
           <Sliders className="w-4 h-4" />
           {showDetailedBreakdown
             ? "Hide Detailed Breakdown"

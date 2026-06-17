@@ -51,9 +51,9 @@ export default function DashboardPage() {
 
   const recentMeals = [...todayMeals].reverse().slice(0, 5);
   const recentWorkouts = [...todayWorkouts].reverse().slice(0, 5);
-  
+
   const targetKcal = profile.calTarget || 2000;
-  
+
   const targetMacros = {
     p: profile.protein || Math.round((targetKcal * 0.3) / 4),
     c: profile.carbs || Math.round((targetKcal * 0.4) / 4),
@@ -64,7 +64,7 @@ export default function DashboardPage() {
     <div className="min-h-screen pb-20">
       <WeekStrip />
 
-      <div className="flex flex-col gap-6 mt-8">
+      <div className="flex flex-col gap-6 mt-4 sm:mt-8">
         {/* Top Row: Hero & Macros */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <BlurFade delay={0.1} className="h-full">
@@ -81,7 +81,9 @@ export default function DashboardPage() {
           <BlurFade delay={0.2}>
             <section>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[17px] font-bold text-[#1A1916] dark:text-[#f7f6f3]">Today's Workout</span>
+                <span className="text-[17px] font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+                  Today's Workout
+                </span>
                 <Link
                   href="/workouts"
                   className="text-[13px] font-semibold text-[#9B9895] hover:text-[#1A1916] transition-colors">
@@ -93,16 +95,22 @@ export default function DashboardPage() {
                 <Link href="/workouts" className="block">
                   <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px] hover:bg-gray-50 transition-colors cursor-pointer">
                     <div className="text-3xl mb-1">🏋️</div>
-                    <div className="font-bold text-[14px] text-[#1A1916] dark:text-[#f7f6f3]">No workout yet</div>
-                    <div className="text-[12px] text-[#9B9895]">Tap to go to Workouts page to log a session</div>
+                    <div className="font-bold text-[14px] text-[#1A1916] dark:text-[#f7f6f3]">
+                      No workout yet
+                    </div>
+                    <div className="text-[12px] text-[#9B9895]">
+                      Tap to go to Workouts page to log a session
+                    </div>
                   </Card>
                 </Link>
               ) : (
                 <Card className="flex flex-col gap-2">
                   <CardContent className="p-0 flex flex-col divide-y divide-[#F0EFEC]">
                     {recentWorkouts.map((w) => (
-                      <div key={w.id} className="flex items-center gap-4 p-4 hover:bg-[#FAFAF8] dark:hover:bg-[#1a1916] transition-colors">
-                        <div className="w-12 h-12 rounded-2xl bg-[#F7F6F3] dark:bg-[#0f0f0e] flex items-center justify-center text-xl flex-shrink-0">
+                      <div
+                        key={w.id}
+                        className="flex items-center gap-4 p-4 hover:bg-subtle transition-colors">
+                        <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
                           💪
                         </div>
                         <div className="flex-1 min-w-0">
@@ -124,7 +132,9 @@ export default function DashboardPage() {
           <BlurFade delay={0.25}>
             <section>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[17px] font-bold text-[#1A1916] dark:text-[#f7f6f3]">Recently uploaded</span>
+                <span className="text-[17px] font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+                  Recently uploaded
+                </span>
                 <Link
                   href="/nutrition"
                   className="text-[13px] font-semibold text-[#9B9895] hover:text-[#1A1916] transition-colors">
@@ -135,8 +145,12 @@ export default function DashboardPage() {
               {todayMeals.length === 0 ? (
                 <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px]">
                   <div className="text-3xl mb-1">🍽️</div>
-                  <div className="font-bold text-[14px] text-[#1A1916] dark:text-[#f7f6f3]">No meals logged</div>
-                  <div className="text-[12px] text-[#9B9895]">Tap + below to add a meal</div>
+                  <div className="font-bold text-[14px] text-[#1A1916] dark:text-[#f7f6f3]">
+                    No meals logged
+                  </div>
+                  <div className="text-[12px] text-[#9B9895]">
+                    Tap + below to add a meal
+                  </div>
                 </Card>
               ) : (
                 <Card className="flex flex-col">
@@ -144,9 +158,14 @@ export default function DashboardPage() {
                     {recentMeals.map((m) => {
                       const Icon = MEAL_ICONS[m.time] || Utensils;
                       return (
-                        <div key={m.id} className="flex items-center gap-4 p-4 hover:bg-[#FAFAF8] dark:hover:bg-[#1a1916] transition-colors">
-                          <div className="w-12 h-12 rounded-2xl bg-[#F7F6F3] dark:bg-[#0f0f0e] flex items-center justify-center text-xl flex-shrink-0">
-                            <Icon size={20} className="text-[#1A1916] dark:text-[#f7f6f3]" />
+                        <div
+                          key={m.id}
+                          className="flex items-center gap-4 p-4 hover:bg-subtle transition-colors">
+                          <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
+                            <Icon
+                              size={20}
+                              className="text-[#1A1916] dark:text-[#f7f6f3]"
+                            />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="font-bold text-[15px] text-[#1A1916] dark:text-[#f7f6f3] truncate">

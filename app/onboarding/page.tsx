@@ -33,13 +33,13 @@ const INTENSITIES: IntensityOption[] = [
   },
   {
     key: "moderate",
-    emoji: "🚶",
+    emoji: "🐇",
     label: "Moderate",
     desc: "±300 kcal — balanced, recommended for most",
   },
   {
     key: "aggressive",
-    emoji: "🔥",
+    emoji: "🐅",
     label: "Aggressive",
     desc: "±500 kcal — fast results, high discipline required",
   },
@@ -171,20 +171,20 @@ export default function OnboardingPage() {
 
   return (
     <div
+      className="flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8 bg-background"
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100dvh",
-        padding: "32px 20px",
-        backgroundColor: "#F7F6F3",
+        backgroundColor: "var(--background)",
       }}>
       <div
+        className="p-6 sm:p-8 lg:p-10"
         style={{
           background: "#ffffff",
           border: "1px solid #E8E7E4",
           borderRadius: "24px",
-          padding: "40px",
           width: "100%",
           maxWidth: "480px",
           boxShadow: "0 12px 48px rgba(0,0,0,0.09)",
@@ -194,7 +194,8 @@ export default function OnboardingPage() {
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
-              className={`flex-1 h-[3px] rounded transition-colors duration-300 ${ i <= step ? "bg-[#1A1916] dark:bg-[#f7f6f3]" : "bg-[#E8E7E4]"
+              className={`flex-1 h-[3px] rounded transition-colors duration-300 ${
+                i <= step ? "bg-[#1A1916] dark:bg-[#f7f6f3]" : "bg-[#E8E7E4]"
               }`}
             />
           ))}
@@ -217,7 +218,7 @@ export default function OnboardingPage() {
               </label>
               <input
                 id="ob-name"
-                className="w-full px-3.5 py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all"
+                className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
                 placeholder="e.g. david"
                 autoFocus
                 value={name}
@@ -249,7 +250,7 @@ export default function OnboardingPage() {
                 <label className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5">
                   Weight Unit
                 </label>
-                <div className="flex border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg overflow-hidden">
+                <div className="flex border border-border rounded-lg overflow-hidden">
                   <button
                     type="button"
                     onClick={() => {
@@ -259,9 +260,10 @@ export default function OnboardingPage() {
                           Math.round((Number(weight) / 2.20462) * 10) / 10 + "",
                         );
                     }}
-                    className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${ weightUnit === "kg"
+                    className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${
+                      weightUnit === "kg"
                         ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                        : "bg-white dark:bg-[#1a1916] text-[#9B9895]"
+                        : "bg-foreground dark:bg-[#1a1916] text-[#9B9895]"
                     }`}>
                     kg
                   </button>
@@ -274,9 +276,10 @@ export default function OnboardingPage() {
                           Math.round(Number(weight) * 2.20462 * 10) / 10 + "",
                         );
                     }}
-                    className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${ weightUnit === "lbs"
+                    className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${
+                      weightUnit === "lbs"
                         ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                        : "bg-white dark:bg-[#1a1916] text-[#9B9895]"
+                        : "bg-foreground dark:bg-[#1a1916] text-[#9B9895]"
                     }`}>
                     lbs
                   </button>
@@ -286,7 +289,7 @@ export default function OnboardingPage() {
                 <label className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5">
                   Height Unit
                 </label>
-                <div className="flex border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg overflow-hidden">
+                <div className="flex border border-border rounded-lg overflow-hidden">
                   <button
                     type="button"
                     onClick={() => {
@@ -295,9 +298,10 @@ export default function OnboardingPage() {
                       setFeet("");
                       setInches("");
                     }}
-                    className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${ heightUnit === "metric"
+                    className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${
+                      heightUnit === "metric"
                         ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                        : "bg-white dark:bg-[#1a1916] text-[#9B9895]"
+                        : "bg-foreground dark:bg-[#1a1916] text-[#9B9895]"
                     }`}>
                     cm
                   </button>
@@ -309,9 +313,10 @@ export default function OnboardingPage() {
                       setFeet("");
                       setInches("");
                     }}
-                    className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${ heightUnit === "imperial"
+                    className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${
+                      heightUnit === "imperial"
                         ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                        : "bg-white dark:bg-[#1a1916] text-[#9B9895]"
+                        : "bg-foreground dark:bg-[#1a1916] text-[#9B9895]"
                     }`}>
                     ft/in
                   </button>
@@ -332,7 +337,7 @@ export default function OnboardingPage() {
                   min="12"
                   max="99"
                   placeholder="21"
-                  className="w-full px-3.5 py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all"
+                  className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
                   autoFocus
@@ -347,7 +352,7 @@ export default function OnboardingPage() {
                 <div className="relative">
                   <select
                     id="ob-gender"
-                    className="w-full px-3.5 py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all appearance-none cursor-pointer"
+                    className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all appearance-none cursor-pointer"
                     value={gender}
                     onChange={(e) => setGender(e.target.value as Gender)}>
                     <option value="male">Male</option>
@@ -377,7 +382,7 @@ export default function OnboardingPage() {
                   min="30"
                   max="700"
                   placeholder={weightUnit === "kg" ? "70" : "154"}
-                  className="w-full px-3.5 py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all"
+                  className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
                 />
@@ -396,7 +401,7 @@ export default function OnboardingPage() {
                       min="100"
                       max="250"
                       placeholder="175"
-                      className="w-full px-3.5 py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all"
+                      className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
                       value={height}
                       onChange={(e) => setHeight(e.target.value)}
                     />
@@ -412,7 +417,7 @@ export default function OnboardingPage() {
                         min="3"
                         max="8"
                         placeholder="5"
-                        className="w-full px-3.5 py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all"
+                        className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
                         value={feet}
                         onChange={(e) => setFeet(e.target.value)}
                         aria-label="Feet"
@@ -422,7 +427,7 @@ export default function OnboardingPage() {
                         min="0"
                         max="11"
                         placeholder="9"
-                        className="w-full px-3.5 py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all"
+                        className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
                         value={inches}
                         onChange={(e) => setInches(e.target.value)}
                         aria-label="Inches"
@@ -439,7 +444,7 @@ export default function OnboardingPage() {
             </button>
             <button
               onClick={() => setStep(1)}
-              className="w-full py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] active:scale-[0.99] transition-all cursor-pointer">
+              className="w-full py-3 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-all cursor-pointer">
               Back
             </button>
           </BlurFade>
@@ -466,9 +471,9 @@ export default function OnboardingPage() {
                 id="ob-steps"
                 type="number"
                 min={0}
-                max={30000}
+                max={50000}
                 placeholder="7500"
-                className="w-full px-3.5 py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all"
+                className="w-full px-3.5 py-3 rounded-lg text-sm outline-none transition-all border border-border bg-background text-foreground focus:bg-background/50 focus:border-foreground/50"
                 value={steps}
                 onChange={(e) => setSteps(e.target.value)}
                 autoFocus
@@ -484,8 +489,10 @@ export default function OnboardingPage() {
                   <button
                     key={n}
                     onClick={() => setWorkoutsPerWeek(String(n))}
-                    className={`py-3 rounded-xl border-2 text-center text-sm font-bold transition-all cursor-pointer ${ workoutsPerWeek === String(n) ? "border-[#1A1916] dark:border-[#f7f6f3] bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                        : "border-[#E8E7E4] dark:border-[#3a3a3a] hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-[#f7f6f3] bg-white dark:bg-[#1a1916] text-[#1A1916] dark:text-[#f7f6f3]"
+                    className={`py-3 rounded-full border-2 text-center text-sm font-bold transition-all cursor-pointer duration-300  ${
+                      workoutsPerWeek === String(n)
+                        ? "bg-foreground text-background"
+                        : "bg-background text-foreground border-border hover:border-foreground/50"
                     }`}>
                     {n}
                   </button>
@@ -500,7 +507,7 @@ export default function OnboardingPage() {
             </button>
             <button
               onClick={() => setStep(2)}
-              className="w-full py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] active:scale-[0.99] transition-all cursor-pointer">
+              className="w-full py-3 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-all cursor-pointer">
               Back
             </button>
           </BlurFade>
@@ -509,7 +516,7 @@ export default function OnboardingPage() {
         {/* Step 4 — Goal */}
         {step === 4 && (
           <BlurFade>
-            <div className="text-[26px] font-bold mb-1.5 text-[#1A1916] dark:text-[#f7f6f3]">
+            <div className="text-[26px] font-bold mb-1.5 text-foreground">
               Your Goal
             </div>
             <div className="text-sm text-[#9B9895] mb-6 leading-relaxed">
@@ -526,13 +533,18 @@ export default function OnboardingPage() {
                   <button
                     key={g.key}
                     onClick={() => setGoal(g.key)}
-                    className={`p-4 rounded-2xl text-center border-2 transition-all cursor-pointer ${ goal === g.key ? "border-[#1A1916] dark:border-[#f7f6f3] bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                        : "border-[#E8E7E4] dark:border-[#3a3a3a] hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-[#f7f6f3] bg-white dark:bg-[#1a1916] text-[#1A1916] dark:text-[#f7f6f3]"
+                    className={`p-4 rounded-2xl text-center border-2 transition-all cursor-pointer ${
+                      goal === g.key
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border bg-background text-foreground hover:border-foreground/50"
                     }`}>
                     <div className="text-[28px] mb-1.5">{g.emoji}</div>
                     <div className="text-[13px] font-bold">{g.label}</div>
                     <div
-                      className={`text-[11px] mt-0.5 ${ goal === g.key ? "text-white dark:text-[#1a1916]/60" : "text-[#9B9895]"
+                      className={`text-[11px] mt-0.5 ${
+                        goal === g.key
+                          ? "text-white dark:text-[#1a1916]/60"
+                          : "text-[#9B9895]"
                       }`}>
                       {g.sub}
                     </div>
@@ -547,7 +559,7 @@ export default function OnboardingPage() {
             </button>
             <button
               onClick={() => setStep(3)}
-              className="w-full py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] active:scale-[0.99] transition-all cursor-pointer">
+              className="w-full py-3 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-all cursor-pointer">
               Back
             </button>
           </BlurFade>
@@ -556,7 +568,7 @@ export default function OnboardingPage() {
         {/* Step 5 — Intensity + TDEE Preview */}
         {step === 5 && (
           <BlurFade>
-            <div className="text-[26px] font-bold mb-1.5 text-[#1A1916] dark:text-[#f7f6f3]">
+            <div className="text-[26px] font-bold mb-1.5 text-foreground">
               {goal === "maintain"
                 ? "⚖️ Maintenance"
                 : goal === "cut"
@@ -575,19 +587,25 @@ export default function OnboardingPage() {
                   <button
                     key={i.key}
                     onClick={() => setIntensity(i.key)}
-                    className={`w-full flex items-center gap-3 p-4 rounded-xl mb-2 border-2 text-left transition-all cursor-pointer ${ intensity === i.key ? "border-[#1A1916] dark:border-[#f7f6f3] bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                        : "border-[#E8E7E4] dark:border-[#3a3a3a] hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-[#f7f6f3] bg-white dark:bg-[#1a1916] text-[#1A1916] dark:text-[#f7f6f3]"
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl mb-2 border-2 text-left transition-all cursor-pointer  duration-300 ease-in-out  ${
+                      intensity === i.key
+                        ? "border-foreground bg-foreground text-background"
+                        : "border-border bg-background text-foreground hover:border-foreground/50"
                     }`}>
                     <div
-                      className={`w-[42px] h-[42px] rounded-full flex-shrink-0 flex items-center justify-center text-lg ${ intensity === i.key ? "bg-white dark:bg-[#1a1916] text-[#1A1916] dark:text-[#f7f6f3]"
-                          : "bg-[#F7F6F3] dark:bg-[#0f0f0e] text-[#9B9895]"
+                      className={`w-[42px] h-[42px] rounded-full flex-shrink-0 flex items-center justify-center text-lg ${
+                        intensity === i.key
+                          ? "bg-background text-foreground"
+                          : "bg-background text-[#9B9895]"
                       }`}>
                       {i.emoji}
                     </div>
                     <div>
                       <div className="font-bold text-[14px]">{i.label}</div>
                       <div
-                        className={`text-[11px] mt-0.5 ${ intensity === i.key ? "text-white dark:text-[#1a1916]/65"
+                        className={`text-[11px] mt-0.5 ${
+                          intensity === i.key
+                            ? "text-white dark:text-[#1a1916]/65"
                             : "text-[#9B9895]"
                         }`}>
                         {i.desc}
@@ -600,7 +618,7 @@ export default function OnboardingPage() {
 
             {/* TDEE Preview */}
             {pv && (
-              <div className="grid grid-cols-2 gap-2.5 p-5 bg-[#F7F6F3] dark:bg-[#0f0f0e] rounded-[14px] mb-6">
+              <div className="grid grid-cols-2 gap-2.5 p-5 bg-background rounded-[14px] mb-6">
                 {(
                   [
                     ["Calorie Target", `${pv.calTarget} kcal`],
@@ -626,7 +644,7 @@ export default function OnboardingPage() {
             </button>
             <button
               onClick={() => setStep(4)}
-              className="w-full py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] active:scale-[0.99] transition-all cursor-pointer">
+              className="w-full py-3 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-all cursor-pointer">
               Back
             </button>
           </BlurFade>

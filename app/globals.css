@@ -139,6 +139,7 @@ html {
   scroll-behavior: smooth;
 }
 
+html,
 body {
   font-family: var(--font-sans);
   background-color: var(--color-background);
@@ -198,6 +199,15 @@ html.lenis body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-muted-foreground);
+}
+
+/* ─── Hide scrollbar utility ─── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* ─── Keyframes ─── */
@@ -304,13 +314,13 @@ html.lenis body {
   --popover: #1a1916;
   --popover-foreground: #f7f6f3;
   --primary: #f97316;
-  --primary-foreground: #ffffff;
+  --primary-foreground: rgba(247, 246, 243, 0.9);
   --secondary: #1a1916;
-  --secondary-foreground: #f7f6f3;
+  --secondary-foreground: rgba(247, 246, 243, 0.85);
   --muted: #1a1916;
   --muted-foreground: #9b9895;
   --accent: #1a1916;
-  --accent-foreground: #f7f6f3;
+  --accent-foreground: rgba(247, 246, 243, 0.85);
   --destructive: #ef4444;
   --border: #3a3a3a;
   --input: #3a3a3a;
@@ -323,9 +333,9 @@ html.lenis body {
   --sidebar: #0f0f0e;
   --sidebar-foreground: #f7f6f3;
   --sidebar-primary: #f97316;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary-foreground: rgba(247, 246, 243, 0.9);
   --sidebar-accent: #1a1916;
-  --sidebar-accent-foreground: #f7f6f3;
+  --sidebar-accent-foreground: rgba(247, 246, 243, 0.85);
   --sidebar-border: #3a3a3a;
   --sidebar-ring: #9b9895;
 }
@@ -334,7 +344,7 @@ html.lenis body {
  * shadcn-style surface primitives
  *
  * All card-like containers in the app should use `.card` instead
- * of repeating `bg-white border border-[#E8E7E4] rounded-2xl`.
+ * of repeating `bg-foreground border border-[#E8E7E4] rounded-2xl`.
  * Variants and slot utilities make the same primitives composable
  * across the landing page, dashboard, settings, etc.
  * ─────────────────────────────────────────────────────────────── */
@@ -469,8 +479,8 @@ html.lenis body {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.65 0.2 50);
+  --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -488,7 +498,7 @@ html.lenis body {
   --chart-5: oklch(0.269 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.65 0.2 50);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);

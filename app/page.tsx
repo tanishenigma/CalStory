@@ -157,14 +157,14 @@ export default function LandingPage() {
 
   return (
     <ReactLenis root options={{ lerp: 0.1, duration: 1.5 }}>
-      <div className="relative min-h-screen bg-background text-foreground font-sans selection:bg-orange-500/30">
+      <div className="relative min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
         {/* Single subtle gradient */}
         <div className="pointer-events-none fixed inset-0 -z-10">
-          <div className="absolute top-0 right-1/4 w-[50%] h-[60%] rounded-full bg-orange-500/[0.03] blur-[120px]" />
+          <div className="absolute top-0 right-1/4 w-[50%] h-[60%] rounded-full bg-primary/[0.03] blur-[120px]" />
         </div>
 
         {/* NAV */}
-        <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between w-[90%] max-w-4xl px-4 pr-3 h-14 bg-white dark:bg-[#1a1916]/60 backdrop-blur-2xl border border-white/40 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
+        <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between w-[90%] max-w-4xl px-4 pr-3 h-14 bg-background/80 dark:bg-[#1a1916]/80 backdrop-blur-2xl border border-border dark:border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
           <Link
             href="/"
             className="flex items-center gap-2.5 group cursor-pointer">
@@ -178,12 +178,12 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-8">
             <Link
               href="#features"
-              className="text-xs font-bold uppercase tracking-widest text-muted-foreground-foreground hover:text-foreground transition-colors">
+              className="text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
               Features
             </Link>
             <Link
               href="#how-it-works"
-              className="text-xs font-bold uppercase tracking-widest text-muted-foreground-foreground hover:text-foreground transition-colors">
+              className="text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
               Method
             </Link>
           </div>
@@ -201,9 +201,9 @@ export default function LandingPage() {
         {/* HERO - Simplified, single focus */}
         <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-48 pb-24 min-h-[85vh] w-full overflow-hidden">
           <BlurFade delay={0.2} className="w-full max-w-5xl mx-auto px-4">
-            <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-[0.9] mb-6 font-heading">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] mb-6 font-heading">
               Your calorie <br />
-              <span className="text-orange-500">story.</span>
+              <span className="text-primary ">story.</span>
             </h1>
           </BlurFade>
 
@@ -214,7 +214,9 @@ export default function LandingPage() {
             </p>
           </BlurFade>
 
-          <BlurFade delay={0.4} className="flex items-center gap-4">
+          <BlurFade
+            delay={0.4}
+            className="flex flex-wrap items-center justify-center gap-4">
             {!hasProfile ? (
               <>
                 <button
@@ -264,7 +266,7 @@ export default function LandingPage() {
                 strokeLinecap="round"
                 strokeDasharray="440"
                 strokeDashoffset="440"
-                className="text-orange-500"
+                className="text-primary"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -294,12 +296,12 @@ export default function LandingPage() {
               </p>
             </BlurFade>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
               {FEATURES.map((f, i) => (
                 <BlurFade key={f.title} delay={0.1 * i}>
-                  <Card className="card-interactive h-full p-8 group">
-                    <CardContent className="p-0">
-                      <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center mb-6 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                  <Card className="card-interactive h-full p-6 sm:p-8 group">
+                    <CardContent className="p-0 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         {f.icon}
                       </div>
                       <div className="font-bold text-lg mb-2 tracking-tight font-heading">
@@ -321,11 +323,11 @@ export default function LandingPage() {
           id="how-it-works"
           className="relative z-10 py-24 px-6 border-t border-border/60 w-full flex justify-center">
           <div className="max-w-5xl mx-auto w-full">
-            <div className="grid md:grid-cols-2 gap-16 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start">
               <BlurFade>
                 <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1] font-heading">
                   Zero Friction.{" "}
-                  <span className="text-orange-500">Maximum Results.</span>
+                  <span className="text-primary">Maximum Results.</span>
                 </h2>
                 <p className="mt-6 text-muted-foreground-foreground text-base leading-relaxed">
                   Most trackers fail because they're too slow. CalStory is
@@ -342,7 +344,7 @@ export default function LandingPage() {
                       stepsRef.current[i] = el;
                     }}
                     className="flex items-start gap-5 group">
-                    <div className="shrink-0 w-10 h-10 rounded-xl bg-foreground text-background flex items-center justify-center text-sm font-bold tabular-nums group-hover:bg-orange-500 transition-colors">
+                    <div className="shrink-0 w-10 h-10 rounded-xl bg-foreground text-background flex items-center justify-center text-sm font-bold tabular-nums group-hover:bg-primary transition-colors">
                       {s.n}
                     </div>
                     <div>

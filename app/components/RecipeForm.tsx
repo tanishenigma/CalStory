@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { useApp, uid } from "@/app/context/AppContext";
 import { toast } from "sonner";
 import type { MealTime, Meal } from "@/app/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/ui/select";
 
 interface RecipeFormProps {
   onClose: () => void;
@@ -13,7 +19,6 @@ interface RecipeFormProps {
 
 export default function RecipeForm({ onClose }: RecipeFormProps) {
   const { state, addMeal } = useApp();
-
 
   const [name, setName] = useState("");
   const [cal, setCal] = useState("");
@@ -30,7 +35,7 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
       const cVal = parseInt(c) || 0;
       const fVal = parseInt(f) || 0;
       if (pVal > 0 || cVal > 0 || fVal > 0) {
-        const totalCals = Math.round((pVal * 4) + (cVal * 4) + (fVal * 9));
+        const totalCals = Math.round(pVal * 4 + cVal * 4 + fVal * 9);
         setCal(totalCals.toString());
       }
     }
@@ -81,26 +86,34 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
   const isValid = name.trim().length > 0 && (parseInt(cal) || 0) > 0;
 
   return (
-    <div className="w-[360px] bg-white dark:bg-[#1a1916] rounded-[24px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-[#F0EFEC] dark:border-[#2a2a2a] origin-bottom-right animate-in zoom-in-95 duration-200">
-      <h2 className="text-[18px] font-bold mb-6 text-[#1A1916] dark:text-[#f7f6f3]">Log Food</h2>
+    <div className="w-full max-w-sm mx-auto bg-card rounded-[24px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-[#F0EFEC] dark:border-[#2a2a2a] origin-bottom-right animate-in zoom-in-95 duration-200">
+      <h2 className="text-[18px] font-bold mb-6 text-[#1A1916] dark:text-[#f7f6f3]">
+        Log Food
+      </h2>
 
       <div className="space-y-4">
         <div>
-          <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">Name</label>
+          <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+            Name
+          </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border-b border-[#E8E7E4] dark:border-[#3a3a3a] py-1.5 outline-none font-semibold text-[15px] focus:border-[#1A1916] dark:focus:border-[#f7f6f3]"
+            className="w-full border-b border-border py-1.5 outline-none font-semibold text-[15px] focus:border-border"
             placeholder="e.g. White Rice"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">Category</label>
-            <Select value={time} onValueChange={(val) => setTime(val as MealTime)}>
-              <SelectTrigger className="w-full border-b border-t-0 border-x-0 border-[#E8E7E4] dark:border-[#3a3a3a] py-1.5 px-0 rounded-none shadow-none focus:ring-0 focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-semibold text-[15px] h-auto">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+              Category
+            </label>
+            <Select
+              value={time}
+              onValueChange={(val) => setTime(val as MealTime)}>
+              <SelectTrigger className="w-full border-b border-t-0 border-x-0 border-border py-1.5 px-0 rounded-none shadow-none focus:ring-0 focus:border-border font-semibold text-[15px] h-auto">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
@@ -112,7 +125,9 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
             </Select>
           </div>
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">Calories</label>
+            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+              Calories
+            </label>
             <input
               type="number"
               inputMode="decimal"
@@ -122,7 +137,7 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
                 setLastEdited("cals");
                 setCal(e.target.value);
               }}
-              className="w-full border-b border-[#E8E7E4] dark:border-[#3a3a3a] py-1.5 outline-none font-semibold text-[15px] focus:border-[#1A1916] dark:focus:border-[#f7f6f3]"
+              className="w-full border-b border-border py-1.5 outline-none font-semibold text-[15px] focus:border-border"
               placeholder="0"
             />
           </div>
@@ -130,7 +145,9 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
 
         <div className="grid grid-cols-3 gap-4 pt-2">
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">Carbs (g)</label>
+            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+              Carbs (g)
+            </label>
             <input
               type="number"
               inputMode="decimal"
@@ -140,12 +157,14 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
                 setLastEdited("macros");
                 setC(e.target.value);
               }}
-              className="w-full border-b border-[#E8E7E4] dark:border-[#3a3a3a] py-1.5 outline-none font-semibold text-[15px] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] text-emerald-500"
+              className="w-full border-b border-border py-1.5 outline-none font-semibold text-[15px] focus:border-border text-emerald-500"
               placeholder="0"
             />
           </div>
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">Protein (g)</label>
+            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+              Protein (g)
+            </label>
             <input
               type="number"
               inputMode="decimal"
@@ -155,12 +174,14 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
                 setLastEdited("macros");
                 setP(e.target.value);
               }}
-              className="w-full border-b border-[#E8E7E4] dark:border-[#3a3a3a] py-1.5 outline-none font-semibold text-[15px] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] text-red-500"
+              className="w-full border-b border-border py-1.5 outline-none font-semibold text-[15px] focus:border-border text-red-500"
               placeholder="0"
             />
           </div>
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">Fat (g)</label>
+            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+              Fat (g)
+            </label>
             <input
               type="number"
               inputMode="decimal"
@@ -170,7 +191,7 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
                 setLastEdited("macros");
                 setF(e.target.value);
               }}
-              className="w-full border-b border-[#E8E7E4] dark:border-[#3a3a3a] py-1.5 outline-none font-semibold text-[15px] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] text-yellow-500"
+              className="w-full border-b border-border py-1.5 outline-none font-semibold text-[15px] focus:border-border text-yellow-500"
               placeholder="0"
             />
           </div>
@@ -181,15 +202,13 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
             type="button"
             onClick={handleSave}
             disabled={!isValid}
-            className="w-full py-3 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
-          >
+            className="w-full py-3 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100">
             Save Meal
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 border border-[#E8E7E4] dark:border-[#3a3a3a] text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] active:scale-[0.99] transition-transform"
-          >
+            className="w-full py-3 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-transform">
             Cancel
           </button>
         </div>

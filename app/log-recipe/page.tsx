@@ -224,11 +224,11 @@ function LogRecipeForm() {
           type="button"
           onClick={() => router.back()}
           aria-label="Back"
-          className="w-9 h-9 rounded-lg border border-[#E8E7E4] dark:border-[#3a3a3a] bg-white hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] flex items-center justify-center cursor-pointer transition-colors">
+          className="w-9 h-9 rounded-lg border border-border bg-card hover:bg-background flex items-center justify-center cursor-pointer transition-colors">
           <ArrowLeft size={16} />
         </button>
         <div className="flex items-center gap-2 flex-1">
-          <Flame size={20} className="text-orange-500" />
+          <Flame size={20} className="text-primary" />
           <h1 className="text-xl font-bold tracking-tight font-heading">
             Log Recipe — Advanced
           </h1>
@@ -247,7 +247,7 @@ function LogRecipeForm() {
                 key={r.id}
                 type="button"
                 onClick={() => applyPreset(r)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-[#E8E7E4] dark:border-[#3a3a3a] bg-white hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] hover:border-[#1A1916] dark:hover:border-[#f7f6f3] text-xs font-semibold transition-all cursor-pointer">
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-border bg-card hover:bg-background hover:border-[#1A1916] dark:hover:border-[#f7f6f3] text-xs font-semibold transition-all cursor-pointer">
                 <span className="text-sm">{pairingEmojiFor(r.name)}</span>
                 <span>{r.name}</span>
               </button>
@@ -258,7 +258,9 @@ function LogRecipeForm() {
 
       {/* ── Basics ── */}
       <Card className="p-5">
-        <div className="text-sm font-bold mb-4 text-[#1A1916] dark:text-[#f7f6f3]">Basics</div>
+        <div className="text-sm font-bold mb-4 text-[#1A1916] dark:text-[#f7f6f3]">
+          Basics
+        </div>
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Field label="Recipe name">
             <input
@@ -266,7 +268,7 @@ function LogRecipeForm() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Banana Shake"
-              className="w-full px-3.5 py-2.5 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
             />
           </Field>
           <Field label="Meal category">
@@ -305,7 +307,7 @@ function LogRecipeForm() {
               step="0.25"
               value={servings}
               onChange={(e) => setServings(e.target.value)}
-              className="w-full px-3 py-2.5 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all"
+              className="w-full px-3 py-2.5 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
             />
           </Field>
           <Field label="Serving size">
@@ -314,7 +316,7 @@ function LogRecipeForm() {
               min="0"
               value={servingSize}
               onChange={(e) => setServingSize(e.target.value)}
-              className="w-full px-3 py-2.5 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all"
+              className="w-full px-3 py-2.5 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
             />
           </Field>
           <Field label="Unit">
@@ -344,7 +346,7 @@ function LogRecipeForm() {
               type="time"
               value={consumptionTime}
               onChange={(e) => setConsumptionTime(e.target.value)}
-              className="w-full px-3 py-2.5 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all"
+              className="w-full px-3 py-2.5 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
             />
           </Field>
           <Field label="Log for next">
@@ -382,7 +384,7 @@ function LogRecipeForm() {
                   autoEstimateMacros(e.target.value);
                 }}
                 placeholder="e.g. 420"
-                className="w-full px-3.5 py-3 pr-14 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg text-sm bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                className="w-full px-3.5 py-3 pr-14 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-wider text-[#9B9895]">
                 kcal
@@ -399,7 +401,7 @@ function LogRecipeForm() {
               value={p}
               onChange={(e) => setP(e.target.value)}
               placeholder="0"
-              className="w-full px-2.5 py-2.5 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+              className="w-full px-2.5 py-2.5 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
             />
           </Field>
           <Field label="Carbs" hint="g" compact>
@@ -409,7 +411,7 @@ function LogRecipeForm() {
               value={c}
               onChange={(e) => setC(e.target.value)}
               placeholder="0"
-              className="w-full px-2.5 py-2.5 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+              className="w-full px-2.5 py-2.5 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
             />
           </Field>
           <Field label="Fat" hint="g" compact>
@@ -419,7 +421,7 @@ function LogRecipeForm() {
               value={f}
               onChange={(e) => setF(e.target.value)}
               placeholder="0"
-              className="w-full px-2.5 py-2.5 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+              className="w-full px-2.5 py-2.5 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
             />
           </Field>
         </div>
@@ -454,7 +456,7 @@ function LogRecipeForm() {
                   type="number"
                   value={saturatedFat}
                   onChange={(e) => setSaturatedFat(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Trans" hint="g" compact>
@@ -462,7 +464,7 @@ function LogRecipeForm() {
                   type="number"
                   value={transFat}
                   onChange={(e) => setTransFat(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Polyunsaturated" hint="g" compact>
@@ -470,7 +472,7 @@ function LogRecipeForm() {
                   type="number"
                   value={polyFat}
                   onChange={(e) => setPolyFat(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Monounsaturated" hint="g" compact>
@@ -478,7 +480,7 @@ function LogRecipeForm() {
                   type="number"
                   value={monoFat}
                   onChange={(e) => setMonoFat(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
             </div>
@@ -491,7 +493,7 @@ function LogRecipeForm() {
                   type="number"
                   value={cholesterol}
                   onChange={(e) => setCholesterol(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Sodium" hint="mg" compact>
@@ -499,7 +501,7 @@ function LogRecipeForm() {
                   type="number"
                   value={sodium}
                   onChange={(e) => setSodium(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
             </div>
@@ -509,7 +511,7 @@ function LogRecipeForm() {
             title="Carbs breakdown"
             footer={
               netCarbs > 0 ? (
-                <div className="flex justify-between text-[11px] pt-2 border-t border-[#E8E7E4] dark:border-[#3a3a3a] mt-2">
+                <div className="flex justify-between text-[11px] pt-2 border-t border-border mt-2">
                   <span className="font-semibold text-[#1A1916] dark:text-[#f7f6f3]">
                     Net carbs
                   </span>
@@ -525,7 +527,7 @@ function LogRecipeForm() {
                   type="number"
                   value={fiber}
                   onChange={(e) => setFiber(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Sugar" hint="g" compact>
@@ -533,7 +535,7 @@ function LogRecipeForm() {
                   type="number"
                   value={sugar}
                   onChange={(e) => setSugar(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Added sugars" hint="g" compact>
@@ -541,7 +543,7 @@ function LogRecipeForm() {
                   type="number"
                   value={addedSugar}
                   onChange={(e) => setAddedSugar(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Sugar alcohols" hint="g" compact>
@@ -549,7 +551,7 @@ function LogRecipeForm() {
                   type="number"
                   value={sugarAlcohols}
                   onChange={(e) => setSugarAlcohols(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
             </div>
@@ -562,7 +564,7 @@ function LogRecipeForm() {
                   type="number"
                   value={vitaminD}
                   onChange={(e) => setVitaminD(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Calcium" hint="mg" compact>
@@ -570,7 +572,7 @@ function LogRecipeForm() {
                   type="number"
                   value={calcium}
                   onChange={(e) => setCalcium(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Iron" hint="mg" compact>
@@ -578,7 +580,7 @@ function LogRecipeForm() {
                   type="number"
                   value={iron}
                   onChange={(e) => setIron(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Potassium" hint="mg" compact>
@@ -586,7 +588,7 @@ function LogRecipeForm() {
                   type="number"
                   value={potassium}
                   onChange={(e) => setPotassium(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Vitamin A" hint="mcg" compact>
@@ -594,7 +596,7 @@ function LogRecipeForm() {
                   type="number"
                   value={vitaminA}
                   onChange={(e) => setVitaminA(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
               <Field label="Vitamin C" hint="mg" compact>
@@ -602,7 +604,7 @@ function LogRecipeForm() {
                   type="number"
                   value={vitaminC}
                   onChange={(e) => setVitaminC(e.target.value)}
-                  className="w-full px-2.5 py-2 border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-md text-xs bg-[#F7F6F3] dark:bg-[#0f0f0e] focus:bg-white dark:focus:bg-[#1a1916] focus:border-[#1A1916] dark:focus:border-[#f7f6f3] outline-none transition-all font-mono"
+                  className="w-full px-2.5 py-2 border border-border rounded-md text-xs bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                 />
               </Field>
             </div>
@@ -621,7 +623,7 @@ function LogRecipeForm() {
         <button
           onClick={() => router.back()}
           type="button"
-          className="w-full py-3.5 border border-[#E8E7E4] dark:border-[#3a3a3a] text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] active:scale-[0.99] transition-all cursor-pointer">
+          className="w-full py-3.5 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-all cursor-pointer">
           Cancel
         </button>
       </div>
@@ -693,7 +695,7 @@ function DVBar({
       <span className="text-xs font-semibold text-[#1A1916] dark:text-[#f7f6f3] w-16 flex-shrink-0">
         {label}
       </span>
-      <div className="flex-1 h-1.5 rounded-full bg-[#F7F6F3] dark:bg-[#0f0f0e] overflow-hidden">
+      <div className="flex-1 h-1.5 rounded-full bg-background overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{

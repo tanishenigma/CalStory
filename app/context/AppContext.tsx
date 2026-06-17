@@ -27,7 +27,6 @@ import {
   getWorkoutTemplates,
   deleteWorkoutTemplateDB,
 } from "@/app/lib/db";
-import { LS, LS_KEYS, getUserKey } from "@/app/lib/storage";
 import type {
   AppState,
   AppContextValue,
@@ -76,7 +75,7 @@ function reducer(state: AppState, action: Action): AppState {
     case "ADD_MEAL": {
       const day = state.selDate;
       const existing = state.meals[day] || [];
-      const updated = existing.filter(m => m.id !== action.payload.id);
+      const updated = existing.filter((m) => m.id !== action.payload.id);
       updated.push(action.payload);
       return {
         ...state,
@@ -103,7 +102,7 @@ function reducer(state: AppState, action: Action): AppState {
     case "ADD_WORKOUT": {
       const day = state.selDate;
       const existing = state.workouts[day] || [];
-      const updated = existing.filter(w => w.id !== action.payload.id);
+      const updated = existing.filter((w) => w.id !== action.payload.id);
       updated.push(action.payload);
       return {
         ...state,
@@ -122,9 +121,18 @@ function reducer(state: AppState, action: Action): AppState {
     case "SET_RECENTS":
       return { ...state, recents: action.payload };
     case "ADD_TEMPLATE":
-      return { ...state, savedWorkouts: [...state.savedWorkouts.filter(t => t.id !== action.payload.id), action.payload] };
+      return {
+        ...state,
+        savedWorkouts: [
+          ...state.savedWorkouts.filter((t) => t.id !== action.payload.id),
+          action.payload,
+        ],
+      };
     case "DELETE_TEMPLATE":
-      return { ...state, savedWorkouts: state.savedWorkouts.filter(t => t.id !== action.id) };
+      return {
+        ...state,
+        savedWorkouts: state.savedWorkouts.filter((t) => t.id !== action.id),
+      };
     case "SET_TEMPLATES":
       return { ...state, savedWorkouts: action.payload };
     default:
@@ -185,57 +193,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
-  // Hydrate from Firestore when user signs in, localStorage when guest.
-  // CRITICAL: We always pre-populate state from the per-user local cache
-  // BEFORE touching Firestore. This way, if Firestore is blocked (e.g. a
-  // browser extension returns ERR_BLOCKED_BY_CLIENT for the Listen
-  // channel), the app still recognises the user as onboarded and doesn't
-  // kick them back to the onboarding flow.
   useEffect(() => {
-    if (loading) return; // wait for auth to initialize
-
-    // ── Step 1: synchronous local seed (works even when Firestore is down) ──
-    if (user) {
-      const localProfile = getUserKey<Profile>(user.uid, "profile");
-      const localMeals =
-        getUserKey<Record<string, Meal[]>>(user.uid, "meals") ?? {};
-      const localWorkouts =
-        getUserKey<Record<string, Workout[]>>(user.uid, "workouts") ?? {};
-      const localTemplates = getUserKey<SavedWorkout[]>(user.uid, "workoutTemplates") ?? [];
-      const localRecents = getUserKey<RecentMeal[]>(user.uid, "recents") ?? [];
-      const today = todayKey();
+    if (loading) return;
+    if (!user) {
       dispatch({
         type: "HYDRATE",
         payload: {
-          // If we have a local profile, keep the user onboarded. Only
-          // treat them as needing-onboarding if BOTH Firestore AND the
-          // local cache agree there's no profile.
-          profile: localProfile ?? state.profile ?? null,
-          meals: { [today]: localMeals[today] ?? [] },
-          workouts: { [today]: localWorkouts[today] ?? [] },
-          savedWorkouts: localTemplates,
-          recents: localRecents,
-          selDate: today,
-        },
-      });
-    } else {
-      dispatch({
-        type: "HYDRATE",
-        payload: {
-          profile: LS.get<Profile>(LS_KEYS.PROFILE, null),
-          meals: LS.get<Record<string, Meal[]>>(LS_KEYS.MEALS, {}) ?? {},
-          workouts:
-            LS.get<Record<string, Workout[]>>(LS_KEYS.WORKOUTS, {}) ?? {},
-          savedWorkouts: LS.get<SavedWorkout[]>("SAVED_WORKOUTS", []) ?? [],
+          profile: null,
+          meals: {},
+          workouts: {},
+          savedWorkouts: [],
           recents: [],
           selDate: todayKey(),
         },
       });
+      return;
     }
 
-    // ── Step 2: try to enrich with fresh data from Firestore (best effort) ──
     async function hydrateRemote() {
-      if (!user) return;
       try {
         const [profile, recents, templates] = await Promise.all([
           getProfile(user.uid),
@@ -247,12 +222,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           getMeals(user.uid, today),
           getWorkouts(user.uid, today),
         ]);
-        // Only overwrite state if Firestore actually returned data.
-        // If it returned null but we already have a local profile, keep it.
         dispatch({
           type: "HYDRATE",
           payload: {
-            profile: profile ?? state.profile ?? null,
+            profile,
             meals: { [today]: meals },
             workouts: { [today]: workouts },
             savedWorkouts: templates,
@@ -261,13 +234,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           },
         });
       } catch (err) {
-        // Already handled by `safe()` inside db.ts — this catch is just
-        // a safety net. Crucially, we do NOT null out the profile here.
-
-        console.warn(
-          "[AppContext] Remote hydrate failed, using local cache:",
-          err,
-        );
+        dispatch({
+          type: "HYDRATE",
+          payload: {
+            profile: null,
+            meals: {},
+            workouts: {},
+            savedWorkouts: [],
+            recents: [],
+            selDate: todayKey(),
+          },
+        });
       }
     }
     hydrateRemote();
@@ -299,8 +276,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setProfile = useCallback(
     async (p: Profile): Promise<void> => {
       dispatch({ type: "SET_PROFILE", payload: p });
-      if (user) await saveProfile(user.uid, p);
-      else LS.set(LS_KEYS.PROFILE, p);
+      if (!user) return;
+      await saveProfile(user.uid, p);
     },
     [user],
   );
@@ -312,21 +289,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addMeal = useCallback(
     async (meal: Meal): Promise<void> => {
       dispatch({ type: "ADD_MEAL", payload: meal });
-      if (user) {
-        await Promise.all([
-          saveMeal(user.uid, state.selDate, meal),
-          saveRecentMeal(user.uid, meal),
-        ]);
-        const recents = await getRecentMeals(user.uid);
-        dispatch({ type: "SET_RECENTS", payload: recents });
-      } else {
-        LS.set(LS_KEYS.MEALS, {
-          ...state.meals,
-          [state.selDate]: [...(state.meals[state.selDate] || []), meal],
-        });
-      }
+      if (!user) return;
+      await Promise.all([
+        saveMeal(user.uid, state.selDate, meal),
+        saveRecentMeal(user.uid, meal),
+      ]);
+      const recents = await getRecentMeals(user.uid);
+      dispatch({ type: "SET_RECENTS", payload: recents });
     },
-    [user, state.selDate, state.meals],
+    [user, state.selDate],
   );
 
   /**
@@ -352,87 +323,61 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         type: "ADD_MEAL_RANGE",
         payload: { meals: copies, dayKeys },
       });
-      if (user) {
-        await Promise.all(
-          dayKeys.map((k, i) => saveMeal(user.uid, k, copies[i])),
-        );
-        // only record the original as a "recent"
-        await saveRecentMeal(user.uid, meal);
-        const recents = await getRecentMeals(user.uid);
-        dispatch({ type: "SET_RECENTS", payload: recents });
-      } else {
-        const nextMeals = { ...state.meals };
-        for (let i = 0; i < dayKeys.length; i++) {
-          const k = dayKeys[i];
-          nextMeals[k] = [...(nextMeals[k] || []), copies[i]];
-        }
-        LS.set(LS_KEYS.MEALS, nextMeals);
-      }
+      if (!user) return;
+      await Promise.all(
+        dayKeys.map((k, i) => saveMeal(user.uid, k, copies[i])),
+      );
+      // only record the original as a "recent"
+      await saveRecentMeal(user.uid, meal);
+      const recents = await getRecentMeals(user.uid);
+      dispatch({ type: "SET_RECENTS", payload: recents });
     },
-    [user, state.selDate, state.meals],
+    [user, state.selDate],
   );
 
   const deleteMeal = useCallback(
     async (id: string, day: string): Promise<void> => {
       dispatch({ type: "DELETE_MEAL", id, day });
-      if (user) await deleteMealDB(user.uid, day, id);
-      else
-        LS.set(LS_KEYS.MEALS, {
-          ...state.meals,
-          [day]: (state.meals[day] || []).filter((m) => m.id !== id),
-        });
+      if (!user) return;
+      await deleteMealDB(user.uid, day, id);
     },
-    [user, state.meals],
+    [user],
   );
 
   const addWorkout = useCallback(
     async (w: Workout): Promise<void> => {
       dispatch({ type: "ADD_WORKOUT", payload: w });
-      if (user) await saveWorkout(user.uid, state.selDate, w);
-      else
-        LS.set(LS_KEYS.WORKOUTS, {
-          ...state.workouts,
-          [state.selDate]: [...(state.workouts[state.selDate] || []), w],
-        });
+      if (!user) return;
+      await saveWorkout(user.uid, state.selDate, w);
     },
-    [user, state.selDate, state.workouts],
+    [user, state.selDate],
   );
 
   const deleteWorkout = useCallback(
     async (id: string, day: string): Promise<void> => {
       dispatch({ type: "DELETE_WORKOUT", id, day });
-      if (user) await deleteWorkoutDB(user.uid, day, id);
-      else
-        LS.set(LS_KEYS.WORKOUTS, {
-          ...state.workouts,
-          [day]: (state.workouts[day] || []).filter((w) => w.id !== id),
-        });
+      if (!user) return;
+      await deleteWorkoutDB(user.uid, day, id);
     },
-    [user, state.workouts],
+    [user],
   );
 
   const saveTemplate = useCallback(
     async (template: SavedWorkout): Promise<void> => {
       dispatch({ type: "ADD_TEMPLATE", payload: template });
-      if (user) await saveWorkoutTemplateDB(user.uid, template);
-      else {
-        const next = [...state.savedWorkouts.filter(t => t.id !== template.id), template];
-        LS.set("SAVED_WORKOUTS", next);
-      }
+      if (!user) return;
+      await saveWorkoutTemplateDB(user.uid, template);
     },
-    [user, state.savedWorkouts],
+    [user],
   );
 
   const deleteTemplate = useCallback(
     async (id: string): Promise<void> => {
       dispatch({ type: "DELETE_TEMPLATE", id });
-      if (user) await deleteWorkoutTemplateDB(user.uid, id);
-      else {
-        const next = state.savedWorkouts.filter(t => t.id !== id);
-        LS.set("SAVED_WORKOUTS", next);
-      }
+      if (!user) return;
+      await deleteWorkoutTemplateDB(user.uid, id);
     },
-    [user, state.savedWorkouts],
+    [user],
   );
 
   return (

@@ -45,15 +45,8 @@ export default function BottomNav() {
   if (pathname === "/") return null;
   return (
     <nav
-      className=" fixed bottom-5 left-1/2 -translate-x-1/2 md:hidden z-[200] w-[calc(100vw-24px)] max-w-[420px] h-[72px] flex items-center justify-around px-2 "
-      style={{
-        background: "rgba(255,255,255,0.96)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        border: "1px solid #E8E7E4",
-        borderRadius: "24px",
-        boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
-      }}>
+      className="fixed bottom-5 left-1/2 -translate-x-1/2 md:hidden z-[200] w-[calc(100vw-24px)] max-w-md mx-auto h-[72px] flex items-center justify-around px-2 bg-white/95 dark:bg-[#1a1916]/95 backdrop-blur-xl border border-border rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
+    >
       {TABS.map(({ href, label, icon }) => {
         const active = pathname === href || pathname.startsWith(href + "/");
 

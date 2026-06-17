@@ -10,7 +10,7 @@ export function ExpenditureChanges() {
 
   const expenditureChanges = useMemo(() => {
     const today = new Date();
-    
+
     // Helper to get average calories for a specific past window
     const getAvgCal = (daysAgoStart: number, daysAgoEnd: number) => {
       let total = 0;
@@ -22,7 +22,7 @@ export function ExpenditureChanges() {
         const month = String(d.getMonth() + 1).padStart(2, "0");
         const day = String(d.getDate()).padStart(2, "0");
         const key = `${year}-${month}-${day}`;
-        
+
         if (meals[key]) {
           total += meals[key].reduce((sum, m) => sum + (m.cal || 0), 0);
           count++;
@@ -34,17 +34,17 @@ export function ExpenditureChanges() {
     // Calculate changes comparing recent window vs previous window of same size
     const calculateChange = (days: number) => {
       const recentAvg = getAvgCal(0, days - 1);
-      const previousAvg = getAvgCal(days, (days * 2) - 1);
-      
+      const previousAvg = getAvgCal(days, days * 2 - 1);
+
       if (recentAvg === null || previousAvg === null) {
         return { label: `${days} day`, value: "--", isPositive: true };
       }
-      
+
       const diff = Math.round(recentAvg - previousAvg);
-      return { 
-        label: `${days} day`, 
-        value: `${diff > 0 ? '+' : ''}${diff} kcal`, 
-        isPositive: diff >= 0 
+      return {
+        label: `${days} day`,
+        value: `${diff > 0 ? "+" : ""}${diff} kcal`,
+        isPositive: diff >= 0,
       };
     };
 
@@ -58,16 +58,23 @@ export function ExpenditureChanges() {
   }, [meals]);
 
   return (
-    <div className="bg-white dark:bg-[#1a1916] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-2xl overflow-hidden mb-8">
-      <div className="px-4 py-3 border-b border-[#E8E7E4] dark:border-[#3a3a3a]">
-        <h3 className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">Expenditure Changes</h3>
+    <div className="bg-card border border-border rounded-2xl overflow-hidden mb-8">
+      <div className="px-4 py-3 border-b border-border">
+        <h3 className="font-bold text-[#1A1916] dark:text-[#f7f6f3] ">
+          Expenditure Changes
+        </h3>
       </div>
       <div className="divide-y divide-[#E8E7E4] dark:divide-[#3a3a3a]">
         {expenditureChanges.map((item, idx) => (
-          <div key={idx} className="flex justify-between items-center px-4 py-3">
-            <span className="text-sm font-medium text-[#1A1916] dark:text-[#f7f6f3]">{item.label}</span>
+          <div
+            key={idx}
+            className="flex justify-between items-center px-4 py-3">
+            <span className="text-sm font-medium text-[#1A1916] dark:text-[#f7f6f3]">
+              {item.label}
+            </span>
             <div className="flex items-center gap-2">
-              <span className={`text-sm font-mono font-semibold ${item.isPositive ? 'text-[#9B9895]' : 'text-[#EF4444]'}`}>
+              <span
+                className={`text-sm font-mono font-semibold ${item.isPositive ? "text-[#9B9895]" : "text-[#EF4444]"}`}>
                 {item.value}
               </span>
               <ChevronRight size={16} className="text-[#9B9895]" />

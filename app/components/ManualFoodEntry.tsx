@@ -12,10 +12,9 @@ interface Props {
 export default function ManualFoodEntry({ onClose }: Props) {
   const { addMeal } = useApp();
 
-
   const [name, setName] = useState("");
   const [time, setTime] = useState<MealTime>("lunch");
-  
+
   // Macros
   const [cal, setCal] = useState("");
   const [p, setP] = useState("");
@@ -27,7 +26,7 @@ export default function ManualFoodEntry({ onClose }: Props) {
       toast.warning("Please enter a name");
       return;
     }
-    
+
     // Auto calculate calories if left blank but macros provided
     let finalCal = parseInt(cal) || 0;
     const finalP = parseInt(p) || 0;
@@ -53,12 +52,19 @@ export default function ManualFoodEntry({ onClose }: Props) {
     onClose();
   };
 
-  const isValid = name.trim().length > 0 && (parseInt(cal) > 0 || parseInt(p) > 0 || parseInt(c) > 0 || parseInt(f) > 0);
+  const isValid =
+    name.trim().length > 0 &&
+    (parseInt(cal) > 0 ||
+      parseInt(p) > 0 ||
+      parseInt(c) > 0 ||
+      parseInt(f) > 0);
 
   return (
-    <div className="bg-white dark:bg-[#1a1916] rounded-2xl shadow-sm border border-[#E8E7E4] dark:border-[#3a3a3a] p-5 mb-8">
+    <div className="bg-card rounded-2xl shadow-sm border border-border p-5 mb-8">
       <div className="flex justify-between items-center mb-5">
-        <h2 className="text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3]">Manual Food Entry</h2>
+        <h2 className="text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+          Manual Food Entry
+        </h2>
       </div>
 
       <div className="space-y-4">
@@ -72,7 +78,7 @@ export default function ManualFoodEntry({ onClose }: Props) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Homemade Greek Salad"
-              className="w-full bg-[#FAFAF8] dark:bg-[#0f0f0e] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-xl py-2.5 px-3 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-semibold text-[14px]"
+              className="w-full bg-subtle border border-border rounded-xl py-2.5 px-3 outline-none focus:border-border font-semibold text-[14px]"
             />
           </div>
           <div>
@@ -84,10 +90,11 @@ export default function ManualFoodEntry({ onClose }: Props) {
                 <button
                   key={t}
                   onClick={() => setTime(t as MealTime)}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold capitalize transition-colors border ${ time === t ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] border-[#1A1916] dark:border-[#f7f6f3]"
-                      : "bg-[#FAFAF8] dark:bg-[#1a1916] text-[#9B9895] border-[#E8E7E4] dark:border-[#3a3a3a] hover:border-[#9B9895]"
-                  }`}
-                >
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold capitalize transition-colors border ${
+                    time === t
+                      ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] border-[#1A1916] dark:border-[#f7f6f3]"
+                      : "bg-card text-[#9B9895] border-border hover:border-[#9B9895]"
+                  }`}>
                   {t}
                 </button>
               ))}
@@ -95,7 +102,7 @@ export default function ManualFoodEntry({ onClose }: Props) {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 p-4 bg-[#FAFAF8] dark:bg-[#0f0f0e] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-xl">
+        <div className="grid grid-cols-4 gap-4 p-4 bg-subtle border border-border rounded-xl">
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
               Calories
@@ -107,7 +114,7 @@ export default function ManualFoodEntry({ onClose }: Props) {
                 value={cal}
                 onChange={(e) => setCal(e.target.value)}
                 placeholder="0"
-                className="w-full bg-white dark:bg-[#1a1916] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg py-2 pl-3 pr-8 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-mono text-[15px]"
+                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-8 outline-none focus:border-border font-mono text-[15px]"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#9B9895]">
                 kcal
@@ -125,7 +132,7 @@ export default function ManualFoodEntry({ onClose }: Props) {
                 value={p}
                 onChange={(e) => setP(e.target.value)}
                 placeholder="0"
-                className="w-full bg-white dark:bg-[#1a1916] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg py-2 pl-3 pr-6 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-mono text-[15px]"
+                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-6 outline-none focus:border-border font-mono text-[15px]"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#9B9895]">
                 g
@@ -143,7 +150,7 @@ export default function ManualFoodEntry({ onClose }: Props) {
                 value={c}
                 onChange={(e) => setC(e.target.value)}
                 placeholder="0"
-                className="w-full bg-white dark:bg-[#1a1916] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg py-2 pl-3 pr-6 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-mono text-[15px]"
+                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-6 outline-none focus:border-border font-mono text-[15px]"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#9B9895]">
                 g
@@ -161,7 +168,7 @@ export default function ManualFoodEntry({ onClose }: Props) {
                 value={f}
                 onChange={(e) => setF(e.target.value)}
                 placeholder="0"
-                className="w-full bg-white dark:bg-[#1a1916] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-lg py-2 pl-3 pr-6 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-mono text-[15px]"
+                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-6 outline-none focus:border-border font-mono text-[15px]"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#9B9895]">
                 g
@@ -173,15 +180,13 @@ export default function ManualFoodEntry({ onClose }: Props) {
         <div className="flex justify-end gap-3 pt-2">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#9B9895] hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] transition-colors"
-          >
+            className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#9B9895] hover:bg-background transition-colors">
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={!isValid}
-            className="px-6 py-2.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl font-bold text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity shadow-sm"
-          >
+            className="px-6 py-2.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl font-bold text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity shadow-sm">
             Save Meal
           </button>
         </div>

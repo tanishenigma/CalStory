@@ -37,18 +37,18 @@ export default function CalorieHero({ eaten, target }: Props) {
   }
 
   return (
-    <Card className="flex items-center justify-between px-6 py-5 h-full">
+    <Card className="flex items-center justify-between px-4 sm:px-6 py-5 h-full min-w-0 overflow-hidden">
       {/* ── Left: stat ── */}
-      <div>
-        <div className="text-[44px] font-extrabold leading-none tracking-tight text-[#1A1916] dark:text-[#f7f6f3] tabular-nums">
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <div className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-[44px] font-extrabold leading-none tracking-tight text-[#1A1916] dark:text-[#f7f6f3] tabular-nums truncate pr-2">
           {left.toLocaleString()}
         </div>
-        <div className="text-[13px] font-semibold text-[#9B9895] mt-1 mb-3">
+        <div className="text-[13px] font-semibold text-[#9B9895] mt-1 mb-3 truncate">
           Calories Left
         </div>
         <div
           className={[
-            "inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full",
+            "inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold px-2 sm:px-2.5 py-1 rounded-full max-w-full",
             over
               ? "bg-red-50 text-red-600"
               : hasTarget
@@ -57,7 +57,7 @@ export default function CalorieHero({ eaten, target }: Props) {
           ].join(" ")}>
           <span
             className={[
-              "w-1.5 h-1.5 rounded-full",
+              "w-1.5 h-1.5 rounded-full flex-shrink-0",
               over
                 ? "bg-red-400"
                 : hasTarget
@@ -65,23 +65,23 @@ export default function CalorieHero({ eaten, target }: Props) {
                   : "bg-muted-foreground",
             ].join(" ")}
           />
-          {statusText}
+          <span className="truncate">{statusText}</span>
         </div>
       </div>
 
       {/* ── Right: ring ── */}
-      <div className="relative flex-shrink-0 w-[110px] h-[110px]">
+      <div className="relative flex-shrink-0 w-[88px] sm:w-[110px] md:w-[140px] lg:w-[170px] xl:w-[200px] h-[88px] sm:h-[110px] md:h-[140px] lg:h-[170px] xl:h-[200px]">
         <svg
-          width="110"
-          height="110"
-          viewBox="0 0 130 130"
+          width="100%"
+          height="100%"
+          viewBox="0 0 180 180"
           className={over ? "animate-pulse" : ""}>
           {/* Start the ring at 12 o'clock and go clockwise */}
-          <g transform="rotate(-90 65 65)">
+          <g transform="rotate(-90 90 90)">
             {/* Track — full circle, light grey */}
             <circle
-              cx="65"
-              cy="65"
+              cx="90"
+              cy="90"
               r={R}
               fill="none"
               className="stroke-[#F0EFEC] dark:stroke-[#3a3a3a]"
@@ -89,8 +89,8 @@ export default function CalorieHero({ eaten, target }: Props) {
             />
             {/* Progress — same full circle, but shortened by offset */}
             <circle
-              cx="65"
-              cy="65"
+              cx="90"
+              cy="90"
               r={R}
               fill="none"
               stroke={over ? "#EF4444" : "currentColor"}
@@ -103,7 +103,7 @@ export default function CalorieHero({ eaten, target }: Props) {
           </g>
         </svg>
         {/* centre glyph */}
-        <div className="absolute inset-0 flex items-center justify-center text-2xl select-none pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl select-none pointer-events-none">
           🔥
         </div>
       </div>

@@ -12,8 +12,8 @@ const WeightChanges = () => {
 
   return (
     <div>
-      <div className="bg-white dark:bg-[#1a1916] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-2xl overflow-hidden ">
-        <div className="p-4 border-b border-[#E8E7E4] dark:border-[#3a3a3a]">
+      <div className="bg-card border border-border rounded-2xl overflow-hidden ">
+        <div className="p-4 border-b border-border">
           <h3 className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
             Weight Changes
           </h3>

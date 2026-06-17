@@ -53,26 +53,31 @@ export function Streak() {
 
   return (
     <div className="mb-6">
-      <Card className="p-4 w-full">
-        <CardContent className="p-0 flex flex-col justify-between h-full">
-          <div className="relative flex flex-col h-full">
-            <div className="text-[13px] font-bold text-[#9B9895] p-4 pb-0">Day streak</div>
+      <Card className="p-4 w-full overflow-hidden">
+        <CardContent className="p-0 flex flex-col justify-between h-full min-w-0">
+          <div className="relative flex flex-col h-full min-w-0">
+            <div className="text-[13px] font-bold text-[#9B9895] p-4 pb-0">
+              Day streak
+            </div>
             <div className="p-4 pt-2">
-              <span className="text-8xl font-bold font-sans text-[#1A1916] dark:text-[#f7f6f3]">{currentStreak}</span>
+              <span className="text-4xl sm:text-5xl lg:text-6xl font-bold font-sans text-[#1A1916] dark:text-[#f7f6f3]">
+                {currentStreak}
+              </span>
             </div>
             <Flame
-              className="absolute right-[-16px] top-1/2 -translate-y-1/2 text-[#F97316]"
+              className="absolute right-[-8px] sm:right-[-12px] lg:right-[-16px] top-1/2 -translate-y-1/2 text-[#F97316] w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40"
               fill="#F97316"
-              size={180}
             />
           </div>
 
           <div className="flex justify-between items-center mt-auto max-w-xs">
             {last7Days.map((item, idx) => (
               <div key={idx} className="flex flex-col items-center gap-1.5 w-6">
-                <span className="text-[10px] font-semibold text-[#9B9895]">{item.dayStr}</span>
+                <span className="text-[10px] font-semibold text-[#9B9895]">
+                  {item.dayStr}
+                </span>
                 <div
-                  className={`w-1.5 h-1.5 rounded-full ${item.isActive ? 'bg-[#F97316]' : 'bg-[#E8E7E4]'}`}
+                  className={`w-1.5 h-1.5 rounded-full ${item.isActive ? "bg-[#F97316]" : "bg-[#E8E7E4]"}`}
                 />
               </div>
             ))}

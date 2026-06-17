@@ -4,7 +4,15 @@ import React, { useState, useEffect } from "react";
 import { Search, Loader2, Plus, Utensils } from "lucide-react";
 import { useApp, uid } from "@/app/context/AppContext";
 import { toast } from "sonner";
-import { Select, SelectContent, SelectGroup, SelectLabel, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectLabel,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/ui/select";
 import type { Meal, DetailedNutrients, MealTime } from "@/app/types";
 
 interface FatSecretFood {
@@ -13,9 +21,12 @@ interface FatSecretFood {
   food_description: string;
 }
 
-export default function InlineFoodSearch({ onClose }: { onClose?: () => void }) {
+export default function InlineFoodSearch({
+  onClose,
+}: {
+  onClose?: () => void;
+}) {
   const { addMeal } = useApp();
-
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FatSecretFood[]>([]);
@@ -34,7 +45,9 @@ export default function InlineFoodSearch({ onClose }: { onClose?: () => void }) 
       }
       setLoading(true);
       try {
-        const res = await fetch(`/api/food/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(
+          `/api/food/search?q=${encodeURIComponent(query)}`,
+        );
         const data = await res.json();
         const foods = data?.foods?.food || [];
         setResults(Array.isArray(foods) ? foods : [foods]);
@@ -64,7 +77,10 @@ export default function InlineFoodSearch({ onClose }: { onClose?: () => void }) 
         ? food.servings.serving
         : [food.servings.serving];
 
-      let baseServing = servings.find((s: any) => s.metric_serving_unit === "g" && s.metric_serving_amount) || servings[0];
+      let baseServing =
+        servings.find(
+          (s: any) => s.metric_serving_unit === "g" && s.metric_serving_amount,
+        ) || servings[0];
       let baseGrams = parseFloat(baseServing.metric_serving_amount || "100");
       if (isNaN(baseGrams) || baseGrams <= 0) baseGrams = 100;
 
@@ -102,42 +118,72 @@ export default function InlineFoodSearch({ onClose }: { onClose?: () => void }) 
 
       const lowerName = foodName.toLowerCase();
       let portions = [];
-      
-      if (lowerName.includes("roti") || lowerName.includes("chapati") || lowerName.includes("naan") || lowerName.includes("paratha")) {
-        portions.push({ label: "Roti / Chapati / Paratha", value: "roti", factor: baseGrams });
-      } else if (lowerName.includes("slice") || lowerName.includes("bread") || lowerName.includes("pizza") || lowerName.includes("cake") || lowerName.includes("cheese")) {
+
+      if (
+        lowerName.includes("roti") ||
+        lowerName.includes("chapati") ||
+        lowerName.includes("naan") ||
+        lowerName.includes("paratha")
+      ) {
+        portions.push({
+          label: "Roti / Chapati / Paratha",
+          value: "roti",
+          factor: baseGrams,
+        });
+      } else if (
+        lowerName.includes("slice") ||
+        lowerName.includes("bread") ||
+        lowerName.includes("pizza") ||
+        lowerName.includes("cake") ||
+        lowerName.includes("cheese")
+      ) {
         portions.push({ label: "Slice", value: "slice", factor: baseGrams });
-      } else if (lowerName.includes("protein") || lowerName.includes("whey") || lowerName.includes("powder") || lowerName.includes("scoop")) {
+      } else if (
+        lowerName.includes("protein") ||
+        lowerName.includes("whey") ||
+        lowerName.includes("powder") ||
+        lowerName.includes("scoop")
+      ) {
         portions.push({ label: "Scoop", value: "scoop", factor: baseGrams });
       } else {
         portions.push({ label: "Piece", value: "piece", factor: baseGrams });
       }
 
-      portions.unshift({ label: `Serving (${Math.round(baseGrams)}g)`, value: "serving", factor: baseGrams });
+      portions.unshift({
+        label: `Serving (${Math.round(baseGrams)}g)`,
+        value: "serving",
+        factor: baseGrams,
+      });
 
       const optionsGroups = [
-        { group: "Weight (Accurate)", options: [
-          { label: "Grams (g)", value: "g", factor: 1 },
-          { label: "Kilograms (kg)", value: "kg", factor: 1000 },
-          { label: "Ounces (oz)", value: "oz", factor: 28.3495 },
-          { label: "Pounds (lb)", value: "lb", factor: 453.592 },
-        ]},
-        { group: "Volume & Household", options: [
-          { label: "Cup", value: "cup", factor: 240 },
-          { label: "Tablespoon (tbsp)", value: "tbsp", factor: 15 },
-          { label: "Teaspoon (tsp)", value: "tsp", factor: 5 },
-          { label: "Glass", value: "glass", factor: 240 },
-          { label: "Bowl / Katori", value: "bowl", factor: 150 },
-          { label: "Ladle", value: "ladle", factor: 30 },
-        ]},
-        { group: "Count & Portions", options: portions }
+        {
+          group: "Weight (Accurate)",
+          options: [
+            { label: "Grams (g)", value: "g", factor: 1 },
+            { label: "Kilograms (kg)", value: "kg", factor: 1000 },
+            { label: "Ounces (oz)", value: "oz", factor: 28.3495 },
+            { label: "Pounds (lb)", value: "lb", factor: 453.592 },
+          ],
+        },
+        {
+          group: "Volume & Household",
+          options: [
+            { label: "Cup", value: "cup", factor: 240 },
+            { label: "Tablespoon (tbsp)", value: "tbsp", factor: 15 },
+            { label: "Teaspoon (tsp)", value: "tsp", factor: 5 },
+            { label: "Glass", value: "glass", factor: 240 },
+            { label: "Bowl / Katori", value: "bowl", factor: 150 },
+            { label: "Ladle", value: "ladle", factor: 30 },
+          ],
+        },
+        { group: "Count & Portions", options: portions },
       ];
 
       setSelectedFoodData({
         food_id: foodId,
         food_name: foodName,
         perGram,
-        optionsGroups
+        optionsGroups,
       });
       setSelectedUnit("g");
       setQuantity("100");
@@ -151,7 +197,7 @@ export default function InlineFoodSearch({ onClose }: { onClose?: () => void }) 
 
   async function handleSaveFood() {
     if (!selectedFoodData) return;
-    
+
     let factor = 1;
     for (const group of selectedFoodData.optionsGroups) {
       const opt = group.options.find((o: any) => o.value === selectedUnit);
@@ -236,16 +282,20 @@ export default function InlineFoodSearch({ onClose }: { onClose?: () => void }) 
     const q = parseFloat(quantity) || 0;
     const totalMultiplier = q * factor;
     const pg = selectedFoodData.perGram;
-    
+
     const cal = Math.round(pg.cal * totalMultiplier);
     const p = Math.round(pg.p * totalMultiplier);
     const c = Math.round(pg.c * totalMultiplier);
     const f = Math.round(pg.f * totalMultiplier);
 
     return (
-      <div className="bg-white dark:bg-[#1a1916] rounded-2xl shadow-sm border border-[#E8E7E4] dark:border-[#3a3a3a] p-5 mb-8">
-        <h2 className="text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3] mb-1">{selectedFoodData.food_name}</h2>
-        <div className="text-xs text-[#9B9895] mb-6 capitalize font-semibold">{selectedTime}</div>
+      <div className="bg-background text-foreground dark:bg-[#1a1916] rounded-2xl shadow-sm border border-border p-5 mb-8">
+        <h2 className="text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3] mb-1">
+          {selectedFoodData.food_name}
+        </h2>
+        <div className="text-xs text-[#9B9895] mb-6 capitalize font-semibold">
+          {selectedTime}
+        </div>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
@@ -257,69 +307,82 @@ export default function InlineFoodSearch({ onClose }: { onClose?: () => void }) 
               inputMode="decimal"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="w-full bg-[#FAFAF8] dark:bg-[#0f0f0e] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-xl py-2.5 px-3 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-semibold text-[14px]"
+              className="w-full bg-subtle border border-border rounded-xl py-2.5 px-3 outline-none focus:border-border font-semibold text-[14px]"
             />
           </div>
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
               Serving Size
             </label>
-            <Select
-              value={selectedUnit}
-              onValueChange={setSelectedUnit}
-            >
-              <SelectTrigger className="w-full bg-[#FAFAF8] dark:bg-[#0f0f0e] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-xl py-2.5 px-3 outline-none focus:ring-0 focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-semibold text-[14px] h-auto">
+            <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+              <SelectTrigger className="w-full bg-subtle border border-border rounded-xl py-2.5 px-3 outline-none focus:ring-0 focus:border-border font-semibold text-[14px] h-auto">
                 <SelectValue placeholder="Select serving size" />
               </SelectTrigger>
               <SelectContent>
-                {selectedFoodData.optionsGroups.map((group: any, gIdx: number) => (
-                  <SelectGroup key={gIdx}>
-                    <SelectLabel className="text-[10px] uppercase text-[#9B9895] font-bold tracking-wider px-2 py-1.5 bg-[#F7F6F3] dark:bg-[#0f0f0e]">
-                      {group.group}
-                    </SelectLabel>
-                    {group.options.map((opt: any) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                ))}
+                {selectedFoodData.optionsGroups.map(
+                  (group: any, gIdx: number) => (
+                    <SelectGroup key={gIdx}>
+                      <SelectLabel className="text-[10px] uppercase text-[#9B9895] font-bold tracking-wider px-2 py-1.5 bg-background">
+                        {group.group}
+                      </SelectLabel>
+                      {group.options.map((opt: any) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ),
+                )}
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        <div className="flex justify-between items-center bg-[#FAFAF8] dark:bg-[#0f0f0e] rounded-xl border border-[#E8E7E4] dark:border-[#3a3a3a] p-4 mb-6">
+        <div className="flex justify-between items-center bg-subtle rounded-xl border border-border p-4 mb-6">
           <div className="text-center">
-            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">Calories</div>
-            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">{cal}</div>
+            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+              Calories
+            </div>
+            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+              {cal}
+            </div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">Protein</div>
-            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">{p}g</div>
+            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+              Protein
+            </div>
+            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+              {p}g
+            </div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">Carbs</div>
-            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">{c}g</div>
+            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+              Carbs
+            </div>
+            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+              {c}g
+            </div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">Fat</div>
-            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">{f}g</div>
+            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+              Fat
+            </div>
+            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+              {f}g
+            </div>
           </div>
         </div>
 
         <div className="flex justify-end gap-3">
           <button
             onClick={() => setSelectedFoodData(null)}
-            className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#9B9895] hover:bg-[#F7F6F3] dark:hover:bg-[#0f0f0e] transition-colors"
-          >
+            className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#9B9895] hover:bg-background transition-colors">
             Back
           </button>
           <button
             onClick={handleSaveFood}
             disabled={q <= 0}
-            className="px-6 py-2.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl font-bold text-sm hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm"
-          >
+            className="px-6 py-2.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl font-bold text-sm hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm">
             Add to Log
           </button>
         </div>
@@ -328,18 +391,21 @@ export default function InlineFoodSearch({ onClose }: { onClose?: () => void }) 
   }
 
   return (
-    <div className="bg-white dark:bg-[#1a1916] rounded-2xl shadow-sm border border-[#E8E7E4] dark:border-[#3a3a3a] p-4 mb-8">
-      <h2 className="text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3] mb-4">Log Food via Database</h2>
+    <div className="bg-background dark:bg-[#1a1916] rounded-2xl shadow-sm border border-border p-4 mb-8">
+      <h2 className="text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3] mb-4">
+        Log Food via Database
+      </h2>
 
       <div className="flex gap-2 mb-4">
         {["breakfast", "lunch", "dinner", "snack"].map((t) => (
           <button
             key={t}
             onClick={() => setSelectedTime(t as MealTime)}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-colors ${selectedTime === t ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                : "bg-[#F7F6F3] dark:bg-[#0f0f0e] text-[#9B9895] hover:bg-[#E8E7E4]"
-              }`}
-          >
+            className={`px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-colors ${
+              selectedTime === t
+                ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                : "bg-background text-[#9B9895] hover:bg-[#E8E7E4]"
+            }`}>
             {t}
           </button>
         ))}
@@ -352,24 +418,31 @@ export default function InlineFoodSearch({ onClose }: { onClose?: () => void }) 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search for food (e.g. apple, tofu)"
-          className="w-full bg-[#FAFAF8] dark:bg-[#0f0f0e] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-xl py-3 pl-10 pr-4 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-semibold text-[15px]"
+          className="w-full bg-subtle border border-border rounded-xl py-3 pl-10 pr-4 outline-none focus:border-border font-semibold text-[15px]"
         />
-        {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9895] animate-spin" />}
+        {loading && (
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9895] animate-spin" />
+        )}
       </div>
 
       {results.length > 0 && (
-        <div className="mt-2 divide-y divide-[#E8E7E4] border border-[#E8E7E4] dark:border-[#3a3a3a] rounded-xl overflow-hidden bg-white dark:bg-[#1a1916]">
+        <div className="mt-2 divide-y divide-[#E8E7E4] border border-border rounded-xl overflow-hidden bg-foreground dark:bg-[#1a1916]">
           {results.map((food) => (
-            <div key={food.food_id} className="p-3 hover:bg-[#FAFAF8] dark:hover:bg-[#1a1916] transition-colors flex items-center justify-between">
+            <div
+              key={food.food_id}
+              className="p-3 hover:bg-subtle transition-colors flex items-center justify-between">
               <div>
-                <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3] text-sm">{food.food_name}</div>
-                <div className="text-xs text-[#9B9895]">{food.food_description}</div>
+                <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3] text-sm">
+                  {food.food_name}
+                </div>
+                <div className="text-xs text-[#9B9895]">
+                  {food.food_description}
+                </div>
               </div>
               <button
                 onClick={() => handleSelectFood(food.food_id, food.food_name)}
                 disabled={loading}
-                className="w-8 h-8 flex items-center justify-center bg-[#F7F6F3] dark:bg-[#0f0f0e] hover:bg-[#E8E7E4] rounded-full text-[#1A1916] dark:text-[#f7f6f3]"
-              >
+                className="w-8 h-8 flex items-center justify-center bg-background hover:bg-[#E8E7E4] rounded-full text-[#1A1916] dark:text-[#f7f6f3]">
                 <Plus className="w-4 h-4" />
               </button>
             </div>
