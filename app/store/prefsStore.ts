@@ -16,6 +16,23 @@ interface PrefsState {
 const DEFAULT_NAVBAR: NavbarStyle = "floating";
 const DEFAULT_THEME: Theme = "system";
 
+/** Resolve "system" to the actual OS preference at call time. */
+export function resolveTheme(t: Theme): "light" | "dark" {
+  if (t === "system") {
+    if (typeof window === "undefined") return "light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  }
+  return t;
+}
+
+/** Write the resolved theme to the blocking-script key so it survives refresh. */
+function syncBlockingKey(t: Theme): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("theme", resolveTheme(t));
+}
+
 export const usePrefsStore = create<PrefsState>((set) => ({
   navbarStyle: DEFAULT_NAVBAR,
   setNavbarStyle: (s) => {
@@ -26,6 +43,7 @@ export const usePrefsStore = create<PrefsState>((set) => ({
   setTheme: (t) => {
     set({ theme: t });
     LS.set<Theme>("ft_theme", t);
+    syncBlockingKey(t);
   },
 }));
 
@@ -45,4 +63,5 @@ export function persistPrefsForUser(uid: string): void {
   const state = usePrefsStore.getState();
   setUserKey<NavbarStyle>(uid, "navbar_style", state.navbarStyle);
   setUserKey<Theme>(uid, "theme", state.theme);
+  syncBlockingKey(state.theme);
 }

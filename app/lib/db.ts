@@ -40,14 +40,12 @@ export async function saveProfile(
   uid: string,
   profile: Profile,
 ): Promise<void> {
-  console.log(`[API Request] saveProfile (uid: ${uid})`, profile);
   await safe(async () => {
     await setDoc(
       doc(db, "users", uid),
       { profile, updatedAt: serverTimestamp() },
       { merge: true },
     );
-    console.log(`[API Response] saveProfile success`);
   }, undefined);
 }
 
@@ -179,14 +177,10 @@ export async function saveWorkoutTemplateDB(
 export async function getWorkoutTemplates(
   uid: string,
 ): Promise<SavedWorkout[]> {
-  console.log(`[API Request] getWorkoutTemplates (uid: ${uid})`);
   return safe(async () => {
     const col = collection(db, "users", uid, "workout_templates");
     const snap = await getDocs(col);
     const templates = snap.docs.map((d) => d.data() as SavedWorkout);
-    console.log(
-      `[API Response] getWorkoutTemplates success, got ${templates.length} items`,
-    );
     return templates;
   }, [] as SavedWorkout[]);
 }

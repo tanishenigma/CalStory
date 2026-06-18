@@ -7,7 +7,7 @@ const Footer = () => {
   return (
     <footer
       id="footer"
-      className="relative z-10 py-12 border-t border-border/40 bg-background/50 backdrop-blur-sm">
+      className="relative z-10 py-12 border-t border-border/30 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-6">
         {/* Desktop: single row — Logo | GitHub | Legal + Copyright */}
         <div className="hidden md:grid md:grid-cols-3 items-center gap-8">

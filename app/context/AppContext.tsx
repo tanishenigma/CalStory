@@ -6,7 +6,7 @@ import {
   useEffect,
   useReducer,
 } from "react";
-import { useAuthStore } from "@/app/store/authStore";
+import { useAuthStore, initAuthListener } from "@/app/store/authStore";
 import {
   hydratePrefs,
   persistPrefsForUser,
@@ -147,12 +147,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initial);
 
   useEffect(() => {
-    useAuthStore.setState({ initialized: false, loading: true });
-    const unsub = useAuthStore.getState().initAuth();
-    return () => {
-      unsub();
-      useAuthStore.setState({ initialized: false });
-    };
+    // Start the singleton Firebase auth listener. Safe to call multiple times.
+    initAuthListener();
   }, []);
 
   useEffect(() => {
@@ -211,6 +207,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     async function hydrateRemote() {
+      if (!user) return;
       try {
         const [profile, recents, templates] = await Promise.all([
           getProfile(user.uid),

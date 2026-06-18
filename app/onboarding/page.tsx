@@ -182,21 +182,20 @@ export default function OnboardingPage() {
       <div
         className="p-6 sm:p-8 lg:p-10"
         style={{
-          background: "#ffffff",
-          border: "1px solid #E8E7E4",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           borderRadius: "24px",
           width: "100%",
           maxWidth: "480px",
-          boxShadow: "0 12px 48px rgba(0,0,0,0.09)",
+          boxShadow: "0 12px 48px rgba(0,0,0,0.15)",
         }}>
         {/* Progress bars */}
         <div className="flex gap-1.5 mb-9">
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
-              className={`flex-1 h-[3px] rounded transition-colors duration-300 ${
-                i <= step ? "bg-[#1A1916] dark:bg-[#f7f6f3]" : "bg-[#E8E7E4]"
-              }`}
+              className={`flex-1 h-[3px] rounded transition-colors duration-300 ${i <= step ? "bg-[#1A1916] dark:bg-[#f7f6f3]" : "bg-[#E8E7E4]"
+                }`}
             />
           ))}
         </div>
@@ -204,7 +203,7 @@ export default function OnboardingPage() {
         {/* Step 1 — Name */}
         {step === 1 && (
           <BlurFade>
-            <div className="text-[26px] font-bold mb-1.5 text-[#1A1916] dark:text-[#f7f6f3]">
+            <div className="text-[26px] font-bold mb-1.5 text-foreground">
               Hey there 👋
             </div>
             <div className="text-sm text-[#9B9895] mb-7 leading-relaxed">
@@ -218,7 +217,7 @@ export default function OnboardingPage() {
               </label>
               <input
                 id="ob-name"
-                className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
+                className="w-full px-3.5 py-3 text-foreground bg-background border border-border rounded-lg text-sm focus:border-foreground/50 outline-none transition-all"
                 placeholder="e.g. david"
                 autoFocus
                 value={name}
@@ -228,7 +227,7 @@ export default function OnboardingPage() {
             </div>
             <button
               onClick={next}
-              className="w-full py-3.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer">
+              className="w-full py-3.5 bg-foreground text-background border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer">
               Continue
             </button>
           </BlurFade>
@@ -237,7 +236,7 @@ export default function OnboardingPage() {
         {/* Step 2 — Body Stats */}
         {step === 2 && (
           <BlurFade>
-            <div className="text-[26px] font-bold mb-1.5 text-[#1A1916] dark:text-[#f7f6f3]">
+            <div className="text-[26px] font-bold mb-1.5 text-foreground">
               Body Stats
             </div>
             <div className="text-sm text-[#9B9895] mb-7 leading-relaxed">
@@ -262,8 +261,8 @@ export default function OnboardingPage() {
                     }}
                     className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${
                       weightUnit === "kg"
-                        ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                        : "bg-foreground dark:bg-[#1a1916] text-[#9B9895]"
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground"
                     }`}>
                     kg
                   </button>
@@ -278,8 +277,8 @@ export default function OnboardingPage() {
                     }}
                     className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${
                       weightUnit === "lbs"
-                        ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                        : "bg-foreground dark:bg-[#1a1916] text-[#9B9895]"
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground"
                     }`}>
                     lbs
                   </button>
@@ -300,8 +299,8 @@ export default function OnboardingPage() {
                     }}
                     className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${
                       heightUnit === "metric"
-                        ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                        : "bg-foreground dark:bg-[#1a1916] text-[#9B9895]"
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground"
                     }`}>
                     cm
                   </button>
@@ -315,8 +314,8 @@ export default function OnboardingPage() {
                     }}
                     className={`flex-1 py-2 text-xs font-semibold border-0 transition-colors cursor-pointer ${
                       heightUnit === "imperial"
-                        ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                        : "bg-foreground dark:bg-[#1a1916] text-[#9B9895]"
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground"
                     }`}>
                     ft/in
                   </button>
@@ -439,12 +438,12 @@ export default function OnboardingPage() {
             </div>
             <button
               onClick={next}
-              className="w-full py-3.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mb-2.5">
+              className="w-full py-3.5 bg-foreground text-background border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mb-2.5">
               Continue
             </button>
             <button
               onClick={() => setStep(1)}
-              className="w-full py-3 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-all cursor-pointer">
+              className="w-full py-3 border border-border text-muted-foreground rounded-xl text-sm font-semibold hover:bg-muted active:scale-[0.99] transition-all cursor-pointer">
               Back
             </button>
           </BlurFade>
@@ -489,11 +488,10 @@ export default function OnboardingPage() {
                   <button
                     key={n}
                     onClick={() => setWorkoutsPerWeek(String(n))}
-                    className={`py-3 rounded-full border-2 text-center text-sm font-bold transition-all cursor-pointer duration-300  ${
-                      workoutsPerWeek === String(n)
-                        ? "bg-foreground text-background"
-                        : "bg-background text-foreground border-border hover:border-foreground/50"
-                    }`}>
+                    className={`py-3 rounded-full border-2 text-center text-sm font-bold transition-all cursor-pointer duration-300  ${workoutsPerWeek === String(n)
+                      ? "bg-foreground text-background"
+                      : "bg-background text-foreground border-border hover:border-foreground/50"
+                      }`}>
                     {n}
                   </button>
                 ))}
@@ -502,12 +500,12 @@ export default function OnboardingPage() {
 
             <button
               onClick={next}
-              className="w-full py-3.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mt-2 mb-2.5">
+              className="w-full py-3.5 bg-foreground text-background border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mt-2 mb-2.5">
               Continue
             </button>
             <button
               onClick={() => setStep(2)}
-              className="w-full py-3 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-all cursor-pointer">
+              className="w-full py-3 border border-border text-muted-foreground rounded-xl text-sm font-semibold hover:bg-muted active:scale-[0.99] transition-all cursor-pointer">
               Back
             </button>
           </BlurFade>
@@ -543,8 +541,8 @@ export default function OnboardingPage() {
                     <div
                       className={`text-[11px] mt-0.5 ${
                         goal === g.key
-                          ? "text-white dark:text-[#1a1916]/60"
-                          : "text-[#9B9895]"
+                          ? "text-background/60"
+                          : "text-muted-foreground"
                       }`}>
                       {g.sub}
                     </div>
@@ -554,12 +552,12 @@ export default function OnboardingPage() {
             </div>
             <button
               onClick={next}
-              className="w-full py-3.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mb-2.5">
+              className="w-full py-3.5 bg-foreground text-background border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mb-2.5">
               Continue
             </button>
             <button
               onClick={() => setStep(3)}
-              className="w-full py-3 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-all cursor-pointer">
+              className="w-full py-3 border border-border text-muted-foreground rounded-xl text-sm font-semibold hover:bg-muted active:scale-[0.99] transition-all cursor-pointer">
               Back
             </button>
           </BlurFade>
@@ -587,7 +585,7 @@ export default function OnboardingPage() {
                   <button
                     key={i.key}
                     onClick={() => setIntensity(i.key)}
-                    className={`w-full flex items-center gap-3 p-4 rounded-xl mb-2 border-2 text-left transition-all cursor-pointer  duration-300 ease-in-out  ${
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl mb-2 border-2 text-left transition-all cursor-pointer duration-300 ease-in-out ${
                       intensity === i.key
                         ? "border-foreground bg-foreground text-background"
                         : "border-border bg-background text-foreground hover:border-foreground/50"
@@ -595,8 +593,8 @@ export default function OnboardingPage() {
                     <div
                       className={`w-[42px] h-[42px] rounded-full flex-shrink-0 flex items-center justify-center text-lg ${
                         intensity === i.key
-                          ? "bg-background text-foreground"
-                          : "bg-background text-[#9B9895]"
+                          ? "bg-background/20"
+                          : "bg-muted"
                       }`}>
                       {i.emoji}
                     </div>
@@ -605,8 +603,8 @@ export default function OnboardingPage() {
                       <div
                         className={`text-[11px] mt-0.5 ${
                           intensity === i.key
-                            ? "text-white dark:text-[#1a1916]/65"
-                            : "text-[#9B9895]"
+                            ? "text-background/60"
+                            : "text-muted-foreground"
                         }`}>
                         {i.desc}
                       </div>
@@ -639,12 +637,12 @@ export default function OnboardingPage() {
 
             <button
               onClick={finish}
-              className="w-full py-3.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mb-2.5">
+              className="w-full py-3.5 bg-foreground text-background border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mb-2.5">
               Let's go 🚀
             </button>
             <button
               onClick={() => setStep(4)}
-              className="w-full py-3 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-all cursor-pointer">
+              className="w-full py-3 border border-border text-muted-foreground rounded-xl text-sm font-semibold hover:bg-muted active:scale-[0.99] transition-all cursor-pointer">
               Back
             </button>
           </BlurFade>

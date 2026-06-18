@@ -157,11 +157,64 @@ export default function LandingPage() {
 
   return (
     <ReactLenis root options={{ lerp: 0.1, duration: 1.5 }}>
-      <div className="relative min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
-        {/* Single subtle gradient */}
-        <div className="pointer-events-none fixed inset-0 -z-10">
-          <div className="absolute top-0 right-1/4 w-[50%] h-[60%] rounded-full bg-primary/[0.03] blur-[120px]" />
-        </div>
+      {/* ── Animated gradient orbs ──────────────────────────────────
+          Rendered as a sibling BEFORE the content wrapper so they are
+          NOT inside the bg-background stacking context. Body already
+          owns the page background colour. Orbs sit at z-0, content at z-10.
+      ────────────────────────────────────────────────────────────── */}
+      <div className="pointer-events-none fixed inset-0" style={{ zIndex: 0 }}>
+        {/* Primary orange orb — top-right */}
+        <div
+          className="orb-1 absolute"
+          style={{
+            top: "-10%",
+            right: "-5%",
+            width: "65vw",
+            height: "65vw",
+            maxWidth: "860px",
+            maxHeight: "860px",
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle at center, rgba(249,115,22,0.30) 0%, rgba(249,115,22,0.14) 40%, transparent 70%)",
+            filter: "blur(48px)",
+          }}
+        />
+        {/* Secondary orange orb — bottom-left */}
+        <div
+          className="orb-2 absolute"
+          style={{
+            bottom: "5%",
+            left: "-8%",
+            width: "55vw",
+            height: "55vw",
+            maxWidth: "720px",
+            maxHeight: "720px",
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle at center, rgba(249,115,22,0.20) 0%, rgba(251,146,60,0.10) 45%, transparent 70%)",
+            filter: "blur(60px)",
+          }}
+        />
+        {/* Accent deep-orange orb — center */}
+        <div
+          className="orb-3 absolute"
+          style={{
+            top: "35%",
+            left: "30%",
+            width: "50vw",
+            height: "50vw",
+            maxWidth: "640px",
+            maxHeight: "640px",
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle at center, rgba(234,88,12,0.14) 0%, rgba(249,115,22,0.05) 50%, transparent 70%)",
+            filter: "blur(72px)",
+          }}
+        />
+      </div>
+
+      {/* Content — relative z-10 sits above the orb layer */}
+      <div className="relative min-h-screen text-foreground font-sans selection:bg-primary/30" style={{ zIndex: 1 }}>
 
         {/* NAV */}
         <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between w-[90%] max-w-4xl px-4 pr-3 h-14 bg-background/80 dark:bg-[#1a1916]/80 backdrop-blur-2xl border border-border dark:border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]">

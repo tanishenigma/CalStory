@@ -13,9 +13,11 @@ import BlurFade from "@/app/components/animations/BlurFade";
 import { Card } from "@/app/components/ui/card";
 import {
   usePrefsStore,
+  resolveTheme,
   type NavbarStyle,
   type Theme,
 } from "@/app/store/prefsStore";
+import { animateThemeTransition } from "@/app/components/ThemeToggle";
 import {
   LayoutPanelLeft,
   PanelLeft,
@@ -482,7 +484,26 @@ function SettingsPageContent() {
                   return (
                     <button
                       key={opt.key}
-                      onClick={() => setTheme(opt.key)}
+                      onClick={(e) => {
+                        const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                        const ox = rect.left + rect.width / 2;
+                        const oy = rect.top + rect.height / 2;
+                        animateThemeTransition(
+                          () => {
+                            setTheme(opt.key);
+                            // Apply class immediately inside the transition
+                            const next = resolveTheme(opt.key);
+                            if (next === "dark") {
+                              document.documentElement.classList.add("dark");
+                            } else {
+                              document.documentElement.classList.remove("dark");
+                            }
+                          },
+                          ox,
+                          oy,
+                          450,
+                        );
+                      }}
                       className={[
                         "flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all",
                         active
