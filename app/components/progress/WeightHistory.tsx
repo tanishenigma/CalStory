@@ -86,12 +86,17 @@ export function WeightHistory() {
     toast("Removed");
   }
 
-  // Display helper: show each entry in the unit the user was in
-  // when they logged it, since the WeightLog row stores its own
-  // unit. That's also what they'd see in a paper log.
+  // Display helper: show each entry in the user's *current* global
+  // unit (profile.weightUnit), not the unit they happened to be
+  // in when they logged that row. The WeightLog stores its own
+  // unit because that's what the user typed, but a paper log
+  // shows the same number regardless of what unit you happen
+  // to prefer today — so should we. We always store kg internally
+  // (`log.weight` is in kg) and convert at display time using the
+  // current global setting.
   function displayWeight(log: WeightLog): string {
-    const value = log.weightUnit === "lbs" ? kgToLbs(log.weight) : log.weight;
-    return `${value.toFixed(1)} ${log.weightUnit}`;
+    const value = weightUnit === "lbs" ? kgToLbs(log.weight) : log.weight;
+    return `${value.toFixed(1)} ${weightUnit}`;
   }
 
   return (

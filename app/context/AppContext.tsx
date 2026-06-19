@@ -43,6 +43,20 @@ import type {
 } from "@/app/types";
 
 export const todayKey = (): string => new Date().toISOString().slice(0, 10);
+
+/**
+ * Returns today's date as YYYY-MM-DD using the **local** calendar,
+ * avoiding the UTC-vs-local offset issue that todayKey() has for
+ * users in UTC+5:30 before 05:30 IST.
+ */
+export const todayLocalKey = (): string => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 export const uid = (): string =>
   Math.random().toString(36).slice(2) + Date.now().toString(36);
 
@@ -154,9 +168,20 @@ function reducer(state: AppState, action: Action): AppState {
         // and the dashboard read the latest value without a round-trip
         // to Firestore. Caller is responsible for persisting the log
         // — this reducer is local-state only.
-        profile: state.profile
-          ? { ...state.profile, weight: action.payload.weight }
-          : state.profile,
+        //
+        // BUT only mirror when the log is for *today*. The progress
+        // page lets the user backdate a weigh-in (e.g. "I forgot to
+        // log yesterday's 78.5kg"). If we mirrored every entry, that
+        // backdated value would clobber the *current* weight on the
+        // profile. "Current" should mean "the most recent weight
+        // logged for today", not "the most recent weight logged at
+        // all". Caller is responsible for the same gate on the DB
+        // persist. We use strict equality rather than `<=` so a
+        // backdated entry can't sneak through.
+        profile:
+          state.profile && action.payload.date === todayKey()
+            ? { ...state.profile, weight: action.payload.weight }
+            : state.profile,
       };
     case "DELETE_WEIGHT_LOG":
       return {
@@ -327,11 +352,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const addMeal = useCallback(
     async (meal: Meal): Promise<void> => {
-      dispatch({ type: "ADD_MEAL", payload: meal });
+      // Stamp the wall-clock date (local) so streak/heatmap can
+      // distinguish meals actually logged today from backdated ones.
+      const stamped: Meal = { ...meal, savedDate: todayLocalKey() };
+      dispatch({ type: "ADD_MEAL", payload: stamped });
       if (!user) return;
       await Promise.all([
-        saveMeal(user.uid, state.selDate, meal),
-        saveRecentMeal(user.uid, meal),
+        saveMeal(user.uid, state.selDate, stamped),
+        saveRecentMeal(user.uid, stamped),
       ]);
       const recents = await getRecentMeals(user.uid);
       dispatch({ type: "SET_RECENTS", payload: recents });
@@ -346,6 +374,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
    */
   const addMealForRange = useCallback(
     async (meal: Meal, days: number): Promise<void> => {
+      const savedDate = todayLocalKey();
       const start = new Date(state.selDate + "T00:00:00");
       const dayKeys: string[] = [];
       for (let i = 0; i < Math.max(1, days); i++) {
@@ -356,6 +385,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const copies: Meal[] = dayKeys.map((k, i) => ({
         ...meal,
         id: i === 0 ? meal.id : uid(),
+        // Same savedDate for all copies — they were all initiated today.
+        savedDate,
       }));
       // single dispatch covers all days
       dispatch({
@@ -444,17 +475,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         loggedAt: Date.now(),
         note: options?.note,
       };
+      // "Current" = the log is dated today. The form date picker
+      // restricts the max to today, so this is effectively the only
+      // way the mirror triggers. We use strict equality (not `<=`)
+      // so a backdated entry never clobbers the real current weight
+      // even if the picker allows it via manual editing.
+      const isCurrentLog = log.date === todayKey();
       // Optimistic local update — both the log and the mirrored
-      // profile weight. The reducer handles the sort + mirror.
+      // profile weight. The reducer handles the sort + mirror
+      // (and applies the same isCurrentLog gate).
       dispatch({ type: "ADD_WEIGHT_LOG", payload: log });
       try {
         await Promise.all([
           saveWeightLog(user.uid, log),
           // Persist the mirrored weight onto the profile so the
           // dashboard / calorie math see the same value the user
-          // just entered. We only update the `weight` field here
-          // — anything else on the profile is untouched.
-          state.profile
+          // just entered — but only when the log is for today.
+          // Backdated weigh-ins are historical data, not "current
+          // weight" updates, so we leave the existing profile
+          // weight alone in that case.
+          state.profile && isCurrentLog
             ? saveProfile(user.uid, { ...state.profile, weight: weightKg })
             : Promise.resolve(),
         ]);

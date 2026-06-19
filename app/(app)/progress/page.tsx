@@ -10,6 +10,8 @@ import { ExpenditureChanges } from "@/app/components/progress/ExpenditureChanges
 import { YourBMI } from "@/app/components/progress/YourBMI";
 import WeightChanges from "@/app/components/progress/WeightChanges";
 import { WeightHistory } from "@/app/components/progress/WeightHistory";
+import { ConsistencyHeatmap } from "@/app/components/progress/ConsistencyHeatmap";
+import { NutritionQuality } from "@/app/components/progress/NutritionQuality";
 
 export default function ProgressPage() {
   const { profile, isLoading } = useAuthGuard();
@@ -27,12 +29,16 @@ export default function ProgressPage() {
         Progress
       </h1>
       <Streak />
-      <div className="grid grid-cols-1  gap-4 mb-4">
-        <WeightChanges />
-        <ExpenditureChanges />
+      <div className="mb-4 grid grid-cols-1 lg:grid-cols-2 gap-4 items-center bg-primary/20 rounded-xl p-2">
+        <ConsistencyHeatmap mode="meals" />
+        <NutritionQuality />
       </div>
       <div className="grid grid-cols-1 gap-4 mb-4">
         <WeightHistory />
+      </div>
+      <div className="grid grid-cols-2  gap-4 mb-4">
+        <WeightChanges />
+        <ExpenditureChanges />
       </div>
       <div className="grid grid-cols-2 gap-4 mb-4">
         <WeeklyEnergy />

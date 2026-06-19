@@ -72,6 +72,13 @@ export interface Meal {
   f: number;
   nutrients?: DetailedNutrients;
   foodId?: string; // FatSecret food ID
+  /**
+   * Local YYYY-MM-DD of the calendar day when `addMeal` was called.
+   * Used by the streak / heatmap to verify the meal was actually
+   * logged on the day it is attributed to (not backdated via date
+   * picker). Optional for backwards-compat with existing meals.
+   */
+  savedDate?: string;
 }
 
 /**

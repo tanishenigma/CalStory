@@ -114,12 +114,21 @@ export function DailyAverageCalories() {
       x: {
         grid: { display: false },
         stacked: true,
-        ticks: { font: { family: "Inter", size: 11 }, color: "#9B9895" },
+        ticks: {
+          font: { family: "Inter", size: 11 },
+          color: "rgba(155, 152, 149, 0.6)",
+        },
       },
       y: {
-        grid: { color: "#F0EFEC" },
+        // Subtle gridline that works on both light and dark cards.
+        // Earlier this was a hard-coded light hex (#F0EFEC) which
+        // read as stark white in dark mode and fought the data.
+        grid: { color: "rgba(155, 152, 149, 0.15)" },
         stacked: true,
-        ticks: { font: { family: "DM Mono", size: 11 }, color: "#9B9895" },
+        ticks: {
+          font: { family: "DM Mono", size: 11 },
+          color: "rgba(155, 152, 149, 0.6)",
+        },
       },
     },
   };

@@ -105,11 +105,11 @@ export default function DashboardPage() {
                 </Link>
               ) : (
                 <Card className="flex flex-col gap-2">
-                  <CardContent className="p-0 flex flex-col divide-y divide-[#F0EFEC]">
-                    {recentWorkouts.map((w) => (
+                  {recentWorkouts.map((w) => (
+                    <CardContent className="flex flex-col divide-y divide-[#F0EFEC] p-2 ">
                       <div
                         key={w.id}
-                        className="flex items-center gap-4 p-4 hover:bg-subtle transition-colors">
+                        className="flex items-center gap-4 p-4 hover:bg-subtle transition-colors rounded-xl">
                         <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
                           💪
                         </div>
@@ -122,8 +122,8 @@ export default function DashboardPage() {
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </CardContent>
+                    </CardContent>
+                  ))}
                 </Card>
               )}
             </section>
@@ -157,7 +157,8 @@ export default function DashboardPage() {
                   {recentMeals.map((m) => {
                     const Icon = MEAL_ICONS[m.time] || Utensils;
                     return (
-                      <CardContent key={m.id}
+                      <CardContent
+                        key={m.id}
                         className="flex items-center gap-4 p-4 m-2 hover:bg-subtle hover:rounded-xl transition-colors ">
                         <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
                           <Icon

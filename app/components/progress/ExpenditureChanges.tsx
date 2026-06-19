@@ -48,39 +48,76 @@ export function ExpenditureChanges() {
       };
     };
 
+    // "All Time" mirrors the WeightChanges row: compare the average of
+    // every logged day against the average of the prior N logged days
+    // (where N = number of logged days). This gives a real delta when
+    // the user has at least 2 days of data, and degrades to "--" when
+    // there isn't enough history to split in half.
+    const calculateAllTime = () => {
+      const allDates = Object.keys(meals)
+        .filter((k) => meals[k] && meals[k].length > 0)
+        .sort(); // ascending; YYYY-MM-DD sorts chronologically
+      if (allDates.length < 2) {
+        return { label: "All Time", value: "--", isPositive: true };
+      }
+      const mid = Math.floor(allDates.length / 2);
+      const recentSlice = allDates.slice(mid);
+      const previousSlice = allDates.slice(0, mid);
+
+      const avg = (slice: string[]) => {
+        const total = slice.reduce(
+          (s, k) => s + meals[k].reduce((sm, m) => sm + (m.cal || 0), 0),
+          0,
+        );
+        return total / slice.length;
+      };
+
+      const recentAvg = avg(recentSlice);
+      const previousAvg = avg(previousSlice);
+      const diff = Math.round(recentAvg - previousAvg);
+      return {
+        label: "All Time",
+        value: `${diff > 0 ? "+" : ""}${diff} kcal`,
+        isPositive: diff >= 0,
+      };
+    };
+
     return [
       calculateChange(3),
       calculateChange(7),
       calculateChange(14),
       calculateChange(30),
       calculateChange(90),
+      calculateAllTime(),
     ];
   }, [meals]);
 
   return (
-    <div className="bg-card border border-border rounded-2xl overflow-hidden mb-8">
-      <div className="px-4 py-3 border-b border-border">
-        <h3 className="font-bold text-[#1A1916] dark:text-[#f7f6f3] ">
-          Expenditure Changes
-        </h3>
-      </div>
-      <div className="divide-y divide-[#E8E7E4] dark:divide-[#3a3a3a]">
-        {expenditureChanges.map((item, idx) => (
-          <div
-            key={idx}
-            className="flex justify-between items-center px-4 py-3">
-            <span className="text-sm font-medium text-[#1A1916] dark:text-[#f7f6f3]">
-              {item.label}
-            </span>
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-sm font-mono font-semibold ${item.isPositive ? "text-[#9B9895]" : "text-[#EF4444]"}`}>
-                {item.value}
+    <div>
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <h3 className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+            Expenditure Changes
+          </h3>
+        </div>
+        <div className="divide-y divide-[#E8E7E4] dark:divide-[#3a3a3a]">
+          {expenditureChanges.map((item, idx) => (
+            <div
+              key={idx}
+              className="flex justify-between items-center p-4 m-1">
+              <span className="text-md font-medium text-[#1A1916] dark:text-[#f7f6f3]">
+                {item.label}
               </span>
-              <ChevronRight size={16} className="text-[#9B9895]" />
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-sm font-mono font-semibold ${item.isPositive ? "text-[#9B9895]" : "text-[#EF4444]"}`}>
+                  {item.value}
+                </span>
+                <ChevronRight size={16} className="text-[#9B9895]" />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

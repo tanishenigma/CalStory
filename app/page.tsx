@@ -21,38 +21,11 @@ import {
 import Footer from "./footer";
 import CTASection from "@/app/cta";
 import { Card, CardContent } from "@/app/components/ui/card";
+import PrecisionWorkflow from "@/app/components/landing/PrecisionWorkflow";
+import EngineeredPerformance from "@/app/components/landing/EngineeredPerformance";
+import FAQSection from "@/app/components/landing/FAQSection";
 
 if (typeof window !== "undefined") gsap.registerPlugin(ScrollTrigger);
-
-const FEATURES = [
-  {
-    icon: <BarChart3 className="w-6 h-6" />,
-    title: "Precision tracking",
-    desc: "Log meals in seconds. Watch your macro balance shift in real-time.",
-    wide: true,
-  },
-  {
-    icon: <Flame className="w-6 h-6" />,
-    title: "Dynamic TDEE",
-    desc: "Adapts to your metabolism and activity level daily.",
-  },
-  {
-    icon: <Calendar className="w-6 h-6" />,
-    title: "Consistency loops",
-    desc: "Psychology-backed streak systems to keep you in the zone.",
-  },
-  {
-    icon: <Target className="w-6 h-6" />,
-    title: "Elite targets",
-    desc: "Custom calorie and macro goals for professionals.",
-  },
-  {
-    icon: <Flame className="w-6 h-6" />,
-    title: "Instant insights",
-    desc: "No digging. Your data is served raw and clear, exactly when you need it.",
-    wide: true,
-  },
-];
 
 const STEPS = [
   {
@@ -214,8 +187,9 @@ export default function LandingPage() {
       </div>
 
       {/* Content — relative z-10 sits above the orb layer */}
-      <div className="relative min-h-screen text-foreground font-sans selection:bg-primary/30" style={{ zIndex: 1 }}>
-
+      <div
+        className="relative min-h-screen text-foreground font-sans selection:bg-primary/30"
+        style={{ zIndex: 1 }}>
         {/* NAV */}
         <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between w-[90%] max-w-4xl px-4 pr-3 h-14 bg-background/80 dark:bg-[#1a1916]/80 backdrop-blur-2xl border border-border dark:border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
           <Link
@@ -349,24 +323,8 @@ export default function LandingPage() {
               </p>
             </BlurFade>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-              {FEATURES.map((f, i) => (
-                <BlurFade key={f.title} delay={0.1 * i}>
-                  <Card className="card-interactive h-full p-6 sm:p-8 group">
-                    <CardContent className="p-0 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        {f.icon}
-                      </div>
-                      <div className="font-bold text-lg mb-2 tracking-tight font-heading">
-                        {f.title}
-                      </div>
-                      <div className="text-muted-foreground-foreground text-sm leading-relaxed">
-                        {f.desc}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </BlurFade>
-              ))}
+            <div>
+              <EngineeredPerformance />
             </div>
           </div>
         </section>
@@ -412,6 +370,14 @@ export default function LandingPage() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Workflow / Features / FAQ */}
+        <section className="relative z-10 py-24 px-6 border-t border-border/60 w-full flex justify-center">
+          <div className="max-w-5xl mx-auto w-full flex flex-col gap-20 sm:gap-28">
+            <PrecisionWorkflow />
+            <FAQSection />
           </div>
         </section>
 

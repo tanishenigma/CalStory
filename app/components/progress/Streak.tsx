@@ -23,7 +23,11 @@ export function Streak() {
     const day = String(d.getDate()).padStart(2, "0");
     const key = `${year}-${month}-${day}`;
 
-    const hasMeals = meals[key] && meals[key].length > 0;
+    // A day counts only if at least one meal was actually saved on that date
+    // (not backdated). Meals without savedDate are old data — count them as valid.
+    const hasMeals = (meals[key] ?? []).some(
+      (m) => !m.savedDate || m.savedDate === key
+    );
 
     if (i === 0 && !hasMeals) {
       // Today is not logged yet, but streak isn't broken
@@ -47,7 +51,9 @@ export function Streak() {
 
     return {
       dayStr: d.toLocaleDateString("en-IN", { weekday: "short" }).charAt(0),
-      isActive: meals[key] && meals[key].length > 0,
+      isActive: (meals[key] ?? []).some(
+        (m) => !m.savedDate || m.savedDate === key
+      ),
     };
   });
 

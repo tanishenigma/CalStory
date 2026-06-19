@@ -6,6 +6,7 @@ import WorkoutConfirmationCard from "@/app/components/nutrition/workout-confirma
 import { useWorkoutChat } from "@/app/lib/use-workout-chat";
 import { cn } from "@/app/lib/utils";
 import type { WorkoutChatMessage, PendingWorkout } from "@/app/types";
+import BorderGlow from "@/app/components/BorderGlow";
 
 interface Props {
   onClose: () => void;
@@ -64,13 +65,22 @@ export default function AIWorkoutLogger({
   }
 
   return (
-    <div
-      className={cn(
-        "mb-8 rounded-2xl border border-orange-200 dark:border-orange-900/40",
-        "bg-card shadow-sm overflow-hidden",
-        "animate-in slide-in-from-top-4 duration-300",
-      )}
+    <BorderGlow
+      className="mb-8 animate-in slide-in-from-top-4 duration-300"
+      borderRadius={16}
+      glowColor="25 95 53"
+      colors={["#f97316", "#fb923c", "#fdba74"]}
+      glowRadius={35}
+      glowIntensity={1.2}
+      edgeSensitivity={25}
+      animated={true}
     >
+      <div
+        className={cn(
+          "rounded-2xl border border-orange-200 dark:border-orange-900/40",
+          "bg-card shadow-sm overflow-hidden",
+        )}
+      >
       {/* ── Header ──────────────────────────────────────────── */}
       {/* <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <div className="flex items-center gap-2.5">
@@ -183,8 +193,9 @@ export default function AIWorkoutLogger({
             <ArrowUp size={16} />
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </BorderGlow>
   );
 }
 

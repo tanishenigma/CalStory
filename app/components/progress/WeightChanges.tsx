@@ -18,6 +18,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * nearest one (in either direction) so a missing entry on exactly
  * day -7 still resolves to the closest actual weigh-in. `null` if
  * no log exists in the lookback window at all.
+ *
+ * Comparison is done against `log.date` (parsed at local noon) rather
+ * than `loggedAt` so backdated entries are matched by their intended
+ * calendar date, not when they were physically saved.
  */
 function nearestLog(
   logs: WeightLog[],
@@ -28,7 +32,9 @@ function nearestLog(
   let best: WeightLog | null = null;
   let bestDiff = Number.POSITIVE_INFINITY;
   for (const l of logs) {
-    const diff = Math.abs(l.loggedAt - target);
+    // Use the intended date at local noon to match calendar-day intent
+    const dateMs = new Date(l.date + "T12:00:00").getTime();
+    const diff = Math.abs(dateMs - target);
     if (diff <= windowMs && diff < bestDiff) {
       best = l;
       bestDiff = diff;
