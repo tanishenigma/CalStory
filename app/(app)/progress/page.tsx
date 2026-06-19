@@ -9,6 +9,7 @@ import { WeeklyEnergy } from "@/app/components/progress/WeeklyEnergy";
 import { ExpenditureChanges } from "@/app/components/progress/ExpenditureChanges";
 import { YourBMI } from "@/app/components/progress/YourBMI";
 import WeightChanges from "@/app/components/progress/WeightChanges";
+import { WeightHistory } from "@/app/components/progress/WeightHistory";
 
 export default function ProgressPage() {
   const { profile, isLoading } = useAuthGuard();
@@ -29,6 +30,9 @@ export default function ProgressPage() {
       <div className="grid grid-cols-1  gap-4 mb-4">
         <WeightChanges />
         <ExpenditureChanges />
+      </div>
+      <div className="grid grid-cols-1 gap-4 mb-4">
+        <WeightHistory />
       </div>
       <div className="grid grid-cols-2 gap-4 mb-4">
         <WeeklyEnergy />

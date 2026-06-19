@@ -154,39 +154,36 @@ export default function DashboardPage() {
                 </Card>
               ) : (
                 <Card className="flex flex-col">
-                  <CardContent className="p-0 flex flex-col divide-y divide-[#F0EFEC]">
-                    {recentMeals.map((m) => {
-                      const Icon = MEAL_ICONS[m.time] || Utensils;
-                      return (
-                        <div
-                          key={m.id}
-                          className="flex items-center gap-4 p-4 hover:bg-subtle transition-colors">
-                          <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
-                            <Icon
-                              size={20}
-                              className="text-[#1A1916] dark:text-[#f7f6f3]"
-                            />
+                  {recentMeals.map((m) => {
+                    const Icon = MEAL_ICONS[m.time] || Utensils;
+                    return (
+                      <CardContent key={m.id}
+                        className="flex items-center gap-4 p-4 m-2 hover:bg-subtle hover:rounded-xl transition-colors ">
+                        <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
+                          <Icon
+                            size={20}
+                            className="text-[#1A1916] dark:text-[#f7f6f3]"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-[15px] text-[#1A1916] dark:text-[#f7f6f3] truncate">
+                            {m.name}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-bold text-[15px] text-[#1A1916] dark:text-[#f7f6f3] truncate">
-                              {m.name}
-                            </div>
-                            <div className="text-xs text-[#9B9895] capitalize">
-                              {m.time}
-                            </div>
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            <div className="font-bold text-lg text-[#1A1916] dark:text-[#f7f6f3] tabular-nums">
-                              {m.cal}
-                            </div>
-                            <div className="text-[9px] text-[#9B9895] font-bold uppercase tracking-widest">
-                              kcal
-                            </div>
+                          <div className="text-xs text-[#9B9895] capitalize">
+                            {m.time}
                           </div>
                         </div>
-                      );
-                    })}
-                  </CardContent>
+                        <div className="text-right flex-shrink-0">
+                          <div className="font-bold text-lg text-[#1A1916] dark:text-[#f7f6f3] tabular-nums">
+                            {m.cal}
+                          </div>
+                          <div className="text-[9px] text-[#9B9895] font-bold uppercase tracking-widest">
+                            kcal
+                          </div>
+                        </div>
+                      </CardContent>
+                    );
+                  })}
                 </Card>
               )}
             </section>

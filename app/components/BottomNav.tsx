@@ -45,7 +45,7 @@ export default function BottomNav() {
   if (pathname === "/") return null;
   return (
     <nav
-      className="fixed bottom-5 left-1/2 -translate-x-1/2 md:hidden z-[200] w-[calc(100vw-24px)] max-w-md mx-auto h-[72px] flex items-center justify-around px-2 bg-white/95 dark:bg-[#1a1916]/95 backdrop-blur-xl border border-border rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
+      className="fixed bottom-5 left-1/2 -translate-x-1/2 lg:hidden z-[200] w-[calc(100vw-24px)] max-w-md mx-auto h-[72px] flex items-center justify-around px-2 bg-white/95 dark:bg-[#1a1916]/95 backdrop-blur-xl border border-border rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
     >
       {TABS.map(({ href, label, icon }) => {
         const active = pathname === href || pathname.startsWith(href + "/");
@@ -59,14 +59,14 @@ export default function BottomNav() {
               textDecoration: "none",
             }}>
             <div
-              className={`transition-all duration-200 ${ active ? "text-[#1A1916] dark:text-[#f7f6f3]" : "text-[#A5A19D]"
-              }`}>
+              className={`transition-all duration-200 ${active ? "text-[#1A1916] dark:text-[#f7f6f3]" : "text-[#A5A19D]"
+                }`}>
               {icon}
             </div>
 
             <span
-              className={`text-[11px] font-semibold transition-colors duration-200 ${ active ? "text-[#1A1916] dark:text-[#f7f6f3]" : "text-[#A5A19D]"
-              }`}>
+              className={`text-[11px] font-semibold transition-colors duration-200 ${active ? "text-[#1A1916] dark:text-[#f7f6f3]" : "text-[#A5A19D]"
+                }`}>
               {label}
             </span>
 

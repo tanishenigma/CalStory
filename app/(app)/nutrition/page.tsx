@@ -4,13 +4,16 @@ import React from "react";
 import { useApp, todayKey } from "@/app/context/AppContext";
 import { useToast } from "@/app/components/ToastContainer";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
+import { useAuthStore } from "@/app/store/authStore";
 import WeekStrip from "@/app/components/WeekStrip";
 import InlineFoodSearch from "@/app/components/InlineFoodSearch";
 import ManualFoodEntry from "@/app/components/ManualFoodEntry";
+import AIChatLogger from "@/app/components/nutrition/ai-chat-logger";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { MEAL_ICONS } from "@/app/lib/constants";
-import { Flame, Utensils, Sliders } from "lucide-react";
+import { Flame, Utensils, Sliders, Sparkles } from "lucide-react";
 import Link from "next/link";
+import type { PendingMeal } from "@/app/types";
 
 function fmtDate(key: string): string {
   if (key === todayKey()) return "Today";
@@ -24,12 +27,15 @@ function fmtDate(key: string): string {
 export default function NutritionPage() {
   const { profile, isLoading } = useAuthGuard();
   const { state, deleteMeal } = useApp();
+  const { user } = useAuthStore();
   const toast = useToast();
   const { selDate, meals } = state;
   const [showSearch, setShowSearch] = React.useState(false);
   const [showRecipeForm, setShowRecipeForm] = React.useState(false);
   const [showDetailedBreakdown, setShowDetailedBreakdown] =
     React.useState(false);
+  const [showAIChat, setShowAIChat] = React.useState(false);
+  const [prefillMeal, setPrefillMeal] = React.useState<PendingMeal | null>(null);
 
   if (isLoading || !profile) return <Spinner />;
 
@@ -98,6 +104,22 @@ export default function NutritionPage() {
             {fmtDate(selDate)}
           </div>
           <div className="flex gap-2">
+            {/* Log with AI — leftmost in the button group */}
+            <button
+              id="btn-log-with-ai"
+              onClick={() => {
+                setShowAIChat((v) => {
+                  if (!v) {
+                    setShowSearch(false);
+                    setShowRecipeForm(false);
+                  }
+                  return !v;
+                });
+              }}
+              className="px-4 py-2.5 bg-card text-ink dark:text-[#f7f6f3]  hover:bg-orange-50 dark:hover:bg-orange-900/20  rounded-xl text-sm font-bold shadow-sm transition-colors active:scale-[0.98] flex items-center gap-1.5">
+              <Sparkles size={14} className="text-orange-500" />
+              {showAIChat ? "Cancel" : "Log with AI"}
+            </button>
             <button
               onClick={() => {
                 setShowRecipeForm(!showRecipeForm);
@@ -120,7 +142,25 @@ export default function NutritionPage() {
 
       {showSearch && <InlineFoodSearch onClose={() => setShowSearch(false)} />}
       {showRecipeForm && (
-        <ManualFoodEntry onClose={() => setShowRecipeForm(false)} />
+        <ManualFoodEntry
+          onClose={() => {
+            setShowRecipeForm(false);
+            setPrefillMeal(null);
+          }}
+          initialMeal={prefillMeal ?? undefined}
+        />
+      )}
+      {showAIChat && user && (
+        <AIChatLogger
+          onClose={() => setShowAIChat(false)}
+          date={selDate}
+          userId={user.uid}
+          onEditMeal={(meal) => {
+            setPrefillMeal(meal);
+            setShowAIChat(false);
+            setShowRecipeForm(true);
+          }}
+        />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

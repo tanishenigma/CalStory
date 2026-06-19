@@ -8,6 +8,7 @@ import { useToast } from "@/app/components/ToastContainer";
 import { calcTDEE } from "@/app/lib/tdee";
 import { GOALS } from "@/app/lib/constants";
 import { lbsToKg, ftInToCm } from "@/app/lib/units";
+import { dobToAge, maxDobIso, minDobIso } from "@/app/lib/age";
 import BlurFade from "@/app/components/animations/BlurFade";
 import type {
   Gender,
@@ -47,7 +48,8 @@ const INTENSITIES: IntensityOption[] = [
 
 interface FormState {
   name: string;
-  age: string;
+  /** YYYY-MM-DD — the date of birth. `age` is derived from this. */
+  dob: string;
   gender: Gender;
   weight: string;
   height: string;
@@ -64,13 +66,32 @@ export default function OnboardingPage() {
   const toast = useToast();
 
   useEffect(() => {
-    if (!loading && !user) router.replace("/");
-    if (!loading && user && state.profile) router.replace("/dashboard");
-  }, [state.profile, user, loading, router]);
+    // If Firebase has resolved a user, immediately bounce any signed-in
+    // user away from /onboarding. We don't wait for the profile fetch —
+    // `useAuthGuard` on the destination page handles the still-loading
+    // case via its own Spinner.
+    if (!loading && user) {
+      router.replace("/dashboard");
+    } else if (!loading && !user) {
+      router.replace("/");
+    }
+  }, [user, loading, router]);
+
+  // Belt-and-suspenders: if the profile arrives after we've already
+  // shown the form (e.g. a user who somehow has no `onboardedAt` flag
+  // and is re-onboarding), still redirect to /dashboard once we
+  // confirm they're fully onboarded. This effect is a no-op for new
+  // users whose profile stays `null`.
+  useEffect(() => {
+    if (loading) return;
+    if (state.profile && state.profile.onboardedAt) {
+      router.replace("/dashboard");
+    }
+  }, [state.profile, loading, router]);
 
   const [step, setStep] = useState(1);
   const [name, setName] = useState<FormState["name"]>("");
-  const [age, setAge] = useState<FormState["age"]>("");
+  const [dob, setDob] = useState<FormState["dob"]>("");
   const [gender, setGender] = useState<FormState["gender"]>("male");
   const [weight, setWeight] = useState<FormState["weight"]>("");
   const [height, setHeight] = useState<FormState["height"]>("");
@@ -92,12 +113,13 @@ export default function OnboardingPage() {
       heightUnit === "imperial"
         ? ftInToCm(Number(feet), Number(inches))
         : Number(height);
-    if (!wKg || !hCm || !age || !steps) return null;
+    const ageNum = dobToAge(dob);
+    if (!wKg || !hCm || ageNum === null || !steps) return null;
     return calcTDEE({
       gender,
       weight: wKg,
       height: hCm,
-      age: +age,
+      age: ageNum,
       steps: Number(steps),
       workoutsPerWeek: Number(workoutsPerWeek),
       goal: (goal || "maintain") as GoalKey,
@@ -117,7 +139,7 @@ export default function OnboardingPage() {
         heightUnit === "imperial"
           ? ftInToCm(Number(feet), Number(inches))
           : Number(height);
-      if (!age || !wKg || !hCm) {
+      if (dobToAge(dob) == null || !wKg || !hCm) {
         toast("Fill all fields correctly", "⚠️");
         return;
       }
@@ -139,11 +161,12 @@ export default function OnboardingPage() {
       heightUnit === "imperial"
         ? ftInToCm(Number(feet), Number(inches))
         : Number(height);
+    const ageNum = dobToAge(dob) ?? 0;
     const calc = calcTDEE({
       gender,
       weight: wKg,
       height: hCm,
-      age: +age,
+      age: ageNum,
       steps: Number(steps),
       workoutsPerWeek: Number(workoutsPerWeek),
       goal: goal as GoalKey,
@@ -151,7 +174,8 @@ export default function OnboardingPage() {
     });
     await setProfile({
       name,
-      age: +age,
+      age: ageNum,
+      dob,
       gender,
       weight: wKg,
       height: hCm,
@@ -162,6 +186,7 @@ export default function OnboardingPage() {
       ...calc,
       weightUnit,
       heightUnit,
+      onboardedAt: Date.now(),
     });
     toast(`Welcome, ${name}! 🎉`);
     router.push("/dashboard");
@@ -194,8 +219,9 @@ export default function OnboardingPage() {
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
-              className={`flex-1 h-[3px] rounded transition-colors duration-300 ${i <= step ? "bg-[#1A1916] dark:bg-[#f7f6f3]" : "bg-[#E8E7E4]"
-                }`}
+              className={`flex-1 h-[3px] rounded transition-colors duration-300 ${
+                i <= step ? "bg-[#1A1916] dark:bg-[#f7f6f3]" : "bg-[#E8E7E4]"
+              }`}
             />
           ))}
         </div>
@@ -327,20 +353,24 @@ export default function OnboardingPage() {
               <div>
                 <label
                   className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5"
-                  htmlFor="ob-age">
-                  Age
+                  htmlFor="ob-dob">
+                  Date of Birth
                 </label>
                 <input
-                  id="ob-age"
-                  type="number"
-                  min="12"
-                  max="99"
-                  placeholder="21"
-                  className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
+                  id="ob-dob"
+                  type="date"
+                  min={minDobIso()}
+                  max={maxDobIso()}
+                  className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
                   autoFocus
                 />
+                {dob && dobToAge(dob) != null && (
+                  <div className="text-[11px] text-[#9B9895] mt-1.5 font-medium">
+                    Age: {dobToAge(dob)} yrs
+                  </div>
+                )}
               </div>
               <div>
                 <label
@@ -488,10 +518,11 @@ export default function OnboardingPage() {
                   <button
                     key={n}
                     onClick={() => setWorkoutsPerWeek(String(n))}
-                    className={`py-3 rounded-full border-2 text-center text-sm font-bold transition-all cursor-pointer duration-300  ${workoutsPerWeek === String(n)
-                      ? "bg-foreground text-background"
-                      : "bg-background text-foreground border-border hover:border-foreground/50"
-                      }`}>
+                    className={`py-3 rounded-full border-2 text-center text-sm font-bold transition-all cursor-pointer duration-300  ${
+                      workoutsPerWeek === String(n)
+                        ? "bg-foreground text-background"
+                        : "bg-background text-foreground border-border hover:border-foreground/50"
+                    }`}>
                     {n}
                   </button>
                 ))}
@@ -592,9 +623,7 @@ export default function OnboardingPage() {
                     }`}>
                     <div
                       className={`w-[42px] h-[42px] rounded-full flex-shrink-0 flex items-center justify-center text-lg ${
-                        intensity === i.key
-                          ? "bg-background/20"
-                          : "bg-muted"
+                        intensity === i.key ? "bg-background/20" : "bg-muted"
                       }`}>
                       {i.emoji}
                     </div>

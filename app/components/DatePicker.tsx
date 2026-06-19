@@ -40,7 +40,7 @@ export default function DatePicker({ onClose }: DatePickerProps) {
 
   return (
     <div
-      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[500]"
+      className="fixed inset-0 backdrop-blur-sm  bg-black/20 flex items-center justify-center z-[500]"
       onClick={handleOverlayClick}>
       <div className="bg-background rounded-[20px] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.15)] animate-[fadeUp_0.3s_ease]">
         <div className="font-bold text-base mb-4 bg-background text-[#1A1916] dark:text-[#f7f6f3]">
@@ -88,7 +88,7 @@ export default function DatePicker({ onClose }: DatePickerProps) {
                   </SelectTrigger>
 
                   <SelectContent
-                    className="z-[510] max-h-[250px] p-2 backdrop-blur-md bg-transparent"
+                    className="z-[510] max-h-[250px] p-2 backdrop-blur-md bg-transparent "
                     position="popper"
                     sideOffset={4}>
                     {options?.map((option) => (

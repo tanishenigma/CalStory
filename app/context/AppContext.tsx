@@ -26,6 +26,9 @@ import {
   saveWorkoutTemplateDB,
   getWorkoutTemplates,
   deleteWorkoutTemplateDB,
+  saveWeightLog,
+  getWeightLogs,
+  deleteWeightLogDB,
 } from "@/app/lib/db";
 import type {
   AppState,
@@ -35,6 +38,8 @@ import type {
   SavedWorkout,
   Profile,
   RecentMeal,
+  WeightLog,
+  WeightUnit,
 } from "@/app/types";
 
 export const todayKey = (): string => new Date().toISOString().slice(0, 10);
@@ -43,7 +48,7 @@ export const uid = (): string =>
 
 type Action =
   | { type: "HYDRATE"; payload: Partial<AppState> }
-  | { type: "SET_PROFILE"; payload: Profile }
+  | { type: "SET_PROFILE"; payload: Profile | null }
   | { type: "SET_DATE"; payload: string }
   | { type: "ADD_MEAL"; payload: Meal }
   | { type: "ADD_MEAL_RANGE"; payload: { meals: Meal[]; dayKeys: string[] } }
@@ -53,7 +58,10 @@ type Action =
   | { type: "SET_RECENTS"; payload: RecentMeal[] }
   | { type: "ADD_TEMPLATE"; payload: SavedWorkout }
   | { type: "DELETE_TEMPLATE"; id: string }
-  | { type: "SET_TEMPLATES"; payload: SavedWorkout[] };
+  | { type: "SET_TEMPLATES"; payload: SavedWorkout[] }
+  | { type: "ADD_WEIGHT_LOG"; payload: WeightLog }
+  | { type: "DELETE_WEIGHT_LOG"; id: string }
+  | { type: "SET_WEIGHT_LOGS"; payload: WeightLog[] };
 
 const initial: AppState = {
   profile: undefined,
@@ -61,6 +69,7 @@ const initial: AppState = {
   workouts: {},
   savedWorkouts: [],
   recents: [],
+  weightLogs: [],
   selDate: todayKey(),
 };
 
@@ -135,6 +144,27 @@ function reducer(state: AppState, action: Action): AppState {
       };
     case "SET_TEMPLATES":
       return { ...state, savedWorkouts: action.payload };
+    case "ADD_WEIGHT_LOG":
+      return {
+        ...state,
+        weightLogs: [action.payload, ...state.weightLogs].sort(
+          (a, b) => b.loggedAt - a.loggedAt,
+        ),
+        // Mirror the new weight onto `profile.weight` so calorie math
+        // and the dashboard read the latest value without a round-trip
+        // to Firestore. Caller is responsible for persisting the log
+        // — this reducer is local-state only.
+        profile: state.profile
+          ? { ...state.profile, weight: action.payload.weight }
+          : state.profile,
+      };
+    case "DELETE_WEIGHT_LOG":
+      return {
+        ...state,
+        weightLogs: state.weightLogs.filter((w) => w.id !== action.id),
+      };
+    case "SET_WEIGHT_LOGS":
+      return { ...state, weightLogs: action.payload };
     default:
       return state;
   }
@@ -200,6 +230,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           workouts: {},
           savedWorkouts: [],
           recents: [],
+          weightLogs: [],
           selDate: todayKey(),
         },
       });
@@ -208,45 +239,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     async function hydrateRemote() {
       if (!user) return;
+      // Fetch the profile FIRST so guards can decide (onboarded vs not)
+      // as early as possible. The rest of the data hydrates in the
+      // background and dispatches separately — no need to block the
+      // redirect on meals / recents / templates.
       try {
-        const [profile, recents, templates] = await Promise.all([
-          getProfile(user.uid),
-          getRecentMeals(user.uid),
-          getWorkoutTemplates(user.uid),
-        ]);
-        const today = todayKey();
-        const [meals, workouts] = await Promise.all([
-          getMeals(user.uid, today),
-          getWorkouts(user.uid, today),
-        ]);
-        dispatch({
-          type: "HYDRATE",
-          payload: {
-            profile,
-            meals: { [today]: meals },
-            workouts: { [today]: workouts },
-            savedWorkouts: templates,
-            recents,
-            selDate: today,
-          },
-        });
+        const profile = await getProfile(user.uid);
+        dispatch({ type: "SET_PROFILE", payload: profile ?? null });
+        // Kick off the rest in parallel. We don't await it here so the
+        // onboarding → dashboard redirect isn't blocked on 5 reads.
+        void hydrateSecondary(user.uid);
       } catch (err) {
-        dispatch({
-          type: "HYDRATE",
-          payload: {
-            profile: null,
-            meals: {},
-            workouts: {},
-            savedWorkouts: [],
-            recents: [],
-            selDate: todayKey(),
-          },
-        });
+        // Real error (e.g. permission denied) — surface it and let
+        // the auth guard show the empty state.
+        console.error("[AppContext] primary hydrate failed:", err);
+        dispatch({ type: "SET_PROFILE", payload: null });
       }
     }
     hydrateRemote();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading]);
+
+  // Secondary hydration: meals/workouts/recents/templates. Runs in
+  // the background after the profile is known. Failures are logged
+  // but never block the user from using the app.
+  const hydrateSecondary = useCallback(async (uid: string): Promise<void> => {
+    try {
+      const [recents, templates, weightLogs] = await Promise.all([
+        getRecentMeals(uid),
+        getWorkoutTemplates(uid),
+        getWeightLogs(uid),
+      ]);
+      const today = todayKey();
+      const [meals, workouts] = await Promise.all([
+        getMeals(uid, today),
+        getWorkouts(uid, today),
+      ]);
+      dispatch({
+        type: "HYDRATE",
+        payload: {
+          meals: { [today]: meals },
+          workouts: { [today]: workouts },
+          savedWorkouts: templates,
+          recents,
+          weightLogs,
+        },
+      });
+    } catch (err) {
+      console.warn("[AppContext] secondary hydrate failed:", err);
+    }
+  }, []);
 
   // When selected date changes, load that day's data from Firestore
   useEffect(() => {
@@ -377,6 +419,65 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [user],
   );
 
+  /**
+   * Record a new weigh-in. Writes a `WeightLog` document and
+   * mirrors the new weight onto `profile.weight` so the change
+   * is visible everywhere (dashboard calorie math, settings
+   * badge, progress page chart) without a Firestore round-trip.
+   *
+   * The caller passes the weight already in kg. `weightUnit` is
+   * stored alongside so the UI can render the original unit the
+   * user typed in.
+   */
+  const logWeight = useCallback(
+    async (
+      weightKg: number,
+      weightUnit: WeightUnit,
+      options?: { date?: string; note?: string },
+    ): Promise<WeightLog | null> => {
+      if (!user) return null;
+      const log: WeightLog = {
+        id: uid(),
+        weight: weightKg,
+        weightUnit,
+        date: options?.date ?? todayKey(),
+        loggedAt: Date.now(),
+        note: options?.note,
+      };
+      // Optimistic local update — both the log and the mirrored
+      // profile weight. The reducer handles the sort + mirror.
+      dispatch({ type: "ADD_WEIGHT_LOG", payload: log });
+      try {
+        await Promise.all([
+          saveWeightLog(user.uid, log),
+          // Persist the mirrored weight onto the profile so the
+          // dashboard / calorie math see the same value the user
+          // just entered. We only update the `weight` field here
+          // — anything else on the profile is untouched.
+          state.profile
+            ? saveProfile(user.uid, { ...state.profile, weight: weightKg })
+            : Promise.resolve(),
+        ]);
+        return log;
+      } catch (err) {
+        console.error("[AppContext] logWeight failed:", err);
+        // Roll back the optimistic log so the UI matches the DB.
+        dispatch({ type: "DELETE_WEIGHT_LOG", id: log.id });
+        return null;
+      }
+    },
+    [user, state.profile],
+  );
+
+  const deleteWeightLog = useCallback(
+    async (id: string): Promise<void> => {
+      dispatch({ type: "DELETE_WEIGHT_LOG", id });
+      if (!user) return;
+      await deleteWeightLogDB(user.uid, id);
+    },
+    [user],
+  );
+
   return (
     <AppCtx.Provider
       value={{
@@ -390,6 +491,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deleteWorkout,
         saveTemplate,
         deleteTemplate,
+        logWeight,
+        deleteWeightLog,
       }}>
       {children}
     </AppCtx.Provider>

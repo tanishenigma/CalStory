@@ -3,23 +3,25 @@
 import React, { useState } from "react";
 import { useApp, uid } from "@/app/context/AppContext";
 import { toast } from "sonner";
-import type { Meal, MealTime } from "@/app/types";
+import type { Meal, MealTime, PendingMeal } from "@/app/types";
 
 interface Props {
   onClose: () => void;
+  /** Optional pre-fill data from the AI chat flow. */
+  initialMeal?: PendingMeal;
 }
 
-export default function ManualFoodEntry({ onClose }: Props) {
+export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
   const { addMeal } = useApp();
 
-  const [name, setName] = useState("");
-  const [time, setTime] = useState<MealTime>("lunch");
+  const [name, setName] = useState(initialMeal?.name ?? "");
+  const [time, setTime] = useState<MealTime>(initialMeal?.time ?? "lunch");
 
-  // Macros
-  const [cal, setCal] = useState("");
-  const [p, setP] = useState("");
-  const [c, setC] = useState("");
-  const [f, setF] = useState("");
+  // Macros — initialise from AI pre-fill if available
+  const [cal, setCal] = useState(initialMeal?.cal ? String(initialMeal.cal) : "");
+  const [p, setP] = useState(initialMeal?.p ? String(initialMeal.p) : "");
+  const [c, setC] = useState(initialMeal?.c ? String(initialMeal.c) : "");
+  const [f, setF] = useState(initialMeal?.f ? String(initialMeal.f) : "");
 
   const handleSave = () => {
     if (!name.trim()) {

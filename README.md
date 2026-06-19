@@ -1,4 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CalStory
+
+A modern fitness & nutrition tracker built with Next.js 16 (App Router), Firebase, and Gemini AI.
+
+## Features
+
+- **Dashboard** — daily calorie ring, macro bars, and a 7-day streak summary
+- **Nutrition page** — log meals via FatSecret food search, manual entry, or AI chat
+  - **AI Log Food** — describe a meal in natural language; Gemini 1.5 Flash estimates the macros using real-time web search grounding. Confirm to persist directly to Firestore, or click Edit to refine in the manual form.
+- **Workouts** — log exercises with sets × reps × weight; save templates
+- **Progress** — weight log with trend chart
+- **Settings** — profile, calorie targets, TDEE recalculation
+
+## Environment Variables
+
+Copy `.env.local.example` to `.env.local` and fill in the values.
+
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_FIREBASE_*` | ✅ | Firebase web app config (all 6 vars) |
+| `GEMINI_API_KEY` | For AI food logging | Google AI Studio API key — **server-only, never prefix with `NEXT_PUBLIC_`**. Get one at [aistudio.google.com](https://aistudio.google.com). |
+
+> **Note:** `GEMINI_API_KEY` is used server-side only (`app/api/ai-log-food/route.ts`). Without it the AI chat panel shows a graceful error bubble — the rest of the app works normally.
+
 
 ## Getting Started
 

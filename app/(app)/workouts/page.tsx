@@ -2,12 +2,15 @@
 
 import React from "react";
 import { useApp, todayKey } from "@/app/context/AppContext";
+import { useAuthStore } from "@/app/store/authStore";
 import { useToast } from "@/app/components/ToastContainer";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
 import WeekStrip from "@/app/components/WeekStrip";
 import { Card } from "@/app/components/ui/card";
 import WorkoutForm from "@/app/components/WorkoutForm";
-import { Pencil, CopyPlus, Trash2, X, Eye } from "lucide-react";
+import AIWorkoutLogger from "@/app/components/nutrition/ai-workout-logger";
+import { Pencil, CopyPlus, Trash2, X, Eye, Sparkles } from "lucide-react";
+import type { PendingWorkout } from "@/app/types";
 
 function fmtDate(key: string): string {
   if (key === todayKey()) return "Today";
@@ -21,9 +24,11 @@ function fmtDate(key: string): string {
 export default function WorkoutsPage() {
   const { profile, isLoading } = useAuthGuard();
   const { state, deleteWorkout, deleteTemplate } = useApp();
+  const { user } = useAuthStore();
   const toast = useToast();
   const { selDate, workouts } = state;
   const [showForm, setShowForm] = React.useState(false);
+  const [showAIChat, setShowAIChat] = React.useState(false);
   const [editingWorkout, setEditingWorkout] = React.useState<any>(null);
   const [formMode, setFormMode] = React.useState<"new" | "edit" | "duplicate">(
     "new",
@@ -59,12 +64,31 @@ export default function WorkoutsPage() {
                 Saved Routines
               </button>
             )}
+            {/* Log with AI — blue accent, left of primary Log Workout button */}
+            {user && (
+              <button
+                id="btn-log-workout-ai"
+                onClick={() => {
+                  setShowAIChat((v) => {
+                    if (!v) {
+                      setShowForm(false);
+                      setShowTemplates(false);
+                    }
+                    return !v;
+                  });
+                }}
+                className="px-4 py-2.5 bg-card text-ink dark:text-[#f7f6f3]  rounded-xl text-sm font-bold shadow-sm hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors active:scale-[0.98] flex items-center gap-1.5">
+                <Sparkles size={14} className="text-orange-500" />
+                {showAIChat ? "Cancel" : "Log with AI"}
+              </button>
+            )}
             <button
               onClick={() => {
                 setEditingWorkout(null);
                 setFormMode("new");
                 setShowForm(true);
                 setShowTemplates(false);
+                setShowAIChat(false);
               }}
               className="px-4 py-2.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
               Log Workout
@@ -167,6 +191,34 @@ export default function WorkoutsPage() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* AI workout logger — inline, appears below button row */}
+      {showAIChat && user && (
+        <AIWorkoutLogger
+          onClose={() => setShowAIChat(false)}
+          date={selDate}
+          userId={user.uid}
+          onEditWorkout={(workout: PendingWorkout) => {
+            // Convert PendingWorkout → WorkoutForm initialWorkout shape
+            setEditingWorkout({
+              id: "",
+              name: workout.name,
+              type: workout.type,
+              duration: workout.duration,
+              exercises: workout.exercises.map((ex) => ({
+                name: ex.name,
+                sets: ex.sets.map((s) => ({ reps: s.reps, kg: s.kg })),
+                reps: ex.sets.map((s) => s.reps),
+                kg: ex.sets[0]?.kg ?? 0,
+              })),
+              notes: workout.notes,
+            });
+            setFormMode("new");
+            setShowForm(true);
+            setShowAIChat(false);
+          }}
+        />
       )}
 
       {showForm && (

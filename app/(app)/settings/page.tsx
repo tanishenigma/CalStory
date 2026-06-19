@@ -8,15 +8,17 @@ import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
 import { signOut } from "@/app/lib/auth";
 import { calcTDEE } from "@/app/lib/tdee";
 import { GOALS } from "@/app/lib/constants";
-import { kgToLbs, lbsToKg } from "@/app/lib/units";
+import { kgToLbs, lbsToKg, displayHeight } from "@/app/lib/units";
 import BlurFade from "@/app/components/animations/BlurFade";
 import { Card } from "@/app/components/ui/card";
+import { EditProfileModal } from "@/app/components/EditProfileModal";
 import {
   usePrefsStore,
   resolveTheme,
   type NavbarStyle,
   type Theme,
 } from "@/app/store/prefsStore";
+import { motion } from "framer-motion";
 import { animateThemeTransition } from "@/app/components/ThemeToggle";
 import {
   LayoutPanelLeft,
@@ -25,6 +27,7 @@ import {
   Monitor,
   Sun,
   Moon,
+  Pencil,
 } from "lucide-react";
 import type {
   GoalKey,
@@ -61,7 +64,7 @@ const INTENSITIES: IntensityOption[] = [
 
 function SettingsPageContent() {
   const { profile, isLoading } = useAuthGuard();
-  const { state, setProfile } = useApp();
+  const { state, setProfile, logWeight } = useApp();
   const { user } = useAuthStore();
   const toast = useToast();
   const router = useRouter();
@@ -74,6 +77,7 @@ function SettingsPageContent() {
       : "profile",
   );
   const [saving, setSaving] = useState<boolean>(false);
+  const [editProfileOpen, setEditProfileOpen] = useState<boolean>(false);
 
   const [goal, setGoal] = useState<GoalKey>(state.profile?.goal || "maintain");
   const [intensity, setIntensity] = useState<IntensityKey>(
@@ -127,6 +131,14 @@ function SettingsPageContent() {
       carbs: calc.carbs,
       fat: calc.fat,
     });
+    // The Goals tab also lets the user update their weight as
+    // part of TDEE recalibration. Treat a real weight change as
+    // a weigh-in so the progress page picks it up immediately —
+    // same bidirectional contract as the Edit profile modal.
+    const previousWeight = state.profile?.weight ?? 0;
+    if (Math.abs(weightKg - previousWeight) > 0.05) {
+      await logWeight(weightKg, weightUnit);
+    }
     setSaving(false);
     toast("Goals updated ✓");
   }
@@ -175,12 +187,19 @@ function SettingsPageContent() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex-1 min-w-[70px] px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-all ${
+            className={`relative flex-1 min-w-[70px] px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-colors ${
               tab === t.key
-                ? "bg-card text-[#1A1916] dark:text-[#f7f6f3] shadow-sm"
+                ? "text-[#1A1916] dark:text-[#f7f6f3]"
                 : "text-[#9B9895] hover:text-[#1A1916] dark:text-[#f7f6f3] dark:hover:text-white"
             }`}>
-            {t.label}
+            {tab === t.key && (
+              <motion.div
+                layoutId="active-settings-tab"
+                className="absolute inset-0 bg-card rounded-lg shadow-sm"
+                transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              />
+            )}
+            <span className="relative z-10">{t.label}</span>
           </button>
         ))}
       </div>
@@ -214,6 +233,17 @@ function SettingsPageContent() {
               </div>
             </div>
 
+            {/* Edit profile — opens a modal for DOB + weight. Age
+                is shown here as a derived value of the stored DOB. */}
+            <div className="flex justify-end mb-3">
+              <button
+                onClick={() => setEditProfileOpen(true)}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9B9895] hover:text-foreground transition-colors px-2.5 py-1.5 rounded-lg hover:bg-muted">
+                <Pencil size={12} />
+                Edit profile
+              </button>
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
               {[
                 { label: "Age", val: `${state.profile?.age} yrs` },
@@ -224,9 +254,17 @@ function SettingsPageContent() {
                       ? `${kgToLbs(state.profile?.weight ?? 0)} lbs`
                       : `${state.profile?.weight} kg`,
                 },
+                {
+                  label: "Height",
+                  val: state.profile
+                    ? displayHeight(
+                        state.profile.height,
+                        state.profile.heightUnit,
+                      )
+                    : "—",
+                },
                 { label: "TDEE", val: `${state.profile?.tdee} kcal` },
                 { label: "Target", val: `${state.profile?.calTarget} kcal` },
-                { label: "Protein", val: `${state.profile?.protein}g` },
                 {
                   label: "Goal",
                   val: `${state.profile?.goal} (${state.profile?.intensity || "moderate"})`,
@@ -287,19 +325,30 @@ function SettingsPageContent() {
                 <button
                   key={n}
                   onClick={() => setWorkoutsPerWeek(n)}
-                  className={`py-3 rounded-xl border text-center text-sm font-bold transition-all ${
+                  className={`relative py-3 rounded-xl border text-center text-sm font-bold transition-colors ${
                     workoutsPerWeek === n
-                      ? "border-foreground bg-foreground text-background"
+                      ? "border-transparent bg-foreground text-background"
                       : "border-foreground text-foreground"
                   }`}>
-                  {n}
+                  {workoutsPerWeek === n && (
+                    <motion.div
+                      layoutId="active-workouts"
+                      className="absolute inset-0 rounded-xl bg-foreground text-background"
+                      transition={{
+                        type: "spring",
+                        stiffness: 320,
+                        damping: 28,
+                      }}
+                    />
+                  )}
+                  <span className="relative z-10">{n}</span>
                 </button>
               ))}
             </div>
 
             <div className="text-sm font-bold mb-1">Weight</div>
             <p className="text-xs text-[#9B9895] mb-4 leading-relaxed">
-              Always stored in kg. Edit in {weightUnit}.
+              Saving will log this as a new weigh-in.
             </p>
             <div className="relative mb-8">
               <input
@@ -322,15 +371,28 @@ function SettingsPageContent() {
                 <button
                   key={g.key}
                   onClick={() => setGoal(g.key as GoalKey)}
-                  className={`p-5 rounded-xl border text-center transition-all ${
+                  className={`relative p-5 rounded-xl border text-center transition-colors ${
                     goal === g.key
-                      ? "border-[#1A1916] dark:border-[#f7f6f3] bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                      : "border-transparent hover:border-[#1A1916] dark:border-[#f7f6f3] dark:hover:border-[#f7f6f3]"
+                      ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                      : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3]"
                   }`}>
-                  <div className="text-3xl mb-2">{g.emoji}</div>
-                  <div className="text-sm font-bold">{g.label}</div>
+                  {goal === g.key && (
+                    <motion.div
+                      layoutId="active-goal"
+                      className="absolute inset-0 rounded-xl  bg-[#1A1916] dark:bg-[#f7f6f3]  "
+                      transition={{
+                        type: "spring",
+                        stiffness: 320,
+                        damping: 28,
+                      }}
+                    />
+                  )}
+                  <div className="relative z-10 text-3xl mb-2">{g.emoji}</div>
+                  <div className="relative z-10 text-sm font-bold">
+                    {g.label}
+                  </div>
                   <div
-                    className={`text-xs mt-1 ${goal === g.key ? "text-white dark:text-[#1a1916]/60" : "text-[#9B9895]"}`}>
+                    className={`relative z-10 text-xs mt-1 ${goal === g.key ? "text-white dark:text-[#1a1916]/60" : "text-[#9B9895]"}`}>
                     {g.sub}
                   </div>
                 </button>
@@ -345,13 +407,24 @@ function SettingsPageContent() {
                     <button
                       key={i.key}
                       onClick={() => setIntensity(i.key)}
-                      className={`flex items-center gap-4 p-4 rounded-xl border text-left transition-all ${
+                      className={`relative flex items-center gap-4 p-4 rounded-xl border text-left transition-colors ${
                         intensity === i.key
-                          ? "border-[#1A1916] dark:border-[#f7f6f3] bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                          ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
                           : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-[#f7f6f3]"
                       }`}>
+                      {intensity === i.key && (
+                        <motion.div
+                          layoutId="active-intensity"
+                          className="absolute inset-0 rounded-xl  bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                          transition={{
+                            type: "spring",
+                            stiffness: 320,
+                            damping: 28,
+                          }}
+                        />
+                      )}
                       <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                        className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                           intensity === i.key
                             ? "bg-card text-[#1A1916] dark:text-[#f7f6f3]"
                             : "bg-background"
@@ -363,7 +436,7 @@ function SettingsPageContent() {
                             ? "300"
                             : "500"}
                       </div>
-                      <div>
+                      <div className="relative z-10">
                         <div className="font-bold text-sm">{i.label}</div>
                         <div
                           className={`text-xs mt-0.5 ${intensity === i.key ? "text-white dark:text-[#1a1916]/70" : "text-[#9B9895]"}`}>
@@ -417,15 +490,28 @@ function SettingsPageContent() {
                 <button
                   key={u.key}
                   onClick={() => setWeightUnit(u.key)}
-                  className={`p-5 rounded-xl border text-center transition-all ${
+                  className={`relative p-5 rounded-xl border text-center transition-colors ${
                     weightUnit === u.key
-                      ? "border-[#1A1916] dark:border-[#f7f6f3] bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                      ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
                       : "border-transparent hover:border-[#1A1916] dark:border-[#f7f6f3] dark:hover:border-[#f7f6f3]"
                   }`}>
-                  <div className="font-mono text-3xl font-medium mb-1">
+                  {weightUnit === u.key && (
+                    <motion.div
+                      layoutId="active-weight-unit"
+                      className="absolute inset-0 rounded-xl bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                      transition={{
+                        type: "spring",
+                        stiffness: 320,
+                        damping: 28,
+                      }}
+                    />
+                  )}
+                  <div className="relative z-10 font-mono text-3xl font-medium mb-1">
                     {u.sub}
                   </div>
-                  <div className="text-sm font-semibold">{u.label}</div>
+                  <div className="relative z-10 text-sm font-semibold">
+                    {u.label}
+                  </div>
                 </button>
               ))}
             </div>
@@ -441,15 +527,28 @@ function SettingsPageContent() {
                 <button
                   key={u.key}
                   onClick={() => setHeightUnit(u.key)}
-                  className={`p-5 rounded-xl border text-center transition-all ${
+                  className={`relative p-5 rounded-xl border text-center transition-colors ${
                     heightUnit === u.key
-                      ? "border-[#1A1916] dark:border-[#f7f6f3] bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                      ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
                       : "border-transparent hover:border-[#1A1916] dark:border-[#f7f6f3] dark:hover:border-[#f7f6f3]"
                   }`}>
-                  <div className="font-mono text-3xl font-medium mb-1">
+                  {heightUnit === u.key && (
+                    <motion.div
+                      layoutId="active-height-unit"
+                      className="absolute inset-0 rounded-xl  bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                      transition={{
+                        type: "spring",
+                        stiffness: 320,
+                        damping: 28,
+                      }}
+                    />
+                  )}
+                  <div className="relative z-10 font-mono text-3xl font-medium mb-1">
                     {u.sub}
                   </div>
-                  <div className="text-sm font-semibold">{u.label}</div>
+                  <div className="relative z-10 text-sm font-semibold">
+                    {u.label}
+                  </div>
                 </button>
               ))}
             </div>
@@ -485,13 +584,14 @@ function SettingsPageContent() {
                     <button
                       key={opt.key}
                       onClick={(e) => {
-                        const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                        const rect = (
+                          e.currentTarget as HTMLButtonElement
+                        ).getBoundingClientRect();
                         const ox = rect.left + rect.width / 2;
                         const oy = rect.top + rect.height / 2;
                         animateThemeTransition(
                           () => {
                             setTheme(opt.key);
-                            // Apply class immediately inside the transition
                             const next = resolveTheme(opt.key);
                             if (next === "dark") {
                               document.documentElement.classList.add("dark");
@@ -505,20 +605,34 @@ function SettingsPageContent() {
                         );
                       }}
                       className={[
-                        "flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all",
+                        "relative flex flex-col items-center gap-2 p-4 rounded-2xl border transition-colors",
                         active
-                          ? "border-[#1A1916] dark:border-[#f7f6f3] bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                          ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
                           : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-white/10",
                       ].join(" ")}>
+                      {active && (
+                        <motion.div
+                          layoutId="active-theme"
+                          className="absolute inset-0 rounded-2xl bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                          transition={{
+                            type: "spring",
+                            stiffness: 320,
+                            damping: 28,
+                          }}
+                        />
+                      )}
                       <opt.Icon
                         size={20}
-                        className={
+                        className={[
+                          "relative z-10",
                           active
                             ? "text-white dark:text-[#1a1916]"
-                            : "text-[#1A1916] dark:text-[#f7f6f3]"
-                        }
+                            : "text-[#1A1916] dark:text-[#f7f6f3]",
+                        ].join(" ")}
                       />
-                      <span className="font-bold text-sm">{opt.title}</span>
+                      <span className="relative z-10 font-bold text-sm">
+                        {opt.title}
+                      </span>
                     </button>
                   );
                 })}
@@ -552,13 +666,23 @@ function SettingsPageContent() {
                       key={opt.key}
                       onClick={() => setNavbarStyle(opt.key as NavbarStyle)}
                       className={[
-                        "flex flex-col gap-3 text-left p-4 rounded-2xl border transition-all",
+                        "relative flex flex-col gap-3 text-left p-4 rounded-2xl border transition-colors",
                         active
-                          ? "border-[#1A1916] dark:border-[#f7f6f3] bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                          ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
                           : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-white/10",
                       ].join(" ")}>
-                      {/* icon + title row */}
-                      <div className="flex items-center gap-2">
+                      {active && (
+                        <motion.div
+                          layoutId="active-nav-style"
+                          className="absolute inset-0 rounded-2xl  bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                          transition={{
+                            type: "spring",
+                            stiffness: 320,
+                            damping: 28,
+                          }}
+                        />
+                      )}
+                      <div className="relative z-10 flex items-center gap-2">
                         <opt.Icon
                           size={16}
                           className={
@@ -575,9 +699,13 @@ function SettingsPageContent() {
                           />
                         )}
                       </div>
-                      {/* sub */}
                       <p
-                        className={`text-[11px] leading-relaxed ${active ? "text-white/70 dark:text-[#1a1916]/60" : "text-[#9B9895]"}`}>
+                        className={[
+                          "relative z-10 text-[11px] leading-relaxed",
+                          active
+                            ? "text-white/70 dark:text-[#1a1916]/60"
+                            : "text-[#9B9895]",
+                        ].join(" ")}>
                         {opt.sub}
                       </p>
                     </button>
@@ -592,6 +720,11 @@ function SettingsPageContent() {
           </Card>
         </BlurFade>
       )}
+
+      <EditProfileModal
+        open={editProfileOpen}
+        onClose={() => setEditProfileOpen(false)}
+      />
     </div>
   );
 }

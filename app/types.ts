@@ -180,6 +180,35 @@ export interface Profile {
   fat: number;
   weightUnit: WeightUnit;
   heightUnit: HeightUnit;
+  /**
+   * Date of birth as an ISO string (YYYY-MM-DD). The canonical
+   * source of truth for age — `age` is derived from this on read
+   * and any save that includes `dob` will recompute it.
+   */
+  dob?: string;
+  /** Unix-ms timestamp set the first time the user finished onboarding. */
+  onboardedAt?: number;
+}
+
+/**
+ * A weight log entry. Each entry represents a single weigh-in.
+ * The most recent entry is treated as the user's "current" weight
+ * (mirrored onto `Profile.weight` for fast read in calorie math).
+ *
+ * Firestore path: users/{uid}/weight_logs/{logId}
+ */
+export interface WeightLog {
+  id: string;
+  /** Always stored in kg. Convert at the UI layer using weightUnit. */
+  weight: number;
+  /** The unit the user was viewing/typing in at log time. */
+  weightUnit: WeightUnit;
+  /** YYYY-MM-DD — the calendar day of the weigh-in. */
+  date: string;
+  /** Unix-ms timestamp the entry was written. */
+  loggedAt: number;
+  /** Optional free-form note (e.g. "morning, after workout"). */
+  note?: string;
 }
 
 // ─── App State ─────────────────────────────────────────────
@@ -189,6 +218,8 @@ export interface AppState {
   workouts: Record<string, Workout[]>;
   savedWorkouts: SavedWorkout[];
   recents: RecentMeal[];
+  /** All weight log entries, newest first. Empty until hydrated. */
+  weightLogs: WeightLog[];
   selDate: string;
 }
 
@@ -205,6 +236,19 @@ export interface AppContextValue {
   deleteWorkout: (id: string, day: string) => Promise<void>;
   saveTemplate: (template: SavedWorkout) => Promise<void>;
   deleteTemplate: (id: string) => Promise<void>;
+  /**
+   * Record a new weigh-in. `weightKg` is canonical (kg). Returns
+   * the created `WeightLog` on success, or `null` if the write
+   * failed (in which case the optimistic local state is rolled
+   * back so the UI never lies).
+   */
+  logWeight: (
+    weightKg: number,
+    weightUnit: WeightUnit,
+    options?: { date?: string; note?: string },
+  ) => Promise<WeightLog | null>;
+  /** Remove a weigh-in from the history. */
+  deleteWeightLog: (id: string) => Promise<void>;
 }
 
 export interface AuthContextValue {
@@ -252,4 +296,83 @@ export interface MealPreset {
   p: number;
   c: number;
   f: number;
+}
+
+// ─── AI Chat ───────────────────────────────────────────────
+/**
+ * A meal suggested by the AI before the user confirms it.
+ * Mirrors the `Meal` shape but has no `id` yet and includes
+ * an optional comment from the model about data confidence.
+ */
+export interface PendingMeal {
+  name: string;
+  cal: number;
+  p: number;
+  c: number;
+  f: number;
+  time: MealTime;
+  aiComment?: string;
+}
+
+/** A single turn in the AI chat conversation. */
+export interface ChatMessage {
+  id: string;
+  role: "user" | "model";
+  /** Display text for the bubble. */
+  content: string;
+  /** Set on model messages that carry a meal confirmation. */
+  meal?: PendingMeal | null;
+  /** Quick-add chips shown after a confirmation. */
+  suggestions?: string[];
+  timestamp: number;
+}
+
+/** Shape returned by the /api/ai-log-food route. */
+export interface AIResponse {
+  type: "greeting" | "confirmation" | "clarification" | "logged" | "error";
+  message: string;
+  meal: PendingMeal | null;
+  suggestions: string[];
+}
+
+// ─── AI Workout Chat ────────────────────────────────────────
+/** A single exercise parsed by the AI (before the user confirms). */
+export interface PendingExercise {
+  name: string;
+  sets: { reps: number; kg: number; note?: string }[];
+}
+
+/**
+ * A workout suggested by the AI before the user confirms it.
+ * Mirrors the `Workout` shape but has no `id` yet.
+ */
+export interface PendingWorkout {
+  name: string;
+  /** Matches WORKOUT_TYPES in WorkoutForm.tsx */
+  type: string;
+  /** Estimated duration in minutes. Defaults to 60 when not mentioned. */
+  duration: number;
+  exercises: PendingExercise[];
+  notes: string;
+}
+
+/** Shape returned by the /api/ai-log-workout route. */
+export interface WorkoutAIResponse {
+  type: "confirmation" | "clarification" | "error";
+  message: string;
+  workout: PendingWorkout | null;
+  /** True when the AI detects a structured routine worth saving as a template. */
+  askSaveTemplate: boolean;
+  suggestions: string[];
+}
+
+/** A single turn in the AI workout chat conversation. */
+export interface WorkoutChatMessage {
+  id: string;
+  role: "user" | "model";
+  content: string;
+  workout?: PendingWorkout | null;
+  askSaveTemplate?: boolean;
+  suggestions?: string[];
+  timestamp: number;
 }

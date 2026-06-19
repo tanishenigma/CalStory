@@ -16,6 +16,7 @@ import type {
   Workout,
   SavedWorkout,
   RecentMeal,
+  WeightLog,
 } from "@/app/types";
 
 /* ────────────────────────────────────────────────────────────
@@ -30,7 +31,10 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await fn();
   } catch (err) {
-    console.warn("[db] Firestore error:", err);
+    // Surface real errors loudly so permission / network failures
+    // don't masquerade as "user has no data" and trap the app in a
+    // silent redirect loop.
+    console.error("[db] Firestore error:", err);
     return fallback;
   }
 }
@@ -230,4 +234,46 @@ export async function getRecentMeals(uid: string): Promise<RecentMeal[]> {
     );
     return recents;
   }, [] as RecentMeal[]);
+}
+
+// ── Weight Logs ───────────────────────────────────────────
+// Path: users/{uid}/weight_logs/{logId}
+// A history of every weigh-in. The latest entry mirrors
+// `Profile.weight` (also always in kg) for fast read in calorie
+// math; the full list powers the progress page chart/history.
+export async function saveWeightLog(
+  uid: string,
+  log: WeightLog,
+): Promise<void> {
+  console.log(`[API Request] saveWeightLog (uid: ${uid})`, log);
+  await safe(async () => {
+    const ref = doc(db, "users", uid, "weight_logs", log.id);
+    await setDoc(ref, { ...log, savedAt: serverTimestamp() });
+    console.log(`[API Response] saveWeightLog success`);
+  }, undefined);
+}
+
+export async function getWeightLogs(uid: string): Promise<WeightLog[]> {
+  console.log(`[API Request] getWeightLogs (uid: ${uid})`);
+  return safe(async () => {
+    const col = collection(db, "users", uid, "weight_logs");
+    const q = query(col, orderBy("loggedAt", "desc"));
+    const snap = await getDocs(q);
+    const logs = snap.docs.map((d) => d.data() as WeightLog);
+    console.log(
+      `[API Response] getWeightLogs success, got ${logs.length} items`,
+    );
+    return logs;
+  }, [] as WeightLog[]);
+}
+
+export async function deleteWeightLogDB(
+  uid: string,
+  logId: string,
+): Promise<void> {
+  console.log(`[API Request] deleteWeightLogDB (uid: ${uid}, id: ${logId})`);
+  await safe(async () => {
+    await deleteDoc(doc(db, "users", uid, "weight_logs", logId));
+    console.log(`[API Response] deleteWeightLogDB success`);
+  }, undefined);
 }

@@ -33,9 +33,11 @@ export function useAuthGuard(): {
       router.replace("/");
       return;
     }
-    // Only redirect to onboarding if profile is explicitly null
-    // (user has no profile). If profile is undefined, we're still loading.
-    if (profile === null) {
+    // Only redirect to onboarding if the user has no profile OR the
+    // profile exists but is missing the `onboardedAt` flag (e.g. legacy
+    // account created before this field was added). If `profile` is
+    // `undefined`, we're still loading from Firestore.
+    if (profile === null || (profile && !profile.onboardedAt)) {
       router.replace("/onboarding");
     }
   }, [profile, user, loading, router]);
