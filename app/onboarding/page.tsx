@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
 import { useAuthStore } from "@/app/store/authStore";
+import { Spinner } from "@/app/hooks/useAuthGuard";
 import { useToast } from "@/app/components/ToastContainer";
 import { calcTDEE } from "@/app/lib/tdee";
 import { GOALS } from "@/app/lib/constants";
@@ -21,30 +22,49 @@ import type {
 interface IntensityOption {
   key: IntensityKey;
   emoji: string;
-  label: string;
-  desc: string;
+  pct: string;
 }
 
 const INTENSITIES: IntensityOption[] = [
-  {
-    key: "slow",
-    emoji: "🐢",
-    label: "Slow",
-    desc: "±150 kcal — sustainable, easy to stick to",
-  },
-  {
-    key: "moderate",
-    emoji: "🐇",
-    label: "Moderate",
-    desc: "±300 kcal — balanced, recommended for most",
-  },
-  {
-    key: "aggressive",
-    emoji: "🐅",
-    label: "Aggressive",
-    desc: "±500 kcal — fast results, high discipline required",
-  },
+  { key: "mildCut", emoji: "🐢", pct: "9%" },
+  { key: "weightloss", emoji: "🐇", pct: "19%" },
+  { key: "extremeCut", emoji: "🐅", pct: "37%" },
 ];
+
+function getIntensityLabel(
+  key: string,
+  goal: GoalKey | "",
+): { label: string; desc: string } {
+  if (goal === "bulk") {
+    const map: Record<string, { label: string; desc: string }> = {
+      mildCut: { label: "Mild Bulk", desc: "105% of TDEE — slow, clean gains" },
+      weightloss: {
+        label: "Weight Gain",
+        desc: "110% of TDEE — steady muscle building",
+      },
+      extremeCut: {
+        label: "Extreme Bulk",
+        desc: "115% of TDEE — aggressive bulk",
+      },
+    };
+    return map[key] ?? { label: key, desc: "" };
+  }
+  const map: Record<string, { label: string; desc: string }> = {
+    mildCut: {
+      label: "Mild Cut",
+      desc: "91% of TDEE — gentle deficit, very sustainable",
+    },
+    weightloss: {
+      label: "Weight Loss",
+      desc: "81% of TDEE — standard deficit, balanced approach",
+    },
+    extremeCut: {
+      label: "Extreme Cut",
+      desc: "63% of TDEE — aggressive deficit, rapid results",
+    },
+  };
+  return map[key] ?? { label: key, desc: "" };
+}
 
 interface FormState {
   name: string;
@@ -65,29 +85,27 @@ export default function OnboardingPage() {
   const { user, loading } = useAuthStore();
   const toast = useToast();
 
-  useEffect(() => {
-    // If Firebase has resolved a user, immediately bounce any signed-in
-    // user away from /onboarding. We don't wait for the profile fetch —
-    // `useAuthGuard` on the destination page handles the still-loading
-    // case via its own Spinner.
-    if (!loading && user) {
-      router.replace("/dashboard");
-    } else if (!loading && !user) {
-      router.replace("/");
-    }
-  }, [user, loading, router]);
-
-  // Belt-and-suspenders: if the profile arrives after we've already
-  // shown the form (e.g. a user who somehow has no `onboardedAt` flag
-  // and is re-onboarding), still redirect to /dashboard once we
-  // confirm they're fully onboarded. This effect is a no-op for new
-  // users whose profile stays `null`.
+  // Onboarding's own auth guard.
+  //
+  //   - signed-out users → /
+  //   - signed-in users with a *complete* profile (onboardedAt set) → /dashboard
+  //   - signed-in users with no profile OR an incomplete profile → stay on form
+  //
+  // The previous version of this effect redirected *every* signed-in user
+  // straight to /dashboard, which produced a /dashboard ↔ /onboarding loop
+  // for new users: the dashboard's `useAuthGuard` saw `profile === null`
+  // and bounced them back here, while this page bounced them right back
+  // again before they could ever fill in the form.
   useEffect(() => {
     if (loading) return;
+    if (!user) {
+      router.replace("/");
+      return;
+    }
     if (state.profile && state.profile.onboardedAt) {
       router.replace("/dashboard");
     }
-  }, [state.profile, loading, router]);
+  }, [user, loading, state.profile, router]);
 
   const [step, setStep] = useState(1);
   const [name, setName] = useState<FormState["name"]>("");
@@ -100,12 +118,19 @@ export default function OnboardingPage() {
     useState<FormState["workoutsPerWeek"]>("3");
   const [goal, setGoal] = useState<FormState["goal"]>("");
   const [intensity, setIntensity] =
-    useState<FormState["intensity"]>("moderate");
+    useState<FormState["intensity"]>("weightloss");
 
   const [weightUnit, setWeightUnit] = useState<WeightUnit>("kg");
   const [heightUnit, setHeightUnit] = useState<HeightUnit>("metric");
   const [feet, setFeet] = useState<string>("");
   const [inches, setInches] = useState<string>("");
+
+  // Show a spinner while auth or profile is still resolving, so we don't
+  // briefly flash the form for users who are about to be redirected away.
+  // Must come *after* all useState calls to satisfy the rules of hooks.
+  if (loading || (user && state.profile === undefined)) {
+    return <Spinner />;
+  }
 
   function preview() {
     const wKg = weightUnit === "lbs" ? lbsToKg(Number(weight)) : Number(weight);
@@ -628,14 +653,16 @@ export default function OnboardingPage() {
                       {i.emoji}
                     </div>
                     <div>
-                      <div className="font-bold text-[14px]">{i.label}</div>
+                      <div className="font-bold text-[14px]">
+                        {getIntensityLabel(i.key, goal).label}
+                      </div>
                       <div
                         className={`text-[11px] mt-0.5 ${
                           intensity === i.key
                             ? "text-background/60"
                             : "text-muted-foreground"
                         }`}>
-                        {i.desc}
+                        {getIntensityLabel(i.key, goal).desc}
                       </div>
                     </div>
                   </button>

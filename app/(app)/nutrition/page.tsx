@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useApp, todayKey } from "@/app/context/AppContext";
+import { useApp, todayLocalKey } from "@/app/context/AppContext";
 import { useToast } from "@/app/components/ToastContainer";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
 import { useAuthStore } from "@/app/store/authStore";
@@ -16,7 +16,7 @@ import Link from "next/link";
 import type { PendingMeal } from "@/app/types";
 
 function fmtDate(key: string): string {
-  if (key === todayKey()) return "Today";
+  if (key === todayLocalKey()) return "Today";
   return new Date(key + "T00:00:00").toLocaleDateString("en-IN", {
     weekday: "short",
     month: "short",
@@ -35,7 +35,9 @@ export default function NutritionPage() {
   const [showDetailedBreakdown, setShowDetailedBreakdown] =
     React.useState(false);
   const [showAIChat, setShowAIChat] = React.useState(false);
-  const [prefillMeal, setPrefillMeal] = React.useState<PendingMeal | null>(null);
+  const [prefillMeal, setPrefillMeal] = React.useState<PendingMeal | null>(
+    null,
+  );
 
   if (isLoading || !profile) return <Spinner />;
 
@@ -103,7 +105,7 @@ export default function NutritionPage() {
           <div className="text-xs font-semibold text-muted-foreground">
             {fmtDate(selDate)}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {/* Log with AI — leftmost in the button group */}
             <button
               id="btn-log-with-ai"
@@ -116,7 +118,7 @@ export default function NutritionPage() {
                   return !v;
                 });
               }}
-              className="px-4 py-2.5 bg-card text-ink dark:text-[#f7f6f3]  hover:bg-orange-50 dark:hover:bg-orange-900/20  rounded-xl text-sm font-bold shadow-sm transition-colors active:scale-[0.98] flex items-center gap-1.5">
+              className="px-4 py-2.5 bg-card text-ink dark:text-[#f7f6f3]  hover:bg-orange-50 dark:hover:bg-orange-900/20  rounded-xl text-xs md:text-sm font-bold shadow-sm transition-colors active:scale-[0.98] flex items-center gap-1.5">
               <Sparkles size={14} className="text-orange-500" />
               {showAIChat ? "Cancel" : "Log with AI"}
             </button>
@@ -125,16 +127,8 @@ export default function NutritionPage() {
                 setShowRecipeForm(!showRecipeForm);
                 setShowSearch(false);
               }}
-              className="px-4 py-2.5 bg-card text-ink dark:text-[#f7f6f3] border border-border rounded-xl text-sm font-bold shadow-sm hover:bg-bg dark:hover:bg-[#0f0f0e] transition-colors active:scale-[0.98]">
-              {showRecipeForm ? "Cancel" : "Manual Entry"}
-            </button>
-            <button
-              onClick={() => {
-                setShowSearch(!showSearch);
-                setShowRecipeForm(false);
-              }}
-              className="px-4 py-2.5 bg-ink text-white dark:text-[#1a1916] rounded-xl text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
-              {showSearch ? "Cancel" : "Log Food"}
+              className="px-4 py-2.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl text-xs md:text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
+              {showRecipeForm ? "Cancel" : "Log Food"}
             </button>
           </div>
         </div>
@@ -577,14 +571,16 @@ function TargetRow({
   const pct = Math.min(100, Math.round((current / max) * 100));
   return (
     <div className="flex items-center gap-4">
-      <div className="w-20 text-xs font-bold text-foreground">{label}</div>
+      <div className="w-16 sm:w-20 text-xs font-bold text-foreground">
+        {label}
+      </div>
       <div className="flex-1 h-3 bg-[#F0EFEC] dark:bg-[#2a2a2a] rounded-full overflow-hidden relative">
         <div
           className={`absolute top-0 left-0 h-full ${fill || color} rounded-full`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <div className="w-32 text-right text-xs">
+      <div className="w-24 sm:w-32 text-right text-xs">
         <span className="font-bold text-foreground">
           {Math.round(current)} / {max} {unit}
         </span>
@@ -612,7 +608,7 @@ function NutrientRow({
   const pct =
     target > 0 ? Math.min(100, Math.round((value / target) * 100)) : 0;
   return (
-    <div className="flex items-center justify-between px-2 py-1.5 hover:bg-background rounded-lg transition-colors">
+    <div className="flex items-center justify-between px-2 py-1.5 hover:bg-background rounded-lg transition-colors min-w-0">
       <div className="text-xs text-foreground flex-1">{label}</div>
       <div className="flex items-center gap-3">
         <div className="text-xs text-foreground w-20 text-right">

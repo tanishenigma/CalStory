@@ -1,13 +1,282 @@
 import type { User } from "firebase/auth";
 
+/**
+ * One exercise within a workout. Each exercise has a `name` plus a
+ * type-specific `metrics` block selected by the workout's `type`.
+ * Legacy flat fields (`reps`, `kg`) are still accepted for older
+ * records but new entries should populate `sets` / `metrics`.
+ */
 export interface Exercise {
   name: string;
   /** Legacy: Per-set reps. Length equals the number of sets. */
   reps?: number[];
   /** Legacy: Weight for all sets. */
   kg?: number;
-  /** New structure: Individual reps and kg per set */
-  sets?: { reps: number; kg: number }[];
+  /** Set × reps × kg entries (Resistance / Powerlifting / CrossFit). */
+  sets?: { reps: number; kg: number; note?: string }[];
+  /**
+   * Optional per-exercise duration in minutes. Used by cardio-style
+   * workouts when the user wants to track time per movement.
+   */
+  durationMin?: number;
+  /**
+   * Type-specific metrics block. Only the block matching the parent
+   * workout's `type` is populated for new entries.
+   */
+  metrics?: ExerciseMetrics;
+}
+
+// ─── Per-activity metric blocks ────────────────────────────
+export interface CardioMetrics {
+  /** Distance covered in kilometres. */
+  distanceKm?: number;
+  /** Calories burned. */
+  calories?: number;
+  /** Average pace in minutes per kilometre (e.g. 6 = 6:00/km). */
+  paceMinPerKm?: number;
+}
+
+export interface HiitMetrics {
+  /** Number of rounds completed. */
+  rounds?: number;
+  /** Work interval in seconds. */
+  workSec?: number;
+  /** Rest interval in seconds. */
+  restSec?: number;
+}
+
+export interface YogaMetrics {
+  /** Free-text style (e.g. "Vinyasa Flow", "Hatha"). */
+  sessionType?: string;
+  /** Free-text difficulty ("Beginner", "Intermediate", "Advanced"). */
+  difficulty?: string;
+}
+
+export interface PilatesMetrics {
+  /** Free-text style ("Mat", "Reformer"). */
+  sessionType?: string;
+  difficulty?: string;
+}
+
+export interface CrossFitMetrics {
+  /** Number of rounds completed. */
+  rounds?: number;
+  /** Total reps in the WOD. */
+  reps?: number;
+  /** Load used for the WOD in kg. */
+  weightKg?: number;
+}
+
+export interface PowerliftingMetrics {
+  /** Estimated 1-rep max in kg for the day's top set. */
+  oneRmKg?: number;
+}
+
+export interface FlexibilityMetrics {
+  /** Average hold time per stretch in seconds. */
+  holdSec?: number;
+  /** Free-text list of areas worked (e.g. "Hamstrings, Hips"). */
+  areasWorked?: string;
+}
+
+export interface SportsMetrics {
+  /** Game/competition score (e.g. "21–18"). */
+  score?: string;
+  /** Distance covered during the session, if applicable. */
+  distanceKm?: number;
+  /** Free-text stats (assists, points, time-on-ice, etc.). */
+  stats?: string;
+}
+
+export interface OtherMetrics {
+  /** Free-form notes describing what was done. */
+  notes?: string;
+}
+
+export type ExerciseMetrics =
+  | CardioMetrics
+  | HiitMetrics
+  | YogaMetrics
+  | PilatesMetrics
+  | CrossFitMetrics
+  | PowerliftingMetrics
+  | FlexibilityMetrics
+  | SportsMetrics
+  | OtherMetrics;
+
+/**
+ * Discriminator — the metric key the workout type expects.
+ * Resistance-style types use `sets` directly, no `metrics` block.
+ */
+export type MetricKey =
+  | "cardio"
+  | "hiit"
+  | "yoga"
+  | "pilates"
+  | "crossfit"
+  | "powerlifting"
+  | "flexibility"
+  | "sports"
+  | "other";
+
+/** The canonical workout-type list used by the manual WorkoutForm. */
+export const WORKOUT_TYPES = [
+  "Resistance",
+  "Cardio",
+  "Yoga",
+  "HIIT",
+  "Pilates",
+  "CrossFit",
+  "Powerlifting",
+  "Flexibility",
+  "Sports",
+  "Other",
+] as const;
+
+/** Which metric key (if any) each workout type populates per exercise. */
+export const WORKOUT_METRIC_KEYS: Record<
+  (typeof WORKOUT_TYPES)[number],
+  MetricKey | null
+> = {
+  Resistance: null,
+  Powerlifting: "powerlifting",
+  CrossFit: "crossfit",
+  HIIT: "hiit",
+  Cardio: "cardio",
+  Yoga: "yoga",
+  Pilates: "pilates",
+  Flexibility: "flexibility",
+  Sports: "sports",
+  Other: "other",
+};
+
+/** Returns the metric key the given workout type populates. */
+export function getMetricKey(
+  type: string | undefined | null,
+): MetricKey | null {
+  if (!type) return null;
+  return WORKOUT_METRIC_KEYS[type as keyof typeof WORKOUT_METRIC_KEYS] ?? null;
+}
+
+/**
+ * Schema describing how to render and persist one metric field.
+ * The form iterates over this schema to build its inputs and the
+ * saver uses it to parse values back into typed numbers.
+ */
+export interface MetricFieldSchema {
+  /** Key inside the metric block (e.g. "distanceKm"). */
+  key: string;
+  /** Human-readable label (e.g. "Distance (km)"). */
+  label: string;
+  /** "number" or "text". */
+  kind: "number" | "text";
+  /** Optional placeholder shown in the input. */
+  placeholder?: string;
+}
+
+export const WORKOUT_METRIC_SCHEMAS: Record<MetricKey, MetricFieldSchema[]> = {
+  cardio: [
+    {
+      key: "distanceKm",
+      label: "Distance (km)",
+      kind: "number",
+      placeholder: "0",
+    },
+    { key: "calories", label: "Calories", kind: "number", placeholder: "0" },
+    {
+      key: "paceMinPerKm",
+      label: "Pace (min/km)",
+      kind: "number",
+      placeholder: "0",
+    },
+  ],
+  hiit: [
+    { key: "rounds", label: "Rounds", kind: "number", placeholder: "0" },
+    { key: "workSec", label: "Work (sec)", kind: "number", placeholder: "40" },
+    { key: "restSec", label: "Rest (sec)", kind: "number", placeholder: "20" },
+  ],
+  yoga: [
+    {
+      key: "sessionType",
+      label: "Session Type",
+      kind: "text",
+      placeholder: "Vinyasa Flow",
+    },
+    {
+      key: "difficulty",
+      label: "Difficulty",
+      kind: "text",
+      placeholder: "Beginner",
+    },
+  ],
+  pilates: [
+    {
+      key: "sessionType",
+      label: "Session Type",
+      kind: "text",
+      placeholder: "Mat",
+    },
+    {
+      key: "difficulty",
+      label: "Difficulty",
+      kind: "text",
+      placeholder: "Intermediate",
+    },
+  ],
+  crossfit: [
+    { key: "rounds", label: "Rounds", kind: "number", placeholder: "0" },
+    { key: "reps", label: "Reps", kind: "number", placeholder: "0" },
+    { key: "weightKg", label: "Weight (kg)", kind: "number", placeholder: "0" },
+  ],
+  powerlifting: [
+    {
+      key: "oneRmKg",
+      label: "Estimated 1RM (kg)",
+      kind: "number",
+      placeholder: "0",
+    },
+  ],
+  flexibility: [
+    { key: "holdSec", label: "Hold (sec)", kind: "number", placeholder: "30" },
+    {
+      key: "areasWorked",
+      label: "Areas Worked",
+      kind: "text",
+      placeholder: "Hamstrings, Hips",
+    },
+  ],
+  sports: [
+    { key: "score", label: "Score", kind: "text", placeholder: "21–18" },
+    {
+      key: "distanceKm",
+      label: "Distance (km)",
+      kind: "number",
+      placeholder: "0",
+    },
+    {
+      key: "stats",
+      label: "Stats",
+      kind: "text",
+      placeholder: "10 pts, 5 ast",
+    },
+  ],
+  other: [
+    {
+      key: "notes",
+      label: "Notes",
+      kind: "text",
+      placeholder: "Describe what you did",
+    },
+  ],
+};
+
+/** Back-compat helper used by old call sites: true for binary cardio. */
+export function isCardioWorkout(type: string | undefined | null): boolean {
+  const key = getMetricKey(type);
+  // Resistance types (Resistance, Powerlifting, CrossFit, HIIT) use sets
+  // OR use metric blocks that aren't "cardio-style". All other keys
+  // represent time/skill activities.
+  return key === "cardio";
 }
 
 export interface DetailedNutrients {
@@ -164,7 +433,7 @@ export interface SavedWorkout {
 export type MealTime = "breakfast" | "lunch" | "dinner" | "snack";
 
 export type GoalKey = "cut" | "maintain" | "bulk";
-export type IntensityKey = "slow" | "moderate" | "aggressive";
+export type IntensityKey = "mildCut" | "weightloss" | "extremeCut";
 export type Gender = "male" | "female";
 export type WeightUnit = "kg" | "lbs";
 export type HeightUnit = "metric" | "imperial";
@@ -288,6 +557,22 @@ export interface TDEEInput {
   intensity?: IntensityKey;
 }
 
+export interface BulkMacroInput {
+  weight: number; // kg
+  tdee: number; // kcal
+  surplus?: number; // fraction, e.g. 0.09 for +9%  (default 0.09)
+  proteinPerKg?: number; // g/kg (default 2.2, floor 2.0)
+  fatPerKg?: number; // g/kg (default 1.0, floor 0.8)
+}
+
+export interface BulkMacroResult {
+  totalCalories: number;
+  protein: number; // grams
+  fat: number; // grams
+  carbs: number; // grams
+  warnings: string[];
+}
+
 export interface Goal {
   key: GoalKey;
   emoji: string;
@@ -347,6 +632,13 @@ export interface AIResponse {
 export interface PendingExercise {
   name: string;
   sets: { reps: number; kg: number; note?: string }[];
+  /** Optional per-exercise duration in minutes. */
+  durationMin?: number;
+  /**
+   * Optional type-specific metrics block, mirroring `Exercise.metrics`.
+   * Only one of cardio/hiit/yoga/etc. is populated per exercise.
+   */
+  metrics?: ExerciseMetrics;
 }
 
 /**

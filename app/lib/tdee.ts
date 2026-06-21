@@ -68,12 +68,12 @@ export function calcTDEE(profile: TDEEInput): TDEEResult {
   const factor = getActivityMultiplier(steps, workoutsPerWeek);
   const tdee = Math.round(bmr * factor);
 
-  // Step 3: Calorie target (goal + intensity adjustment)
-  const adj =
+  // Step 3: Calorie target (goal + intensity multiplier)
+  const multiplier =
     goal !== "maintain" && intensity
-      ? (INTENSITY_ADJ[intensity]?.[goal] ?? 0)
-      : 0;
-  const calTarget = Math.max(tdee + adj, 1200);
+      ? (INTENSITY_ADJ[intensity]?.[goal] ?? 1.0)
+      : 1.0;
+  const calTarget = Math.max(Math.round(tdee * multiplier), 1200);
 
   // Step 4: BMI-based macro weight
   const bmi = weight / Math.pow(height / 100, 2);

@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/app/components/ui/card";
-import { useApp, todayKey } from "@/app/context/AppContext";
+import { useApp, todayLocalKey } from "@/app/context/AppContext";
 
 interface Props {
   eaten: number;
@@ -15,7 +15,7 @@ export default function CalorieHero({ eaten, target }: Props) {
   const over = target > 0 && eaten > target;
   const hasTarget = target > 0;
 
-  const isPastDay = state.selDate < todayKey();
+  const isPastDay = state.selDate < todayLocalKey();
 
   const R = 54;
   const C = 2 * Math.PI * R;

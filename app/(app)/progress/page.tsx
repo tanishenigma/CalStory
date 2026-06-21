@@ -24,7 +24,7 @@ export default function ProgressPage() {
   if (isLoading || !profile || !mounted) return <Spinner />;
 
   return (
-    <div className="pb-24 m-2 ">
+    <div className="pb-24 p-4 md:p-6 lg:p-8 min-w-0 w-full">
       <h1 className="mb-4 sm:mb-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1A1916] dark:text-[#f7f6f3]">
         Progress
       </h1>
@@ -36,11 +36,11 @@ export default function ProgressPage() {
       <div className="grid grid-cols-1 gap-4 mb-4">
         <WeightHistory />
       </div>
-      <div className="grid grid-cols-2  gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <WeightChanges />
         <ExpenditureChanges />
       </div>
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <WeeklyEnergy />
         <DailyAverageCalories />
       </div>

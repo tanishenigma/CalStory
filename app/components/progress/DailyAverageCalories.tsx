@@ -78,13 +78,13 @@ export function DailyAverageCalories() {
         {
           label: "Carbs",
           data: carbsData,
-          backgroundColor: "#F97316",
+          backgroundColor: "#00E676",
           stack: "Stack 0",
         },
         {
           label: "Fat",
           data: fatData,
-          backgroundColor: "#3B82F6",
+          backgroundColor: "#FFEA00",
           stack: "Stack 0",
           borderRadius: {
             topLeft: 4,
@@ -136,11 +136,11 @@ export function DailyAverageCalories() {
   return (
     <Card className="p-0 overflow-hidden">
       <CardHeader className="px-5 py-4 border-b border-border">
-        <div className="flex items-center justify-between gap-4 min-w-0 m-5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0 m-5">
           <CardTitle className="text-base font-bold shrink-0">
             Daily Average Calories
           </CardTitle>
-          <div className="flex bg-background p-1 rounded-lg shrink-0">
+          <div className="flex bg-background p-1 rounded-lg shrink-0 overflow-x-auto no-scrollbar">
             {timeframes.map((tf) => (
               <button
                 key={tf}
@@ -168,11 +168,11 @@ export function DailyAverageCalories() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#F97316]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#00E676]" />
             <span className="text-xs font-semibold text-[#9B9895]">Carbs</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#3B82F6]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#FFEA00]" />
             <span className="text-xs font-semibold text-[#9B9895]">Fat</span>
           </div>
         </div>

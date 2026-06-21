@@ -94,6 +94,32 @@ export async function getMeals(uid: string, dateKey: string): Promise<Meal[]> {
   }, [] as Meal[]);
 }
 
+/**
+ * Bulk-load meals for an explicit list of date keys in parallel.
+ * Returns a map keyed by dateKey so the caller can merge into
+ * state.meals without overwriting other days.
+ */
+export async function getMealsInRange(
+  uid: string,
+  dateKeys: string[],
+): Promise<Record<string, Meal[]>> {
+  console.log(
+    `[API Request] getMealsInRange (uid: ${uid}, dates: ${dateKeys.length})`,
+  );
+  return safe(
+    async () => {
+      const lists = await Promise.all(dateKeys.map((k) => getMeals(uid, k)));
+      const out: Record<string, Meal[]> = {};
+      dateKeys.forEach((k, i) => {
+        out[k] = lists[i];
+      });
+      console.log(`[API Response] getMealsInRange success`);
+      return out;
+    },
+    {} as Record<string, Meal[]>,
+  );
+}
+
 export async function deleteMealDB(
   uid: string,
   dateKey: string,
@@ -147,6 +173,32 @@ export async function getWorkouts(
     );
     return workouts;
   }, [] as Workout[]);
+}
+
+/**
+ * Bulk-load workouts for an explicit list of date keys in parallel.
+ * Same shape as getMealsInRange — used during hydration so the
+ * WeekStrip / streak can render without waiting for per-day loads.
+ */
+export async function getWorkoutsInRange(
+  uid: string,
+  dateKeys: string[],
+): Promise<Record<string, Workout[]>> {
+  console.log(
+    `[API Request] getWorkoutsInRange (uid: ${uid}, dates: ${dateKeys.length})`,
+  );
+  return safe(
+    async () => {
+      const lists = await Promise.all(dateKeys.map((k) => getWorkouts(uid, k)));
+      const out: Record<string, Workout[]> = {};
+      dateKeys.forEach((k, i) => {
+        out[k] = lists[i];
+      });
+      console.log(`[API Response] getWorkoutsInRange success`);
+      return out;
+    },
+    {} as Record<string, Workout[]>,
+  );
 }
 
 export async function deleteWorkoutDB(

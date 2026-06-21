@@ -46,9 +46,10 @@ export function displayHeight(cm: number, unit: HeightUnit): string {
   return `${cm} cm`;
 }
 
-// TDEE adjustment multipliers for cut/bulk intensity
+// TDEE percentage multipliers for cut/bulk intensity (applied to TDEE)
+// e.g. 0.91 = mild cut at 91% of TDEE, 0.81 = weightloss at 81%, 0.63 = extreme at 63%
 export const INTENSITY_ADJ: Record<IntensityKey, Record<GoalKey, number>> = {
-  slow: { cut: -150, maintain: 0, bulk: +150 },
-  moderate: { cut: -300, maintain: 0, bulk: +300 },
-  aggressive: { cut: -500, maintain: 0, bulk: +500 },
+  mildCut: { cut: 0.91, maintain: 1.0, bulk: 1.05 },
+  weightloss: { cut: 0.81, maintain: 1.0, bulk: 1.1 },
+  extremeCut: { cut: 0.63, maintain: 1.0, bulk: 1.15 },
 };

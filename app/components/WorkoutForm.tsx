@@ -3,7 +3,16 @@
 import React, { useState } from "react";
 import { useApp, uid } from "@/app/context/AppContext";
 import { toast } from "sonner";
-import type { Workout, Exercise } from "@/app/types";
+import {
+  type Workout,
+  type Exercise,
+  type ExerciseMetrics,
+  type MetricKey,
+  type MetricFieldSchema,
+  WORKOUT_TYPES,
+  WORKOUT_METRIC_SCHEMAS,
+  getMetricKey,
+} from "@/app/types";
 import {
   Select,
   SelectContent,
@@ -12,20 +21,7 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 import { Checkbox } from "@/app/components/ui/checkbox";
-import { Copy, Trash2, X, Plus, CopyPlus } from "lucide-react";
-
-export const WORKOUT_TYPES = [
-  "Resistance",
-  "Cardio",
-  "Yoga",
-  "HIIT",
-  "Pilates",
-  "CrossFit",
-  "Powerlifting",
-  "Flexibility",
-  "Sports",
-  "Other",
-];
+import { Trash2, X, Plus } from "lucide-react";
 
 interface Props {
   onClose: () => void;
@@ -39,10 +35,37 @@ interface ExSetState {
   kg: string;
 }
 
+/** String-typed mirror of the `ExerciseMetrics` block for form state. */
+type MetricFieldValues = Record<string, string>;
+
 interface ExState {
   id: string;
   name: string;
+  /** Resistance / Powerlifting / CrossFit / HIIT (set-based). */
   sets: ExSetState[];
+  /** Per-exercise duration in minutes (cardio-style). */
+  durationMin: string;
+  /** Type-specific metrics block as strings (parsed on save). */
+  metrics: MetricFieldValues;
+}
+
+function hydrateMetrics(
+  key: MetricKey | null,
+  e: { cardio?: any; metrics?: ExerciseMetrics },
+): MetricFieldValues {
+  const out: MetricFieldValues = {};
+  if (!key) return out;
+  const schema = WORKOUT_METRIC_SCHEMAS[key];
+  const source = (e.metrics as any) ?? e.cardio ?? {};
+  for (const f of schema) {
+    const v = source[f.key];
+    if (v === undefined || v === null) {
+      out[f.key] = "";
+    } else {
+      out[f.key] = String(v);
+    }
+  }
+  return out;
 }
 
 export default function WorkoutForm({
@@ -80,18 +103,46 @@ export default function WorkoutForm({
         id: uid(),
         name: e.name,
         sets: mappedSets,
+        durationMin: e.durationMin?.toString() ?? "",
+        metrics: hydrateMetrics(getMetricKey(initialWorkout?.type), e as any),
       };
     }) || [],
   );
 
   const [notes, setNotes] = useState(initialWorkout?.notes || "");
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
+  /**
+   * When true, only the workout name is required — duration and
+   * exercises become optional. Useful for a fast "I did a workout"
+   * log without tracking details.
+   */
+  const [quickLog, setQuickLog] = useState(false);
 
   function addEx() {
     setExercises([
       ...exercises,
-      { id: uid(), name: "", sets: [{ id: uid(), reps: "", kg: "" }] },
+      {
+        id: uid(),
+        name: "",
+        sets: [{ id: uid(), reps: "", kg: "" }],
+        durationMin: "",
+        metrics: {},
+      },
     ]);
+  }
+
+  function updateMetricField(exId: string, key: string, val: string) {
+    setExercises((prev) =>
+      prev.map((e) =>
+        e.id === exId ? { ...e, metrics: { ...e.metrics, [key]: val } } : e,
+      ),
+    );
+  }
+
+  function updateExDuration(exId: string, val: string) {
+    setExercises((prev) =>
+      prev.map((e) => (e.id === exId ? { ...e, durationMin: val } : e)),
+    );
   }
 
   function updateExName(exId: string, val: string) {
@@ -158,7 +209,7 @@ export default function WorkoutForm({
       return;
     }
     const dur = parseInt(duration) || 0;
-    if (dur <= 0) {
+    if (!quickLog && dur <= 0) {
       toast.warning("Please enter a valid duration");
       return;
     }
@@ -166,6 +217,8 @@ export default function WorkoutForm({
     const exList: Exercise[] = exercises
       .filter((e) => e.name.trim())
       .map((e) => {
+        const metricKey = getMetricKey(type);
+
         const validSets = e.sets
           .map((s) => ({
             reps: parseInt(s.reps) || 0,
@@ -176,12 +229,57 @@ export default function WorkoutForm({
         const legacyReps = validSets.map((s) => s.reps);
         const legacyKg = validSets.length > 0 ? validSets[0].kg : 0;
 
-        return {
+        const base: Exercise = {
           name: e.name.trim(),
-          reps: legacyReps.length > 0 ? legacyReps : [0],
-          kg: legacyKg,
-          sets: validSets.length > 0 ? validSets : [{ reps: 0, kg: 0 }],
         };
+
+        // Per-exercise duration (optional).
+        const durMin = parseFloat(e.durationMin);
+        if (Number.isFinite(durMin) && durMin > 0) {
+          base.durationMin = durMin;
+        }
+
+        // Set-based types populate `sets`. Resistance always does;
+        // CrossFit / HIIT / Powerlifting can also use `metrics`
+        // (e.g. Rounds / 1RM) without set entries.
+        const usesSets =
+          type === "Resistance" ||
+          type === "Powerlifting" ||
+          type === "CrossFit" ||
+          type === "HIIT";
+
+        if (usesSets) {
+          if (validSets.length > 0) {
+            base.sets = validSets;
+            base.reps = legacyReps;
+            base.kg = legacyKg;
+          } else {
+            // No set entries — still allow pure metrics like "1RM" or "Rounds".
+            base.sets = [];
+          }
+        }
+
+        // Metric block: only when the type defines one and the user
+        // entered at least one field.
+        if (metricKey) {
+          const schema = WORKOUT_METRIC_SCHEMAS[metricKey];
+          const filled: Record<string, number | string> = {};
+          for (const f of schema) {
+            const raw = e.metrics[f.key]?.trim();
+            if (!raw) continue;
+            if (f.kind === "number") {
+              const n = parseFloat(raw);
+              if (Number.isFinite(n)) filled[f.key] = n;
+            } else {
+              filled[f.key] = raw;
+            }
+          }
+          if (Object.keys(filled).length > 0) {
+            base.metrics = filled as unknown as ExerciseMetrics;
+          }
+        }
+
+        return base;
       });
 
     const w: Workout = {
@@ -211,14 +309,34 @@ export default function WorkoutForm({
     onClose();
   }
 
+  const metricKey = getMetricKey(type);
+  const usesSets =
+    type === "Resistance" ||
+    type === "Powerlifting" ||
+    type === "CrossFit" ||
+    type === "HIIT";
+
+  const exerciseHasContent = (e: ExState): boolean => {
+    if (!e.name.trim()) return false;
+    // Sets-based exercises: at least one set with reps > 0.
+    if (usesSets) {
+      if (e.sets.some((s) => (parseInt(s.reps) || 0) > 0)) return true;
+    }
+    // Metric fields: any value entered.
+    if (metricKey) {
+      const schema = WORKOUT_METRIC_SCHEMAS[metricKey];
+      if (schema.some((f) => e.metrics[f.key]?.trim())) return true;
+    }
+    // Per-exercise duration alone can satisfy validity for non-set types.
+    if ((parseFloat(e.durationMin) || 0) > 0) return true;
+    return false;
+  };
+
   const isValid =
     name.trim().length > 0 &&
-    (parseInt(duration) || 0) > 0 &&
-    exercises.some(
-      (e) =>
-        e.name.trim().length > 0 &&
-        e.sets.some((s) => (parseInt(s.reps) || 0) > 0),
-    );
+    // Quick log only needs the name — duration + exercises are optional.
+    (quickLog ||
+      ((parseInt(duration) || 0) > 0 && exercises.some(exerciseHasContent)));
 
   return (
     <div className="w-full bg-card rounded-[24px] p-6 shadow-sm border border-[#F0EFEC] dark:border-[#2a2a2a] animate-in slide-in-from-top-4 duration-300">
@@ -277,9 +395,14 @@ export default function WorkoutForm({
         </div>
 
         <div className="pt-4">
-          <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-3">
-            Exercises
-          </label>
+          <div className="flex items-center justify-between mb-3 gap-3">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895]">
+              Exercises
+            </label>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895]">
+              {type} mode
+            </span>
+          </div>
           <div className="space-y-4">
             {exercises.map((ex) => (
               <div
@@ -289,7 +412,11 @@ export default function WorkoutForm({
                 <div className="flex items-center justify-between gap-3">
                   <input
                     type="text"
-                    placeholder="Exercise Name"
+                    placeholder={
+                      metricKey && metricKey !== "cardio" && !usesSets
+                        ? `e.g. ${type} session`
+                        : "Exercise Name"
+                    }
                     value={ex.name}
                     onChange={(e) => updateExName(ex.id, e.target.value)}
                     className="flex-1 bg-transparent border-b border-transparent py-1 outline-none text-[15px] font-bold focus:border-border transition-colors"
@@ -298,60 +425,120 @@ export default function WorkoutForm({
                     <button
                       type="button"
                       onClick={() => deleteEx(ex.id)}
-                      className="p-1.5 text-[#9B9895] hover:text-[#EF4444] hover:bg-[#FEE2E2] rounded-md transition-colors">
+                      className="p-2.5 sm:p-1.5 text-[#9B9895] hover:text-[#EF4444] hover:bg-[#FEE2E2] rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                {/* Sets List */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 px-2 text-[10px] font-bold uppercase tracking-wider text-[#9B9895]">
-                    <div className="w-12">Set</div>
-                    <div className="flex-1">Reps</div>
-                    <div className="flex-1">Kg</div>
-                    <div className="w-6"></div>
-                  </div>
-
-                  {ex.sets.map((set, idx) => (
-                    <div key={set.id} className="flex items-center gap-2 group">
-                      <div className="w-12 text-xs font-semibold text-[#9B9895] text-center bg-card border border-border py-1.5 rounded-lg">
-                        {idx + 1}
+                {/* Set-based entries (Resistance / Powerlifting / CrossFit / HIIT) */}
+                {usesSets && (
+                  <div className="overflow-x-auto">
+                    <div className="flex flex-col gap-2 min-w-[280px]">
+                      <div className="flex items-center gap-2 px-2 text-[10px] font-bold uppercase tracking-wider text-[#9B9895]">
+                        <div className="w-12">Set</div>
+                        <div className="flex-1">Reps</div>
+                        <div className="flex-1">Kg</div>
+                        <div className="w-6"></div>
                       </div>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={set.reps}
-                        onChange={(e) =>
-                          updateSet(ex.id, set.id, "reps", e.target.value)
-                        }
-                        className="flex-1 bg-card border border-border py-1.5 px-3 rounded-lg outline-none text-sm font-mono focus:border-border transition-colors"
-                      />
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={set.kg}
-                        onChange={(e) =>
-                          updateSet(ex.id, set.id, "kg", e.target.value)
-                        }
-                        className="flex-1 bg-card border border-border py-1.5 px-3 rounded-lg outline-none text-sm font-mono focus:border-border transition-colors"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => deleteSet(ex.id, set.id)}
-                        className="w-6 h-6 flex items-center justify-center text-[#9B9895] hover:text-[#EF4444] hover:bg-white dark:hover:bg-[#1a1916] rounded-md transition-all opacity-0 group-hover:opacity-100">
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
 
-                <button
-                  type="button"
-                  onClick={() => addSet(ex.id)}
-                  className="flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#9B9895] mt-1 hover:text-[#1A1916] transition-colors py-2 bg-[#E8E7E4]/50 hover:bg-[#E8E7E4] rounded-lg">
-                  <Plus className="w-3 h-3" /> Add Set
-                </button>
+                      {ex.sets.map((set, idx) => (
+                        <div
+                          key={set.id}
+                          className="flex items-center gap-2 group">
+                          <div className="w-12 text-xs font-semibold text-[#9B9895] text-center bg-card border border-border py-1.5 rounded-lg">
+                            {idx + 1}
+                          </div>
+                          <input
+                            type="number"
+                            placeholder="0"
+                            value={set.reps}
+                            onChange={(e) =>
+                              updateSet(ex.id, set.id, "reps", e.target.value)
+                            }
+                            className="flex-1 bg-card border border-border py-1.5 px-3 rounded-lg outline-none text-sm font-mono focus:border-border transition-colors"
+                          />
+                          <input
+                            type="number"
+                            placeholder="0"
+                            value={set.kg}
+                            onChange={(e) =>
+                              updateSet(ex.id, set.id, "kg", e.target.value)
+                            }
+                            className="flex-1 bg-card border border-border py-1.5 px-3 rounded-lg outline-none text-sm font-mono focus:border-border transition-colors"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => deleteSet(ex.id, set.id)}
+                            className="w-9 h-9 sm:w-6 sm:h-6 flex items-center justify-center text-[#9B9895] hover:text-[#EF4444] hover:bg-white dark:hover:bg-[#1a1916] rounded-md transition-all opacity-0 group-hover:opacity-100">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => addSet(ex.id)}
+                      className="flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#9B9895] mt-1 hover:text-[#1A1916] transition-colors py-2 bg-[#E8E7E4]/50 hover:bg-[#E8E7E4] rounded-lg">
+                      <Plus className="w-3 h-3" /> Add Set
+                    </button>
+                  </div>
+                )}
+
+                {/* Per-exercise duration (used by all cardio-style types). */}
+                {metricKey && (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 px-2 text-[10px] font-bold uppercase tracking-wider text-[#9B9895]">
+                      <div className="flex-1">Duration (min)</div>
+                      <div className="flex-1">
+                        {WORKOUT_METRIC_SCHEMAS[metricKey].length > 0
+                          ? "Custom Metrics"
+                          : ""}
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        placeholder="0"
+                        value={ex.durationMin}
+                        onChange={(e) =>
+                          updateExDuration(ex.id, e.target.value)
+                        }
+                        className="flex-1 bg-card border border-border py-1.5 px-3 rounded-lg outline-none text-sm font-mono focus:border-border transition-colors"
+                      />
+                      <div className="flex-1 flex flex-wrap gap-2">
+                        {WORKOUT_METRIC_SCHEMAS[metricKey].map((field) => (
+                          <div
+                            key={field.key}
+                            className="flex flex-col gap-1 min-w-[80px] flex-1">
+                            <input
+                              type={field.kind === "number" ? "number" : "text"}
+                              inputMode={
+                                field.kind === "number" ? "decimal" : "text"
+                              }
+                              placeholder={field.placeholder ?? field.label}
+                              value={ex.metrics[field.key] ?? ""}
+                              onChange={(e) =>
+                                updateMetricField(
+                                  ex.id,
+                                  field.key,
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full bg-card border border-border py-1.5 px-3 rounded-lg outline-none text-sm font-mono focus:border-border transition-colors"
+                              title={field.label}
+                            />
+                            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#9B9895] truncate">
+                              {field.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -377,6 +564,17 @@ export default function WorkoutForm({
               placeholder="How did it feel?"
             />
           </div>
+
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <Checkbox
+              checked={quickLog}
+              onCheckedChange={(checked) => setQuickLog(checked as boolean)}
+              className="w-4 h-4 rounded border-border data-[state=checked]:bg-[#1A1916] data-[state=checked]:text-white"
+            />
+            <span className="text-xs font-semibold text-[#1A1916] dark:text-[#f7f6f3]">
+              Quick log (name only — duration and exercises optional)
+            </span>
+          </label>
 
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <Checkbox

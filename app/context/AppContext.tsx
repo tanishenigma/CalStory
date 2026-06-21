@@ -23,6 +23,8 @@ import {
   getWorkouts,
   saveRecentMeal,
   getRecentMeals,
+  getMealsInRange,
+  getWorkoutsInRange,
   saveWorkoutTemplateDB,
   getWorkoutTemplates,
   deleteWorkoutTemplateDB,
@@ -84,7 +86,7 @@ const initial: AppState = {
   savedWorkouts: [],
   recents: [],
   weightLogs: [],
-  selDate: todayKey(),
+  selDate: todayLocalKey(),
 };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -179,7 +181,7 @@ function reducer(state: AppState, action: Action): AppState {
         // persist. We use strict equality rather than `<=` so a
         // backdated entry can't sneak through.
         profile:
-          state.profile && action.payload.date === todayKey()
+          state.profile && action.payload.date === todayLocalKey()
             ? { ...state.profile, weight: action.payload.weight }
             : state.profile,
       };
@@ -256,7 +258,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           savedWorkouts: [],
           recents: [],
           weightLogs: [],
-          selDate: todayKey(),
+          selDate: todayLocalKey(),
         },
       });
       return;
@@ -295,16 +297,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         getWorkoutTemplates(uid),
         getWeightLogs(uid),
       ]);
-      const today = todayKey();
-      const [meals, workouts] = await Promise.all([
-        getMeals(uid, today),
-        getWorkouts(uid, today),
+      const today = todayLocalKey();
+      // Build the past 30 local dates (inclusive of today). The
+      // streak hook and WeekStrip dots both need at least a couple
+      // weeks of data, so we preload a month on hydration. Per-day
+      // fetches still kick in if the user navigates further back.
+      const dateKeys: string[] = [];
+      const base = new Date();
+      for (let i = 0; i < 30; i++) {
+        const d = new Date(base);
+        d.setDate(base.getDate() - i);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        dateKeys.push(`${y}-${m}-${day}`);
+      }
+      const [mealsMap, workoutsMap] = await Promise.all([
+        getMealsInRange(uid, dateKeys),
+        getWorkoutsInRange(uid, dateKeys),
       ]);
       dispatch({
         type: "HYDRATE",
         payload: {
-          meals: { [today]: meals },
-          workouts: { [today]: workouts },
+          meals: mealsMap,
+          workouts: workoutsMap,
           savedWorkouts: templates,
           recents,
           weightLogs,
@@ -358,7 +374,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: "ADD_MEAL", payload: stamped });
       if (!user) return;
       await Promise.all([
-        saveMeal(user.uid, state.selDate, stamped),
+        saveMeal(user.uid, todayLocalKey(), stamped),
         saveRecentMeal(user.uid, stamped),
       ]);
       const recents = await getRecentMeals(user.uid);
@@ -380,7 +396,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       for (let i = 0; i < Math.max(1, days); i++) {
         const d = new Date(start);
         d.setDate(start.getDate() + i);
-        dayKeys.push(d.toISOString().slice(0, 10));
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        dayKeys.push(`${y}-${m}-${day}`);
       }
       const copies: Meal[] = dayKeys.map((k, i) => ({
         ...meal,
@@ -471,7 +490,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         id: uid(),
         weight: weightKg,
         weightUnit,
-        date: options?.date ?? todayKey(),
+        date: options?.date ?? todayLocalKey(),
         loggedAt: Date.now(),
         note: options?.note,
       };
@@ -480,7 +499,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // way the mirror triggers. We use strict equality (not `<=`)
       // so a backdated entry never clobbers the real current weight
       // even if the picker allows it via manual editing.
-      const isCurrentLog = log.date === todayKey();
+      const isCurrentLog = log.date === todayLocalKey();
       // Optimistic local update — both the log and the mirrored
       // profile weight. The reducer handles the sort + mirror
       // (and applies the same isCurrentLog gate).
@@ -494,8 +513,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           // Backdated weigh-ins are historical data, not "current
           // weight" updates, so we leave the existing profile
           // weight alone in that case.
-          state.profile && isCurrentLog
-            ? saveProfile(user.uid, { ...state.profile, weight: weightKg })
+          //
+          // If state.profile is null (not yet hydrated), fetch it
+          // first so we never skip the profile weight update.
+          isCurrentLog
+            ? (async () => {
+                try {
+                  const profile = state.profile ?? (await getProfile(user.uid));
+                  if (profile) {
+                    await saveProfile(user.uid, {
+                      ...profile,
+                      weight: weightKg,
+                    });
+                  }
+                } catch (err) {
+                  console.error(
+                    "[AppContext] logWeight: profile sync failed:",
+                    err,
+                  );
+                }
+              })()
             : Promise.resolve(),
         ]);
         return log;

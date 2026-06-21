@@ -259,26 +259,26 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
           </div>
 
           {/* Month row */}
-          <div className="flex gap-[3px] mb-1 pl-6">
+          <div className="flex gap-[2px] sm:gap-[3px] mb-1 pl-5 sm:pl-6">
             {monthLabels.map((label, wi) => (
               <div
                 key={wi}
-                className="shrink-0 text-[9px] text-muted-foreground font-medium text-left truncate"
-                style={{ width: "clamp(14px, 1.6vw, 24px)" }}>
+                className="shrink-0 text-[8px] sm:text-[9px] text-muted-foreground font-medium text-left truncate"
+                style={{ width: "clamp(10px, 1.4vw, 20px)" }}>
                 {label ?? ""}
               </div>
             ))}
           </div>
 
           {/* Grid: day-name column + weeks */}
-          <div className="flex gap-[3px]">
+          <div className="flex gap-[2px] sm:gap-[3px] overflow-x-auto">
             {/* Day name column */}
-            <div className="flex flex-col gap-[3px] pr-1">
+            <div className="flex flex-col gap-[2px] sm:gap-[3px] pr-1 shrink-0">
               {dayNames.map((d, i) => (
                 <div
                   key={i}
-                  className="text-[9px] text-muted-foreground font-medium w-4 flex items-center justify-center"
-                  style={{ height: "clamp(14px, 1.6vw, 24px)" }}>
+                  className="text-[8px] sm:text-[9px] text-muted-foreground font-medium w-4 flex items-center justify-center"
+                  style={{ height: "clamp(10px, 2vw, 14px)" }}>
                   {i % 2 === 0 ? d : ""}
                 </div>
               ))}
@@ -288,14 +288,20 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
             {cells.map((col, wi) => (
               <div
                 key={wi}
-                className="flex flex-col gap-[3px] shrink-0"
-                style={{ width: "clamp(14px, 1.6vw, 24px)" }}>
+                className="flex flex-col gap-[2px] sm:gap-[3px] shrink-0"
+                style={{ width: "clamp(10px, 1.4vw, 20px)" }}>
                 {col.map((cell, di) => {
                   const bg = cell.isFuture
                     ? "transparent"
                     : cell.intensity > 0
                       ? `rgba(${accent},${cell.intensity})`
                       : "rgba(0,0,0,0.05)";
+
+                  const emptyBg = cell.isFuture
+                    ? "transparent"
+                    : cell.intensity > 0
+                      ? `rgba(${accent},${cell.intensity})`
+                      : "bg-foreground/10 dark:bg-foreground/15";
 
                   return (
                     <motion.div
@@ -307,9 +313,13 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
                         duration: 0.25,
                         ease: "backOut",
                       }}
-                      className="rounded-[3px] relative group/cell cursor-pointer"
+                      className={`rounded-[3px] relative group/cell cursor-pointer ${cell.intensity === 0 && !cell.isFuture ? "dark:bg-foreground/15 bg-foreground/10" : ""}`}
                       style={{
-                        backgroundColor: bg,
+                        backgroundColor: cell.isFuture
+                          ? "transparent"
+                          : cell.intensity > 0
+                            ? `rgba(${accent},${cell.intensity})`
+                            : undefined,
                         // In meals mode, the orange workout border is a useful
                         // cross-signal. In workouts mode, every cell already
                         // represents a workout day, so the border is noise.
@@ -318,7 +328,7 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
                             ? "1px solid rgba(249,115,22,0.5)"
                             : "1px solid transparent",
                         aspectRatio: "1",
-                        minHeight: 14,
+                        minHeight: "clamp(10px, 2vw, 14px)",
                       }}
                       onMouseEnter={(e) => {
                         if (!cell.isFuture) {
@@ -342,8 +352,7 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
           </div>
 
           {/* Legend */}
-          <div className="flex items-center gap-2 mt-4 justify-between">
-            {" "}
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
             <div
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${accentSoft}`}>
               <Flame size={12} className={accentClass} />
@@ -351,23 +360,21 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
                 {currentStreak}d streak
               </span>
             </div>
-            <div className="flex items-center gap-2 mt-4 justify-end">
-              <span className="text-[9px] text-muted-foreground">
-                {mode === "workouts" ? "Less" : "Less"}
-              </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] text-muted-foreground">Less</span>
               {[0, 0.2, 0.45, 0.7, 1.0].map((a, i) => (
                 <div
                   key={i}
-                  className="w-3 h-3 rounded-[3px]"
+                  className={`w-3 h-3 rounded-[3px] ${a === 0 ? "bg-foreground/10 dark:bg-foreground/15" : ""}`}
                   style={{
                     backgroundColor:
-                      a === 0 ? "rgba(0,0,0,0.05)" : `rgba(${accent},${a})`,
+                      a === 0 ? undefined : `rgba(${accent},${a})`,
                   }}
                 />
               ))}
               <span className="text-[9px] text-muted-foreground">More</span>
               {mode === "meals" && (
-                <span className="text-[9px] text-muted-foreground ml-2 border-l border-border pl-2 flex items-center gap-1">
+                <span className="text-[9px] text-muted-foreground ml-1 sm:ml-2 border-l border-border pl-1 sm:pl-2 flex items-center gap-1">
                   <span className="w-3 h-3 rounded-[3px] inline-block border border-primary/50 bg-transparent" />
                   + workout
                 </span>

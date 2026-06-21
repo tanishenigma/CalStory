@@ -16,7 +16,9 @@ export default function AppGroupLayout({
   const padLeft = navStyle === "floating" ? "lg:pl-[240px]" : "lg:pl-20";
   return (
     <>
-      <div style={{ minHeight: "100dvh" }} className="bg-background ml-5">
+      <div
+        style={{ minHeight: "100dvh" }}
+        className="bg-background ml-0 sm:ml-5">
         <PillNav />
         <main
           style={{ paddingBottom: "96px" }}

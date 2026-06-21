@@ -40,27 +40,49 @@ type Tab = "profile" | "goals" | "appearance" | "units";
 
 interface IntensityOption {
   key: IntensityKey;
-  label: string;
-  desc: string;
+  pct: string;
 }
 
 const INTENSITIES: IntensityOption[] = [
-  {
-    key: "slow",
-    label: "Slow",
-    desc: "±150 kcal — sustainable, minimal muscle loss",
-  },
-  {
-    key: "moderate",
-    label: "Moderate",
-    desc: "±300 kcal — the classic balanced approach",
-  },
-  {
-    key: "aggressive",
-    label: "Aggressive",
-    desc: "±500 kcal — fast results, higher discipline needed",
-  },
+  { key: "mildCut", pct: "9%" },
+  { key: "weightloss", pct: "19%" },
+  { key: "extremeCut", pct: "37%" },
 ];
+
+function getIntensityLabel(
+  key: string,
+  goal: GoalKey,
+): { label: string; desc: string } {
+  if (goal === "bulk") {
+    const map: Record<string, { label: string; desc: string }> = {
+      mildCut: { label: "Mild Bulk", desc: "105% of TDEE — slow, clean gains" },
+      weightloss: {
+        label: "Weight Gain",
+        desc: "110% of TDEE — steady muscle building",
+      },
+      extremeCut: {
+        label: "Extreme Bulk",
+        desc: "115% of TDEE — aggressive bulk",
+      },
+    };
+    return map[key] ?? { label: key, desc: "" };
+  }
+  const map: Record<string, { label: string; desc: string }> = {
+    mildCut: {
+      label: "Mild Cut",
+      desc: "91% of TDEE — gentle deficit, very sustainable",
+    },
+    weightloss: {
+      label: "Weight Loss",
+      desc: "81% of TDEE — standard deficit, balanced approach",
+    },
+    extremeCut: {
+      label: "Extreme Cut",
+      desc: "63% of TDEE — aggressive deficit, rapid results",
+    },
+  };
+  return map[key] ?? { label: key, desc: "" };
+}
 
 function SettingsPageContent() {
   const { profile, isLoading } = useAuthGuard();
@@ -81,7 +103,7 @@ function SettingsPageContent() {
 
   const [goal, setGoal] = useState<GoalKey>(state.profile?.goal || "maintain");
   const [intensity, setIntensity] = useState<IntensityKey>(
-    state.profile?.intensity || "moderate",
+    state.profile?.intensity || "weightloss",
   );
   const [steps, setSteps] = useState<number>(state.profile?.steps ?? 7500);
   const [workoutsPerWeek, setWorkoutsPerWeek] = useState<number>(
@@ -158,7 +180,7 @@ function SettingsPageContent() {
   const tabs: { key: Tab; label: string }[] = [
     { key: "profile", label: "Profile" },
     { key: "goals", label: "Goals" },
-    { key: "appearance", label: "Appearance" },
+    { key: "appearance", label: "Style" },
     { key: "units", label: "Units" },
   ];
 
@@ -429,18 +451,16 @@ function SettingsPageContent() {
                             ? "bg-card text-[#1A1916] dark:text-[#f7f6f3]"
                             : "bg-background"
                         }`}>
-                        {goal === "cut" ? "-" : "+"}
-                        {i.key === "slow"
-                          ? "150"
-                          : i.key === "moderate"
-                            ? "300"
-                            : "500"}
+                        {goal === "cut" ? "−" : "+"}
+                        {i.pct}
                       </div>
                       <div className="relative z-10">
-                        <div className="font-bold text-sm">{i.label}</div>
+                        <div className="font-bold text-sm">
+                          {getIntensityLabel(i.key, goal).label}
+                        </div>
                         <div
                           className={`text-xs mt-0.5 ${intensity === i.key ? "text-white dark:text-[#1a1916]/70" : "text-[#9B9895]"}`}>
-                          {i.desc}
+                          {getIntensityLabel(i.key, goal).desc}
                         </div>
                       </div>
                     </button>
@@ -639,7 +659,7 @@ function SettingsPageContent() {
               </div>
             </div>
 
-            <div>
+            <div className="hidden lg:block">
               <div className="text-sm font-bold mb-1">Navigation</div>
               <p className="text-xs text-[#9B9895] leading-relaxed mb-5">
                 Pick how the side navigation looks on desktop. The mobile bottom

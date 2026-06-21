@@ -3,6 +3,11 @@
 import React, { useState } from "react";
 import { cn } from "@/app/lib/utils";
 import type { PendingWorkout } from "@/app/types";
+import {
+  WORKOUT_METRIC_SCHEMAS,
+  type MetricKey,
+  type MetricFieldSchema,
+} from "@/app/types";
 
 interface Props {
   workout: PendingWorkout;
@@ -35,8 +40,7 @@ export default function WorkoutConfirmationCard({
         "bg-gradient-to-br from-orange-500 to-amber-500",
         "shadow-lg shadow-orange-200 dark:shadow-orange-900/30",
         "text-white w-full mt-2 mb-1",
-      )}
-    >
+      )}>
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3">
         <div>
@@ -60,22 +64,99 @@ export default function WorkoutConfirmationCard({
 
       {/* ── Exercise list ───────────────────────────────────── */}
       <div className="px-5 pb-3 space-y-2">
-        {workout.exercises.map((ex, i) => (
-          <div key={i} className="bg-white/10 rounded-xl px-3 py-2">
-            <div className="font-semibold text-sm mb-1">{ex.name}</div>
-            <div className="flex flex-wrap gap-1.5">
-              {ex.sets.map((s, si) => (
+        {workout.exercises.map((ex, i) => {
+          const metricKey = (
+            Object.keys(WORKOUT_METRIC_SCHEMAS) as MetricKey[]
+          ).find((k) => k.toLowerCase() === workout.type.toLowerCase());
+          const schema = metricKey
+            ? WORKOUT_METRIC_SCHEMAS[metricKey]
+            : ([] as MetricFieldSchema[]);
+
+          // AI always populates the new `metrics` field for cardio-style types.
+          const metrics =
+            (ex.metrics as Record<string, unknown> | undefined) ?? {};
+
+          const setChips = (ex.sets || []).map((s, si) => (
+            <span
+              key={si}
+              className="text-[11px] font-mono bg-white/20 rounded-lg px-2 py-0.5">
+              {s.kg > 0 ? `${s.kg}kg × ` : ""}
+              {s.reps}
+              {s.note ? ` (${s.note})` : ""}
+            </span>
+          ));
+
+          const metricChips = schema
+            .map((field) => {
+              const raw = (metrics as any)[field.key];
+              if (raw === undefined || raw === null || raw === "") return null;
+              let label = "";
+              if (field.kind === "number") {
+                const n =
+                  typeof raw === "number" ? raw : parseFloat(String(raw));
+                if (!Number.isFinite(n)) return null;
+                if (field.key === "paceMinPerKm" && n > 0) {
+                  const mins = Math.floor(n);
+                  const secs = Math.round((n - mins) * 60)
+                    .toString()
+                    .padStart(2, "0");
+                  label = `${mins}:${secs}/km`;
+                } else if (
+                  field.key === "workSec" ||
+                  field.key === "restSec" ||
+                  field.key === "holdSec"
+                ) {
+                  label = `${n}s`;
+                } else if (field.key === "distanceKm") {
+                  label = `${n} km`;
+                } else if (field.key === "calories") {
+                  label = `${n} kcal`;
+                } else if (
+                  field.key === "weightKg" ||
+                  field.key === "oneRmKg"
+                ) {
+                  label = `${n} kg`;
+                } else {
+                  label = `${field.label}: ${n}`;
+                }
+              } else {
+                label = `${field.label}: ${raw}`;
+              }
+              return (
                 <span
-                  key={si}
-                  className="text-[11px] font-mono bg-white/20 rounded-lg px-2 py-0.5"
-                >
-                  {s.kg > 0 ? `${s.kg}kg × ` : ""}{s.reps}
-                  {s.note ? ` (${s.note})` : ""}
+                  key={field.key}
+                  className="text-[11px] font-mono bg-white/20 rounded-lg px-2 py-0.5">
+                  {label}
                 </span>
-              ))}
+              );
+            })
+            .filter(Boolean) as React.ReactNode[];
+
+          const durChip = ex.durationMin ? (
+            <span className="text-[11px] font-mono bg-white/20 rounded-lg px-2 py-0.5">
+              {ex.durationMin} min
+            </span>
+          ) : null;
+
+          const allChips: React.ReactNode[] = [
+            durChip,
+            ...metricChips,
+            ...setChips,
+          ].filter(Boolean) as React.ReactNode[];
+
+          return (
+            <div key={i} className="bg-white/10 rounded-xl px-3 py-2">
+              <div className="font-semibold text-sm mb-1">{ex.name}</div>
+              {allChips.length === 0 ? (
+                <span className="text-[11px] font-mono bg-white/20 rounded-lg px-2 py-0.5">
+                  —
+                </span>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">{allChips}</div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* ── Notes ──────────────────────────────────────────── */}
@@ -94,8 +175,7 @@ export default function WorkoutConfirmationCard({
               className={cn(
                 "w-9 h-5 rounded-full transition-colors flex-shrink-0 relative",
                 saveTemplate ? "bg-white" : "bg-white/30",
-              )}
-            >
+              )}>
               <div
                 className={cn(
                   "absolute top-0.5 w-4 h-4 rounded-full bg-orange-600 shadow transition-transform",
@@ -120,8 +200,7 @@ export default function WorkoutConfirmationCard({
             "bg-white text-orange-600",
             "hover:bg-orange-50 transition-colors",
             "disabled:opacity-60 disabled:cursor-not-allowed",
-          )}
-        >
+          )}>
           {isLogging ? "Logging…" : "Log Workout ✓"}
         </button>
         <button
@@ -132,8 +211,7 @@ export default function WorkoutConfirmationCard({
             "bg-white/20 text-white",
             "hover:bg-white/30 transition-colors",
             "disabled:opacity-60 disabled:cursor-not-allowed",
-          )}
-        >
+          )}>
           Edit
         </button>
       </div>

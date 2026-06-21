@@ -138,11 +138,11 @@ export function WeeklyEnergy() {
   return (
     <Card className="p-0 overflow-hidden">
       <CardHeader className="px-5 py-4 border-b border-border ">
-        <div className="flex items-center justify-between gap-4 min-w-0 m-5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0 m-5">
           <CardTitle className="text-2xl font-bold shrink-0">
             Weekly Energy
           </CardTitle>
-          <div className="flex bg-background p-1 rounded-lg shrink-0 ">
+          <div className="flex bg-background p-1 rounded-lg shrink-0 overflow-x-auto no-scrollbar">
             {timeframes.map((tf) => (
               <button
                 key={tf}

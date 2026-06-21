@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import Lenis from "lenis";
-import { useApp, todayKey } from "@/app/context/AppContext";
+import { useApp } from "@/app/context/AppContext";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
 import WeekStrip from "@/app/components/WeekStrip";
 import CalorieHero from "@/app/components/CalorieHero";
