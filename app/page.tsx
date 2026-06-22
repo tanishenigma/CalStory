@@ -10,20 +10,14 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import {
-  Flame,
-  ArrowRight,
-  BarChart3,
-  Target,
-  Calendar,
-  CircleQuestionMark,
-} from "lucide-react";
+import { ArrowRight, CircleQuestionMark } from "lucide-react";
 import Footer from "./footer";
 import CTASection from "@/app/cta";
-import { Card, CardContent } from "@/app/components/ui/card";
 import PrecisionWorkflow from "@/app/components/landing/PrecisionWorkflow";
 import EngineeredPerformance from "@/app/components/landing/EngineeredPerformance";
 import FAQSection from "@/app/components/landing/FAQSection";
+import HeroScrollSection from "@/app/components/landing/HeroScrollSection";
+import { Navbar } from "@/app/components/landing/Navbar";
 
 if (typeof window !== "undefined") gsap.registerPlugin(ScrollTrigger);
 
@@ -45,18 +39,10 @@ const STEPS = [
   },
 ];
 
-const STATS = [
-  { val: "24/7", label: "real-time data" },
-  { val: "0.4s", label: "logging latency" },
-  { val: "100%", label: "privacy focused" },
-];
-
 export default function LandingPage() {
   const { user } = useAuthStore();
   const { state } = useApp();
   const router = useRouter();
-  const arcRef = useRef<SVGCircleElement>(null);
-  const countRef = useRef<HTMLSpanElement>(null);
   const stepsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const hasProfile = !!state.profile;
@@ -67,34 +53,6 @@ export default function LandingPage() {
     const endOffset = circumference * (1 - target / 2200);
 
     const ctx = gsap.context(() => {
-      if (arcRef.current) {
-        gsap.fromTo(
-          arcRef.current,
-          { strokeDashoffset: circumference },
-          {
-            strokeDashoffset: endOffset,
-            duration: 2.2,
-            ease: "power4.inOut",
-            delay: 0.5,
-          },
-        );
-      }
-      gsap.to(
-        { val: 0 },
-        {
-          val: target,
-          duration: 2.2,
-          ease: "power4.inOut",
-          delay: 0.5,
-          onUpdate() {
-            if (countRef.current)
-              countRef.current.textContent = Math.round(
-                this.targets()[0].val,
-              ).toLocaleString();
-          },
-        },
-      );
-
       stepsRef.current.forEach((el, i) => {
         if (!el) return;
         gsap.fromTo(
@@ -191,44 +149,12 @@ export default function LandingPage() {
         className="relative min-h-screen text-foreground font-sans selection:bg-primary/30"
         style={{ zIndex: 1 }}>
         {/* NAV */}
-        <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between w-[90%] max-w-4xl px-4 pr-3 h-14 bg-background/80 dark:bg-[#1a1916]/80 backdrop-blur-2xl border border-border dark:border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 group cursor-pointer">
-            <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center transition-transform group-hover:rotate-12">
-              <Flame size={18} className="text-background fill-background" />
-            </div>
-            <span className="font-bold text-lg tracking-tight font-heading">
-              CalStory
-            </span>
-          </Link>
-          <div className="hidden md:flex items-center gap-8">
-            <Link
-              href="#features"
-              className="text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
-              Features
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
-              Method
-            </Link>
-          </div>
-          {!hasProfile && (
-            <button
-              onClick={() =>
-                user ? router.push("/dashboard") : handleSignIn()
-              }
-              className="shrink-0 inline-flex items-center justify-center rounded-xl bg-foreground text-background text-xs font-bold px-5 py-2.5 hover:scale-[1.03] active:scale-[0.97] transition-all cursor-pointer shadow-lg shadow-black/5 whitespace-nowrap">
-              {user ? "Dashboard" : "Get Started"}
-            </button>
-          )}
-        </nav>
+        <Navbar onSignIn={handleSignIn} user={user} />
 
         {/* HERO - Simplified, single focus */}
-        <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-48 pb-24 min-h-[85vh] w-full overflow-hidden">
+        <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-30  min-h-[85vh] w-full overflow-hidden">
           <BlurFade delay={0.2} className="w-full max-w-5xl mx-auto px-4">
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] mb-6 font-heading">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] mb-6 font-heading">
               Your calorie <br />
               <span className="text-primary ">story.</span>
             </h1>
@@ -250,13 +176,13 @@ export default function LandingPage() {
                   onClick={() =>
                     user ? router.push("/dashboard") : handleSignIn()
                   }
-                  className="h-14 px-8 rounded-2xl bg-foreground text-background text-base font-bold hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center gap-3 shadow-xl shadow-black/10 whitespace-nowrap">
+                  className="h-12 px-8 rounded-2xl bg-foreground text-background text-base font-bold hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center gap-3 shadow-xl shadow-black/10 whitespace-nowrap">
                   {user ? "Enter Dashboard" : "Start Tracking"}
                   <ArrowRight size={18} />
                 </button>
                 <Link
                   href="#features"
-                  className="inline-flex items-center text-sm font-medium text-muted-foreground-foreground hover:text-foreground transition-colors whitespace-nowrap gap-2 border-2 p-4 rounded-2xl">
+                  className="inline-flex h-12 items-center text-sm font-medium text-muted-foreground-foreground hover:text-foreground transition-colors whitespace-nowrap gap-2 border-2 px-12 py-2 md:p-4 rounded-2xl">
                   Learn more <CircleQuestionMark />
                 </Link>
               </>
@@ -270,49 +196,13 @@ export default function LandingPage() {
             )}
           </BlurFade>
 
-          {/* Subtle calorie ring - moved below CTAs, smaller */}
-          <BlurFade delay={0.5} className="relative w-32 h-32 mt-16">
-            <svg viewBox="0 0 160 160" className="-rotate-90 w-full h-full">
-              <circle
-                cx="80"
-                cy="80"
-                r="70"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="8"
-                className="text-foreground/[0.04]"
-              />
-              <circle
-                ref={arcRef}
-                cx="80"
-                cy="80"
-                r="70"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray="440"
-                strokeDashoffset="440"
-                className="text-primary"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span
-                ref={countRef}
-                className="text-3xl font-bold tabular-nums tracking-tighter">
-                0
-              </span>
-              <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground-foreground">
-                kcal
-              </span>
-            </div>
-          </BlurFade>
+          <HeroScrollSection />
         </section>
 
         {/* FEATURES GRID */}
         <section
           id="features"
-          className="relative z-10 py-24 px-6 w-full flex justify-center">
+          className="relative z-10 pb-24 px-6 w-full flex justify-center">
           <div className="max-w-5xl mx-auto w-full">
             <BlurFade className="text-center mb-16 w-full flex flex-col items-center">
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 font-heading">
@@ -332,7 +222,7 @@ export default function LandingPage() {
         {/* METHOD SECTION */}
         <section
           id="how-it-works"
-          className="relative z-10 py-24 px-6 border-t border-border/60 w-full flex justify-center">
+          className="relative z-10 py-24 px-6  w-full flex justify-center">
           <div className="max-w-5xl mx-auto w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start">
               <BlurFade>
@@ -373,10 +263,9 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Workflow / Features / FAQ */}
-        <section className="relative z-10 py-24 px-6 border-t border-border/60 w-full flex justify-center">
+        {/*  Features / FAQ */}
+        <section className="relative z-10 py-24 px-6 w-full flex justify-center">
           <div className="max-w-5xl mx-auto w-full flex flex-col gap-20 sm:gap-28">
-            <PrecisionWorkflow />
             <FAQSection />
           </div>
         </section>
