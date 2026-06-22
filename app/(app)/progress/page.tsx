@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
+import { useApp } from "@/app/context/AppContext";
 import { Streak } from "@/app/components/progress/Streak";
 import { WeightProgress } from "@/app/components/progress/WeightProgress";
 import { DailyAverageCalories } from "@/app/components/progress/DailyAverageCalories";
@@ -12,14 +13,44 @@ import WeightChanges from "@/app/components/progress/WeightChanges";
 import { WeightHistory } from "@/app/components/progress/WeightHistory";
 import { ConsistencyHeatmap } from "@/app/components/progress/ConsistencyHeatmap";
 import { NutritionQuality } from "@/app/components/progress/NutritionQuality";
+import { CalorieVsTdeeChart } from "@/app/components/progress/CalorieVsTdeeChart";
 
 export default function ProgressPage() {
   const { profile, isLoading } = useAuthGuard();
+  const { state } = useApp();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const chartData = useMemo(() => {
+    if (!profile) return [];
+    
+    const days = 14;
+    const today = new Date();
+    const data = [];
+    
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const key = `${year}-${month}-${day}`;
+      
+      const dayMeals = state?.meals?.[key] || [];
+      const intake = dayMeals.reduce((sum, m) => sum + (m.cal || 0), 0);
+      
+      data.push({
+        date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        intake,
+        tdee: profile.tdee || 0,
+      });
+    }
+    
+    return data;
+  }, [state?.meals, profile]);
 
   if (isLoading || !profile || !mounted) return <Spinner />;
 
@@ -29,12 +60,10 @@ export default function ProgressPage() {
         Progress
       </h1>
       <Streak />
-      <div className="mb-4 grid grid-cols-1 lg:grid-cols-2 gap-4 items-center bg-primary/20 rounded-xl p-2">
+      <div className="mb-4 grid grid-cols-1 lg:grid-cols-2 gap-4 items-center p-2">
         <ConsistencyHeatmap mode="meals" />
-        <NutritionQuality />
-      </div>
-      <div className="grid grid-cols-1 gap-4 mb-4">
         <WeightHistory />
+        {/* <NutritionQuality /> */}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <WeightChanges />
@@ -46,8 +75,9 @@ export default function ProgressPage() {
       </div>
       <div className="flex flex-col gap-4">
         <WeightProgress />
+        <CalorieVsTdeeChart data={chartData} tdeeResetDate="Apr 30" />
         <YourBMI />
-      </div>{" "}
+      </div>
     </div>
   );
 }

@@ -504,44 +504,43 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // profile weight. The reducer handles the sort + mirror
       // (and applies the same isCurrentLog gate).
       dispatch({ type: "ADD_WEIGHT_LOG", payload: log });
-      try {
-        await Promise.all([
-          saveWeightLog(user.uid, log),
-          // Persist the mirrored weight onto the profile so the
-          // dashboard / calorie math see the same value the user
-          // just entered — but only when the log is for today.
-          // Backdated weigh-ins are historical data, not "current
-          // weight" updates, so we leave the existing profile
-          // weight alone in that case.
-          //
-          // If state.profile is null (not yet hydrated), fetch it
-          // first so we never skip the profile weight update.
-          isCurrentLog
-            ? (async () => {
-                try {
-                  const profile = state.profile ?? (await getProfile(user.uid));
-                  if (profile) {
-                    await saveProfile(user.uid, {
-                      ...profile,
-                      weight: weightKg,
-                    });
-                  }
-                } catch (err) {
-                  console.error(
-                    "[AppContext] logWeight: profile sync failed:",
-                    err,
-                  );
-                }
-              })()
-            : Promise.resolve(),
-        ]);
-        return log;
-      } catch (err) {
-        console.error("[AppContext] logWeight failed:", err);
-        // Roll back the optimistic log so the UI matches the DB.
+
+      // Persist to Firestore. saveWeightLog returns false on failure,
+      // so we check the result to decide whether to rollback.
+      const saved = await saveWeightLog(user.uid, log);
+      if (!saved) {
+        // Firestore write failed — rollback the optimistic update so
+        // the UI stays in sync with what was actually persisted.
         dispatch({ type: "DELETE_WEIGHT_LOG", id: log.id });
         return null;
       }
+
+      // Also persist the mirrored weight onto the profile so the
+      // dashboard / calorie math see the same value the user
+      // just entered — but only when the log is for today.
+      // Backdated weigh-ins are historical data, not "current
+      // weight" updates, so we leave the existing profile
+      // weight alone in that case.
+      //
+      // If state.profile is null (not yet hydrated), fetch it
+      // first so we never skip the profile weight update.
+      if (isCurrentLog) {
+        try {
+          const profile = state.profile ?? (await getProfile(user.uid));
+          if (profile) {
+            await saveProfile(user.uid, {
+              ...profile,
+              weight: weightKg,
+            });
+          }
+        } catch (err) {
+          console.error("[AppContext] logWeight: profile sync failed:", err);
+          // Non-fatal: the weight log itself was saved; only the
+          // profile mirror failed. The user can still see the entry.
+        }
+      }
+
+      return log;
     },
     [user, state.profile],
   );

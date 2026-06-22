@@ -100,7 +100,7 @@ export function WeightHistory() {
   }
 
   return (
-    <Card className="p-0 overflow-hidden">
+    <Card className="p-0 overflow-hidden h-full">
       <div className="p-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Scale size={16} className="text-[#9B9895]" />

@@ -78,7 +78,13 @@ export async function saveMeal(
   console.log(`[API Request] saveMeal (uid: ${uid}, date: ${dateKey})`, meal);
   await safe(async () => {
     const ref = doc(db, "users", uid, "meals", dateKey, "items", meal.id);
-    await setDoc(ref, { ...meal, savedAt: serverTimestamp() });
+    // Firestore does not support `undefined` field values — strip them.
+    const data = Object.fromEntries(
+      Object.entries({ ...meal, savedAt: serverTimestamp() }).filter(
+        ([, v]) => v !== undefined,
+      ),
+    );
+    await setDoc(ref, data);
     console.log(`[API Response] saveMeal success`);
   }, undefined);
 }
@@ -154,7 +160,13 @@ export async function saveWorkout(
       "sessions",
       workout.id,
     );
-    await setDoc(ref, { ...workout, savedAt: serverTimestamp() });
+    // Firestore does not support `undefined` field values — strip them.
+    const data = Object.fromEntries(
+      Object.entries({ ...workout, savedAt: serverTimestamp() }).filter(
+        ([, v]) => v !== undefined,
+      ),
+    );
+    await setDoc(ref, data);
     console.log(`[API Response] saveWorkout success`);
   }, undefined);
 }
@@ -296,13 +308,21 @@ export async function getRecentMeals(uid: string): Promise<RecentMeal[]> {
 export async function saveWeightLog(
   uid: string,
   log: WeightLog,
-): Promise<void> {
+): Promise<boolean> {
   console.log(`[API Request] saveWeightLog (uid: ${uid})`, log);
-  await safe(async () => {
+  const result = await safe(async () => {
     const ref = doc(db, "users", uid, "weight_logs", log.id);
-    await setDoc(ref, { ...log, savedAt: serverTimestamp() });
+    // Firestore does not support `undefined` field values — strip them.
+    const data = Object.fromEntries(
+      Object.entries({ ...log, savedAt: serverTimestamp() }).filter(
+        ([, v]) => v !== undefined,
+      ),
+    );
+    await setDoc(ref, data);
     console.log(`[API Response] saveWeightLog success`);
-  }, undefined);
+    return true;
+  }, false);
+  return result ?? false;
 }
 
 export async function getWeightLogs(uid: string): Promise<WeightLog[]> {
