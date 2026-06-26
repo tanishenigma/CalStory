@@ -41,19 +41,14 @@ type DayCell = {
 
 type HeatmapMode = "meals" | "workouts";
 
-/* ─────────────────────────────────────────────
-   MAIN COMPONENT
-   ───────────────────────────────────────────── */
 export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
   const { state } = useApp();
   const meals = state.meals ?? {};
   const workouts = state.workouts ?? {};
   const calTarget = state.profile?.calTarget ?? 2000;
-  // "Hit" target for a workout day = 60 active minutes. Anything above
-  // that saturates the cell at full intensity.
+
   const WORKOUT_MIN_TARGET = 60;
 
-  // Tone per mode so the two heatmaps are visually distinct.
   const accent = mode === "workouts" ? "34,197,94" : "249,115,22"; // green vs orange
   const accentClass = mode === "workouts" ? "text-[#22C55E]" : "text-[#F97316]";
   const accentSoft =
@@ -195,8 +190,8 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
       const prevMonth = prevCol ? new Date(prevCol.dateKey).getMonth() : -1;
       return thisMonth !== prevMonth
         ? new Date(firstDay.dateKey).toLocaleDateString("en-GB", {
-            month: "short",
-          })
+          month: "short",
+        })
         : null;
     });
   }, [cells]);
@@ -206,8 +201,6 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
   return (
     <motion.div
       ref={containerRef}
-      initial={{ opacity: 0, y: 24 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.55, ease: [0.21, 0.47, 0.32, 0.98] }}
       className="w-full ">
       <div

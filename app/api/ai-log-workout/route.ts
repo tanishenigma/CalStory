@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { Tool } from "@google/generative-ai";
 import type { WorkoutAIResponse, WorkoutChatMessage } from "@/app/types";
+import { resolveGeminiKey } from "@/app/lib/gemini-key";
 
 /* ------------------------------------------------------------------
  * System prompt — parses free-form workout descriptions into JSON.
@@ -78,12 +79,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "date must be YYYY-MM-DD" }, { status: 400 });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Extract the Firebase ID token from the Authorization header (optional).
+  const authHeader = req.headers.get("Authorization");
+  const idToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+
+  const apiKey = await resolveGeminiKey(userId, idToken);
   if (!apiKey) {
     const fallback: WorkoutAIResponse = {
       type: "error",
       message:
-        "AI workout logging is not configured. Please add GEMINI_API_KEY to your environment variables.",
+        "AI workout logging is not configured. Add a Gemini API key in Settings → AI, or ask your admin to set GEMINI_API_KEY.",
       workout: null,
       askSaveTemplate: false,
       suggestions: [],

@@ -349,3 +349,50 @@ export async function deleteWeightLogDB(
     console.log(`[API Response] deleteWeightLogDB success`);
   }, undefined);
 }
+
+// ── User API Keys ─────────────────────────────────────────
+// Path: users/{uid}/settings/api_keys
+//
+// The personal Gemini API key is stored in a dedicated settings
+// document. It is written via the /api/user/api-key route and
+// read exclusively from server-side route handlers — never
+// from client components or the AppContext.
+//
+// Security:
+//   • The existing wildcard rule covers this path — no rule changes.
+//   • The key value is never logged; only its presence is noted.
+
+export async function saveUserApiKey(
+  uid: string,
+  apiKey: string,
+): Promise<void> {
+  console.log(`[API Request] saveUserApiKey (uid: ${uid}, key: [redacted])`);
+  await safe(async () => {
+    const ref = doc(db, "users", uid, "settings", "api_keys");
+    await setDoc(ref, { geminiApiKey: apiKey, updatedAt: serverTimestamp() });
+    console.log(`[API Response] saveUserApiKey success`);
+  }, undefined);
+}
+
+/**
+ * Read the user's personal Gemini API key from Firestore.
+ * Returns null when no key has been stored.
+ *
+ * IMPORTANT: Call only from server-side route handlers.
+ */
+export async function getUserApiKey(uid: string): Promise<string | null> {
+  return safe(async () => {
+    const snap = await getDoc(doc(db, "users", uid, "settings", "api_keys"));
+    if (!snap.exists()) return null;
+    const data = snap.data() as { geminiApiKey?: string };
+    return data.geminiApiKey ?? null;
+  }, null);
+}
+
+export async function deleteUserApiKey(uid: string): Promise<void> {
+  console.log(`[API Request] deleteUserApiKey (uid: ${uid})`);
+  await safe(async () => {
+    await deleteDoc(doc(db, "users", uid, "settings", "api_keys"));
+    console.log(`[API Response] deleteUserApiKey success`);
+  }, undefined);
+}

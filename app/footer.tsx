@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { ExternalLink, Flame } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
 
 const Footer = () => {
   const year = new Date().getFullYear();
@@ -26,16 +27,16 @@ const Footer = () => {
           </div>
 
           {/* Center: GitHub */}
-          <div className="flex justify-center">
+          <div className="flex justify-center ">
             <Link
               href="https://github.com/tanishenigma"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center gap-1.5 text-xs text-muted-foreground-foreground hover:text-foreground transition-all hover:translate-y-[-2px]">
-              <div className="p-1.5 rounded-full bg-foreground/5 text-foreground ring-1 ring-foreground/10">
-                <ExternalLink size={14} />
+              className="flex flex-col items-center gap-1.5 text-xs text-muted-foreground-foreground hover:text-primary transition-all hover:translate-y-[-2px] duration-200 ease-in-out">
+              <div className="p-1.5 rounded-full bg-primary/5 text-foreground ring-1 ring-foreground/10 ">
+                <FaGithub />
               </div>
-              <span className="font-medium tracking-wide">@tanishenigma</span>
+              <span className="tracking-tight ">tanishenigma</span>
             </Link>
           </div>
 

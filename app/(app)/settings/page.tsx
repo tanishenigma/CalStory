@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/app/store/authStore";
 import { useApp } from "@/app/context/AppContext";
@@ -28,7 +28,14 @@ import {
   Sun,
   Moon,
   Pencil,
+  Key,
+  Eye,
+  EyeOff,
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
+import { getIdToken } from "firebase/auth";
 import type {
   GoalKey,
   IntensityKey,
@@ -36,7 +43,7 @@ import type {
   HeightUnit,
 } from "@/app/types";
 
-type Tab = "profile" | "goals" | "appearance" | "units";
+type Tab = "profile" | "goals" | "appearance" | "units" | "ai";
 
 interface IntensityOption {
   key: IntensityKey;
@@ -94,12 +101,132 @@ function SettingsPageContent() {
 
   const initialTab = (searchParams.get("tab") as Tab | null) ?? "profile";
   const [tab, setTab] = useState<Tab>(
-    ["profile", "goals", "appearance", "units"].includes(initialTab)
+    ["profile", "goals", "appearance", "units", "ai"].includes(initialTab)
       ? initialTab
       : "profile",
   );
   const [saving, setSaving] = useState<boolean>(false);
   const [editProfileOpen, setEditProfileOpen] = useState<boolean>(false);
+
+  // ── AI Key state ──────────────────────────────────────────────────
+  // `apiKeyInput`  — controlled value of the password input (cleared after save)
+  // `apiKeyPreview` — masked token returned by the server ("AIza••••abcd")
+  // `apiKeyHasKey`  — whether the user has a key stored in Firestore
+  // `showKey`       — toggles the input from type=password to type=text
+  const [apiKeyInput, setApiKeyInput] = useState("");
+  const [apiKeyPreview, setApiKeyPreview] = useState<string | null>(null);
+  const [apiKeyHasKey, setApiKeyHasKey] = useState(false);
+  const [apiKeySaving, setApiKeySaving] = useState(false);
+  const [apiKeyDeleting, setApiKeyDeleting] = useState(false);
+  const [showKey, setShowKey] = useState(false);
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+  const [apiKeySuccess, setApiKeySuccess] = useState(false);
+  // True when server detects a pre-encryption plaintext key stored in Firestore
+  const [apiKeyNeedsReEncrypt, setApiKeyNeedsReEncrypt] = useState(false);
+
+  // Load key status (preview only, never the full key) when the AI tab mounts
+  useEffect(() => {
+    if (tab !== "ai" || !user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await getIdToken(user);
+        const res = await fetch("/api/user/api-key", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as {
+          hasKey: boolean;
+          preview: string | null;
+          needsReEncrypt?: boolean;
+        };
+        if (!cancelled) {
+          setApiKeyHasKey(data.hasKey);
+          setApiKeyPreview(data.preview);
+          setApiKeyNeedsReEncrypt(data.needsReEncrypt ?? false);
+        }
+      } catch {
+        // Non-fatal — the tab will just show the empty state
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [tab, user]);
+
+  async function saveApiKey() {
+    if (!user) return;
+    setApiKeyError(null);
+    setApiKeySuccess(false);
+
+    const trimmed = apiKeyInput.trim();
+    // Client-side pre-validation (same regex as server)
+    if (!/^AIza[0-9A-Za-z\-_]{35}$/.test(trimmed)) {
+      setApiKeyError(
+        "Invalid key format. Gemini keys start with \"AIza\" and are 39 characters long.",
+      );
+      return;
+    }
+
+    setApiKeySaving(true);
+    try {
+      const token = await getIdToken(user);
+      const res = await fetch("/api/user/api-key", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        // Only the key itself goes in the body — no uid (server uses token)
+        body: JSON.stringify({ apiKey: trimmed }),
+      });
+      const data = (await res.json()) as {
+        success?: boolean;
+        preview?: string;
+        error?: string;
+      };
+      if (!res.ok || !data.success) {
+        setApiKeyError(data.error ?? "Failed to save key. Please try again.");
+      } else {
+        // Clear the raw key from state IMMEDIATELY — we only keep the preview
+        setApiKeyInput("");
+        setApiKeyHasKey(true);
+        setApiKeyPreview(data.preview ?? null);
+        setApiKeySuccess(true);
+        toast("API key saved ✓");
+      }
+    } catch {
+      setApiKeyError("Network error. Please try again.");
+    } finally {
+      setApiKeySaving(false);
+    }
+  }
+
+  async function removeApiKey() {
+    if (!user) return;
+    setApiKeyError(null);
+    setApiKeySuccess(false);
+    setApiKeyDeleting(true);
+    try {
+      const token = await getIdToken(user);
+      const res = await fetch("/api/user/api-key", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = (await res.json()) as { success?: boolean; error?: string };
+      if (res.ok && data.success) {
+        setApiKeyHasKey(false);
+        setApiKeyPreview(null);
+        setApiKeyInput("");
+        setApiKeyNeedsReEncrypt(false);
+        toast("API key removed ✓");
+      } else {
+        setApiKeyError(data.error ?? "Failed to remove key. Please try again.");
+      }
+    } catch {
+      setApiKeyError("Network error — could not remove key. Please try again.");
+    } finally {
+      setApiKeyDeleting(false);
+    }
+  }
 
   const [goal, setGoal] = useState<GoalKey>(state.profile?.goal || "maintain");
   const [intensity, setIntensity] = useState<IntensityKey>(
@@ -209,11 +336,10 @@ function SettingsPageContent() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`relative flex-1 min-w-[70px] px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-colors ${
-              tab === t.key
-                ? "text-[#1A1916] dark:text-[#f7f6f3]"
-                : "text-[#9B9895] hover:text-[#1A1916] dark:text-[#f7f6f3] dark:hover:text-white"
-            }`}>
+            className={`relative flex-1 min-w-[70px] px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-colors ${tab === t.key
+              ? "text-[#1A1916] dark:text-[#f7f6f3]"
+              : "text-[#9B9895] hover:text-[#1A1916] dark:text-[#f7f6f3] dark:hover:text-white"
+              }`}>
             {tab === t.key && (
               <motion.div
                 layoutId="active-settings-tab"
@@ -246,7 +372,7 @@ function SettingsPageContent() {
                 <div className="font-bold text-lg">
                   {state.profile?.name
                     ? state.profile.name.charAt(0).toUpperCase() +
-                      state.profile.name.slice(1)
+                    state.profile.name.slice(1)
                     : "User"}
                 </div>
                 <div className="text-sm text-[#9B9895]">
@@ -280,9 +406,9 @@ function SettingsPageContent() {
                   label: "Height",
                   val: state.profile
                     ? displayHeight(
-                        state.profile.height,
-                        state.profile.heightUnit,
-                      )
+                      state.profile.height,
+                      state.profile.heightUnit,
+                    )
                     : "—",
                 },
                 { label: "TDEE", val: `${state.profile?.tdee} kcal` },
@@ -303,7 +429,145 @@ function SettingsPageContent() {
                   </div>
                 </div>
               ))}
-            </div>
+            </div>    <Card className="p-6 flex flex-col gap-8 mb-6">
+              {/* Header */}
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Key size={16} className="text-[#9B9895]" />
+                  <div className="text-sm font-bold">Your Gemini API Key</div>
+                </div>
+                <p className="text-xs text-[#9B9895] leading-relaxed">
+                  Use your own key for AI food and workout logging instead of the
+                  shared key. Your key is stored securely and{" "}
+                  <strong>never returned to this browser</strong> after saving.
+                </p>
+              </div>
+
+              {/* Security upgrade banner — shown when plaintext key detected */}
+              {apiKeyNeedsReEncrypt && (
+                <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
+                  <AlertCircle size={14} className="text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs font-bold text-amber-700 dark:text-amber-400 mb-0.5">
+                      Security upgrade required
+                    </div>
+                    <p className="text-xs text-amber-600/90 dark:text-amber-400/80 leading-relaxed">
+                      Your key was saved before encryption was enabled. Please re-enter it below to encrypt it at rest.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Current key status */}
+              {apiKeyHasKey && apiKeyPreview && (
+                <div className="flex items-center justify-between gap-3 bg-background rounded-xl px-4 py-3">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] mb-0.5">
+                      Stored key{" "}
+                      {!apiKeyNeedsReEncrypt && (
+                        <span className="normal-case font-normal text-emerald-600 dark:text-emerald-400 ml-1">
+                          · encrypted
+                        </span>
+                      )}
+                    </div>
+                    <div className="font-mono text-sm tracking-widest">
+                      {apiKeyPreview}
+                    </div>
+                  </div>
+                  <button
+                    id="settings-ai-remove-key"
+                    onClick={removeApiKey}
+                    disabled={apiKeyDeleting}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-[#EF4444] hover:text-red-600 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-50"
+                  >
+                    <Trash2 size={13} />
+                    {apiKeyDeleting ? "Removing…" : "Remove"}
+                  </button>
+                </div>
+              )}
+
+
+              {/* Input */}
+              <div>
+                <label
+                  htmlFor="settings-ai-key-input"
+                  className="text-xs font-bold text-[#9B9895] uppercase tracking-wider mb-2 block"
+                >
+                  {apiKeyHasKey ? "Replace key" : "Enter key"}
+                </label>
+                <div className="relative">
+                  <input
+                    id="settings-ai-key-input"
+                    type={showKey ? "text" : "password"}
+                    value={apiKeyInput}
+                    onChange={(e) => {
+                      setApiKeyInput(e.target.value);
+                      setApiKeyError(null);
+                      setApiKeySuccess(false);
+                    }}
+                    placeholder="AIza…"
+                    // Prevent password managers and spell-checkers from storing the key
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    data-1p-ignore
+                    data-lpignore="true"
+                    data-gramm="false"
+                    className="w-full font-mono text-sm px-3.5 py-3 pr-12 border border-transparent rounded-lg bg-background focus:bg-card focus:border-border outline-none transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKey((v) => !v)}
+                    aria-label={showKey ? "Hide key" : "Show key"}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9B9895] hover:text-foreground transition-colors"
+                  >
+                    {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+
+                {/* Feedback */}
+                {apiKeyError && (
+                  <div className="flex items-start gap-2 mt-2.5 text-xs text-[#EF4444]">
+                    <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
+                    {apiKeyError}
+                  </div>
+                )}
+                {apiKeySuccess && !apiKeyError && (
+                  <div className="flex items-center gap-2 mt-2.5 text-xs text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 size={13} />
+                    Key saved successfully.
+                  </div>
+                )}
+              </div>
+
+              {/* Save button */}
+              <button
+                id="settings-ai-save-key"
+                onClick={saveApiKey}
+                disabled={apiKeySaving || !apiKeyInput.trim()}
+                className="w-full py-3.5 rounded-xl bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-40"
+              >
+                {apiKeySaving ? "Saving…" : apiKeyHasKey ? "Replace Key" : "Save Key"}
+              </button>
+
+              {/* Security note */}
+              <p className="text-[11px] text-[#9B9895] leading-relaxed">
+                🔒 Your key is stored in Firestore under your account and is only
+                used server-side to call the Gemini API. It is{" "}
+                <strong>never exposed to the browser</strong> after saving. To
+                revoke access, remove it here or rotate it in{" "}
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-foreground transition-colors"
+                >
+                  Google AI Studio
+                </a>
+                .
+              </p>
+            </Card>
 
             {user && (
               <button
@@ -347,11 +611,10 @@ function SettingsPageContent() {
                 <button
                   key={n}
                   onClick={() => setWorkoutsPerWeek(n)}
-                  className={`relative py-3 rounded-xl border text-center text-sm font-bold transition-colors ${
-                    workoutsPerWeek === n
-                      ? "border-transparent bg-foreground text-background"
-                      : "border-foreground text-foreground"
-                  }`}>
+                  className={`relative py-3 rounded-xl border text-center text-sm font-bold transition-colors ${workoutsPerWeek === n
+                    ? "border-transparent bg-foreground text-background"
+                    : "border-foreground text-foreground"
+                    }`}>
                   {workoutsPerWeek === n && (
                     <motion.div
                       layoutId="active-workouts"
@@ -393,11 +656,10 @@ function SettingsPageContent() {
                 <button
                   key={g.key}
                   onClick={() => setGoal(g.key as GoalKey)}
-                  className={`relative p-5 rounded-xl border text-center transition-colors ${
-                    goal === g.key
-                      ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                      : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3]"
-                  }`}>
+                  className={`relative p-5 rounded-xl border text-center transition-colors ${goal === g.key
+                    ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                    : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3]"
+                    }`}>
                   {goal === g.key && (
                     <motion.div
                       layoutId="active-goal"
@@ -429,11 +691,10 @@ function SettingsPageContent() {
                     <button
                       key={i.key}
                       onClick={() => setIntensity(i.key)}
-                      className={`relative flex items-center gap-4 p-4 rounded-xl border text-left transition-colors ${
-                        intensity === i.key
-                          ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                          : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-[#f7f6f3]"
-                      }`}>
+                      className={`relative flex items-center gap-4 p-4 rounded-xl border text-left transition-colors ${intensity === i.key
+                        ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                        : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-[#f7f6f3]"
+                        }`}>
                       {intensity === i.key && (
                         <motion.div
                           layoutId="active-intensity"
@@ -446,11 +707,10 @@ function SettingsPageContent() {
                         />
                       )}
                       <div
-                        className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                          intensity === i.key
-                            ? "bg-card text-[#1A1916] dark:text-[#f7f6f3]"
-                            : "bg-background"
-                        }`}>
+                        className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${intensity === i.key
+                          ? "bg-card text-[#1A1916] dark:text-[#f7f6f3]"
+                          : "bg-background"
+                          }`}>
                         {goal === "cut" ? "−" : "+"}
                         {i.pct}
                       </div>
@@ -510,11 +770,10 @@ function SettingsPageContent() {
                 <button
                   key={u.key}
                   onClick={() => setWeightUnit(u.key)}
-                  className={`relative p-5 rounded-xl border text-center transition-colors ${
-                    weightUnit === u.key
-                      ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                      : "border-transparent hover:border-[#1A1916] dark:border-[#f7f6f3] dark:hover:border-[#f7f6f3]"
-                  }`}>
+                  className={`relative p-5 rounded-xl border text-center transition-colors ${weightUnit === u.key
+                    ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                    : "border-transparent hover:border-[#1A1916] dark:border-[#f7f6f3] dark:hover:border-[#f7f6f3]"
+                    }`}>
                   {weightUnit === u.key && (
                     <motion.div
                       layoutId="active-weight-unit"
@@ -547,11 +806,10 @@ function SettingsPageContent() {
                 <button
                   key={u.key}
                   onClick={() => setHeightUnit(u.key)}
-                  className={`relative p-5 rounded-xl border text-center transition-colors ${
-                    heightUnit === u.key
-                      ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                      : "border-transparent hover:border-[#1A1916] dark:border-[#f7f6f3] dark:hover:border-[#f7f6f3]"
-                  }`}>
+                  className={`relative p-5 rounded-xl border text-center transition-colors ${heightUnit === u.key
+                    ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                    : "border-transparent hover:border-[#1A1916] dark:border-[#f7f6f3] dark:hover:border-[#f7f6f3]"
+                    }`}>
                   {heightUnit === u.key && (
                     <motion.div
                       layoutId="active-height-unit"

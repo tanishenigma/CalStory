@@ -258,14 +258,6 @@ export default function FAQSection() {
       {/* Section header */}
       <div ref={titleRef} className="mb-10">
         {/* Eyebrow badge */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={titleInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.4, ease: [0.21, 0.47, 0.32, 0.98] }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold uppercase tracking-widest text-primary mb-4">
-          <Zap size={10} />
-          Common Questions
-        </motion.div>
 
         <h2 className="text-2xl sm:text-4xl font-bold tracking-tight font-heading text-foreground block">
           <AnimatedText text="Frequently Asked" delay={0.05} />{" "}

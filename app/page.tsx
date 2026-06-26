@@ -202,7 +202,7 @@ export default function LandingPage() {
         {/* FEATURES GRID */}
         <section
           id="features"
-          className="relative z-10 pb-24 px-6 w-full flex justify-center">
+          className="relative z-10 pb-24 md:mt-24 px-6 w-full flex justify-center">
           <div className="max-w-5xl mx-auto w-full">
             <BlurFade className="text-center mb-16 w-full flex flex-col items-center">
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 font-heading">

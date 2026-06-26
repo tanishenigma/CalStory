@@ -4,6 +4,8 @@ import { useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { uid } from "@/app/context/AppContext";
 import { useApp } from "@/app/context/AppContext";
+import { useAuthStore } from "@/app/store/authStore";
+import { getIdToken } from "firebase/auth";
 import type { ChatMessage, AIResponse, PendingMeal } from "@/app/types";
 
 /* ------------------------------------------------------------------
@@ -36,6 +38,7 @@ export function useFoodChat({
   userId: string;
 }) {
   const { addMeal } = useApp();
+  const { user } = useAuthStore();
 
   const [messages, setMessages] = useState<ChatMessage[]>([makeGreeting()]);
   const [isLoading, setIsLoading] = useState(false);
@@ -87,12 +90,24 @@ export function useFoodChat({
       setIsLoading(true);
 
       try {
+        // Attach the Firebase ID token so the server can read the user's
+        // personal Gemini API key from Firestore via the REST API.
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (user) {
+          try {
+            const token = await getIdToken(user);
+            headers["Authorization"] = `Bearer ${token}`;
+          } catch {
+            // Non-fatal — falls back to env key
+          }
+        }
         const res = await fetch("/api/ai-log-food", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
             message: trimmed,
-            // Send the last 10 turns as context (avoids overly long prompts)
             conversationHistory: messages.slice(-10),
             userId,
             date,

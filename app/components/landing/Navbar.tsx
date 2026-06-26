@@ -19,28 +19,17 @@ const NAV_LINKS = [
   { label: "FAQ", href: "/#faq" },
 ];
 
-/**
- * Resolve the theme's resting text colour from the active CSS variables.
- *
- * The morphed pill is always a dark backdrop (`rgba(15, 23, 42, 0.75)`),
- * so the navbar text needs to fade from the page's resting text colour
- * (dark ink in light mode, off-white in dark mode) to pure white as the
- * user scrolls past ~80px. Reading the resolved CSS value via
- * getComputedStyle gives us theme-awareness without hard-coding either
- * end, and the MutationObserver picks up theme changes triggered by
- * usePrefsStore (which toggles the `.dark` class on <html>).
- */
-function useRestingTextColor(): string {
-  const [color, setColor] = useState<string>("#1a1916");
+function useThemeColors() {
+  const [colors, setColors] = useState({ fg: "#1a1916", bg: "#ffffff" });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const compute = () => {
       const cs = getComputedStyle(document.documentElement);
-      // --color-foreground is the page text colour in the active theme.
-      const value = cs.getPropertyValue("--color-foreground").trim();
-      if (value) setColor(value);
+      const fg = cs.getPropertyValue("--color-foreground").trim() || "#1a1916";
+      const bg = cs.getPropertyValue("--color-background").trim() || "#ffffff";
+      setColors({ fg, bg });
     };
 
     compute();
@@ -54,7 +43,7 @@ function useRestingTextColor(): string {
     return () => observer.disconnect();
   }, []);
 
-  return color;
+  return colors;
 }
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -72,14 +61,17 @@ export function Navbar({
   user: unknown;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const restTextColor = useRestingTextColor();
-  const [restRGB, setRestRGB] = useState<[number, number, number]>([
-    26, 25, 22,
-  ]);
+
+  const themeColors = useThemeColors();
+  const [fgRGB, setFgRGB] = useState<[number, number, number]>([26, 25, 22]);
+  const [bgRGB, setBgRGB] = useState<[number, number, number]>([255, 255, 255]);
 
   useEffect(() => {
-    setRestRGB(hexToRgb(restTextColor));
-  }, [restTextColor]);
+    setFgRGB(hexToRgb(themeColors.fg));
+    setBgRGB(hexToRgb(themeColors.bg));
+  }, [themeColors]);
+
+  const isLightMode = (bgRGB[0] + bgRGB[1] + bgRGB[2]) / 3 > 127;
 
   const handleHashClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     const href = event.currentTarget.getAttribute("href");
@@ -111,8 +103,6 @@ export function Navbar({
 
   const easeConfig = { ease: easeInOut };
 
-  // Scroll-driven morph: at scrollY=0 the navbar is a full-width flat bar;
-  // as the user scrolls past ~80px it morphs into a compact pill.
   const borderRadius = useTransform(
     smoothScroll,
     [0, 80],
@@ -123,7 +113,46 @@ export function Navbar({
   const height = useTransform(smoothScroll, [0, 100], [72, 56], easeConfig);
   const maxWidth = useTransform(smoothScroll, [0, 80], [1400, 720], easeConfig);
   const top = useTransform(smoothScroll, [0, 80], [0, 12], easeConfig);
-  const bgOpacity = useTransform(smoothScroll, [0, 80], [0, 0.75], easeConfig);
+
+  // --- BACKGROUND COLOR ANIMATION FIX ---
+  // Always target a dark color (e.g., [26, 25, 22]) when scrolled so white text is readable.
+  const targetBgR = 26;
+  const targetBgG = 25;
+  const targetBgB = 22;
+
+  // Animate the actual RGB channels from the current theme background to the dark target
+  const bgR = useTransform(
+    smoothScroll,
+    [0, 80],
+    [bgRGB[0], targetBgR],
+    easeConfig,
+  );
+  const bgG = useTransform(
+    smoothScroll,
+    [0, 80],
+    [bgRGB[1], targetBgG],
+    easeConfig,
+  );
+  const bgB = useTransform(
+    smoothScroll,
+    [0, 80],
+    [bgRGB[2], targetBgB],
+    easeConfig,
+  );
+
+  // Ensure opacity is high enough in light mode to block out the white page content behind the glass
+  const targetOpacity = isLightMode ? 0.4 : 0.2;
+  const bgOpacity = useTransform(
+    smoothScroll,
+    [0, 80],
+    [0, targetOpacity],
+    easeConfig,
+  );
+
+  // Use backgroundColor explicitly to prevent shorthand conflicts with backgroundImage
+  const backgroundColor = useMotionTemplate`rgba(${bgR}, ${bgG}, ${bgB}, ${bgOpacity})`;
+  // --------------------------------------
+
   const borderOpacity = useTransform(
     smoothScroll,
     [0, 80],
@@ -155,32 +184,32 @@ export function Navbar({
     easeConfig,
   );
 
-  // Text colour morph: theme-aware resting colour → pure white as the pill
-  // backdrop fills in. We animate each RGB channel independently so the
-  // interpolation respects the active theme (dark ink in light mode, off-white
-  // in dark mode) at scrollY=0.
   const textR = useTransform(
     smoothScroll,
     [0, 80],
-    [restRGB[0], 255],
+    [fgRGB[0], 255],
     easeConfig,
   );
   const textG = useTransform(
     smoothScroll,
     [0, 80],
-    [restRGB[1], 255],
+    [fgRGB[1], 255],
     easeConfig,
   );
   const textB = useTransform(
     smoothScroll,
     [0, 80],
-    [restRGB[2], 255],
+    [fgRGB[2], 255],
     easeConfig,
   );
   const textColor = useMotionTemplate`rgb(${textR}, ${textG}, ${textB})`;
-  const chipBg = textColor;
 
-  const background = useMotionTemplate`rgba(24, 20, 15, ${bgOpacity})`;
+  const chipBg = textColor;
+  const iconR = useTransform(smoothScroll, [0, 80], [bgRGB[0], 24], easeConfig);
+  const iconG = useTransform(smoothScroll, [0, 80], [bgRGB[1], 20], easeConfig);
+  const iconB = useTransform(smoothScroll, [0, 80], [bgRGB[2], 15], easeConfig);
+  const iconColor = useMotionTemplate`rgb(${iconR}, ${iconG}, ${iconB})`;
+
   const boxShadow = useMotionTemplate`
   0 10px 10px rgba(0, 0, 0, ${shadowOpacity}),
   inset 0 1px 1px rgba(255, 255, 255, ${highlightOpacity}),
@@ -189,6 +218,7 @@ export function Navbar({
   const border = useMotionTemplate`1px solid rgba(194, 120, 3, ${borderOpacity})`;
   const backgroundImage = useMotionTemplate`radial-gradient(circle, rgba(255, 255, 255, ${dotOpacity}) 1px, transparent 1px)`;
   const overflow = useMotionTemplate`hidden`;
+
   return (
     <div className="fixed inset-x-0 top-0 z-50 flex justify-center">
       <motion.nav
@@ -199,7 +229,7 @@ export function Navbar({
           top,
           paddingLeft: paddingX,
           paddingRight: paddingX,
-          background,
+          backgroundColor, // Explicitly mapped to backgroundColor
           backgroundImage,
           backgroundSize: "16px 16px",
           boxShadow,
@@ -209,23 +239,19 @@ export function Navbar({
           border,
         }}
         className="relative w-[calc(100%-2rem)] flex items-center justify-between will-change-transform">
-        {/* Top-edge highlight gradient */}
         <motion.div
           style={{ opacity: highlightOpacity }}
           className="absolute inset-0 pointer-events-none bg-gradient-to-t from-foreground/20 via-primary/10 to-transparent border-t-background border-t-2"
         />
 
-        {/* Logo */}
         <Link
           href="/"
           className="flex items-center relative z-10 shrink-0 gap-2.5 cursor-pointer">
-          {" "}
           <motion.div
             style={{ backgroundColor: chipBg }}
-            className="w-10 h-10 rounded-full flex items-center justify-center ">
-            <motion.span style={{ color: chipBg }} className="inline-flex">
-              {" "}
-              <Flame size={36} className=" fill-white dark:fill-black" />
+            className="w-10 h-10 rounded-full flex items-center justify-center">
+            <motion.span style={{ color: iconColor }} className="inline-flex">
+              <Flame size={24} className="fill-current" />
             </motion.span>
           </motion.div>
           <motion.span
@@ -235,7 +261,6 @@ export function Navbar({
           </motion.span>
         </Link>
 
-        {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-8 relative z-10">
           {NAV_LINKS.map((link) => {
             const isHash =
@@ -264,25 +289,23 @@ export function Navbar({
           })}
         </div>
 
-        {/* Desktop CTA */}
         {user == null && (
           <button
             onClick={() => {
               void onSignIn();
             }}
-            className="hidden md:inline-flex cursor-pointer relative z-10 shrink-0 h-9 px-5 rounded-full bg-foreground text-background text-xs font-bold uppercase tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-all shadow-lg shadow-black/5 whitespace-nowrap">
+            className="hidden md:inline-flex cursor-pointer relative z-10 shrink-0 h-9 px-5 rounded-full bg-foreground text-background text-xs font-bold text-center items-center uppercase tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-all shadow-lg shadow-black/5 whitespace-nowrap">
             Get Started
           </button>
         )}
 
-        {/* Mobile: CTA + hamburger */}
         <div className="flex md:hidden items-center gap-3 relative z-10 shrink-0">
           {user === null && (
             <button
               onClick={() => {
                 void onSignIn();
               }}
-              className="h-8 px-4 rounded-full bg-foreground text-background text-xs font-bold uppercase  cursor-pointer text-">
+              className="h-8 px-4 rounded-full bg-foreground text-background text-xs font-bold uppercase cursor-pointer">
               Login
             </button>
           )}
@@ -297,7 +320,6 @@ export function Navbar({
         </div>
       </motion.nav>
 
-      {/* Mobile dropdown menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div

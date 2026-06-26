@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { AIResponse, ChatMessage } from "@/app/types";
+import { resolveGeminiKey } from "@/app/lib/gemini-key";
 
 /* ------------------------------------------------------------------
  * System prompt — instructs Gemini to always return strict JSON.
@@ -66,13 +67,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "date must be YYYY-MM-DD" }, { status: 400 });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Extract the Firebase ID token from the Authorization header (optional).
+  // When present it allows resolveGeminiKey to read the user's personal key
+  // from Firestore via the REST API (authenticated as the calling user).
+  const authHeader = req.headers.get("Authorization");
+  const idToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+
+  const apiKey = await resolveGeminiKey(userId, idToken);
   if (!apiKey) {
     // Graceful degradation: return a friendly error the UI can display
     const fallback: AIResponse = {
       type: "error",
       message:
-        "AI food logging is not configured. Please add GEMINI_API_KEY to your environment variables.",
+        "AI food logging is not configured. Add a Gemini API key in Settings → AI, or ask your admin to set GEMINI_API_KEY.",
       meal: null,
       suggestions: [],
     };

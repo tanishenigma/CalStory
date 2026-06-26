@@ -107,16 +107,16 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1 ">
               Category
             </label>
             <Select
               value={time}
               onValueChange={(val) => setTime(val as MealTime)}>
-              <SelectTrigger className="w-full border-b border-t-0 border-x-0 border-border py-1.5 px-0 rounded-none shadow-none focus:ring-0 focus:border-border font-semibold text-[15px] h-auto">
+              <SelectTrigger className="w-full border-b border-t-0 border-x-0 border-border py-1.5 px-0 rounded-none shadow-none focus:ring-0 focus:border-border rounded-t-xl p-2 font-semibold text-[15px] h-auto">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="p-2 top-24 sm:top-22 md:top-16 lg:top-18">
                 <SelectItem value="breakfast">Breakfast</SelectItem>
                 <SelectItem value="lunch">Lunch</SelectItem>
                 <SelectItem value="dinner">Dinner</SelectItem>

@@ -23,70 +23,114 @@ export function ContainerScroll({
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const isMobile = windowWidth <= 768;
-  const isMd = windowWidth > 768 && windowWidth <= 1024;
+  const isMobile = windowWidth < 640;
+  const isSm = windowWidth >= 640 && windowWidth < 768;
+  const isMd = windowWidth >= 768 && windowWidth < 1024;
+  const isLg = windowWidth >= 1024 && windowWidth < 1280;
+  const isXl = windowWidth >= 1280 && windowWidth < 1536;
+
+  const getTransform = (
+    mobile: number[],
+    sm: number[],
+    md: number[],
+    lg: number[],
+    xl: number[],
+    xxl: number[],
+  ) => {
+    if (isMobile) return mobile;
+    if (isSm) return sm;
+    if (isMd) return md;
+    if (isLg) return lg;
+    if (isXl) return xl;
+    return xxl;
+  };
 
   const { scrollYProgress } = useScroll({ target: containerRef });
 
   const rotate = useTransform(
     scrollYProgress,
     [0, 1],
-    isMobile ? [0, 0] : [20, 0],
+    getTransform([0, 0], [10, 0], [30, 0], [20, 0], [25, 0], [30, 0]),
   );
 
   const scale = useTransform(
     scrollYProgress,
     [0, 1],
-    isMobile ? [1, 1] : isMd ? [1.02, 0.9] : [1.05, 0.8],
+    getTransform(
+      [1, 1],
+      [1.01, 0.95],
+      [0.9, 0.6],
+      [1.2, 0.9],
+      [1.08, 0.8],
+      [1.1, 0.9],
+    ),
+  );
+
+  const translateX = useTransform(
+    scrollYProgress,
+    [0, 1],
+    getTransform([0, 0], [0, -150], [0, -150], [0, -200], [0, -200], [0, -300]),
   );
 
   const translateY = useTransform(
     scrollYProgress,
     [0, 1],
-    isMobile ? [0, 0] : [0, 80],
-  );
-
-  // MD specific: Smaller horizontal shifts so they don't overlap or fly off screen
-  const cardTranslateX = useTransform(
-    scrollYProgress,
-    [0, 0.5],
-    isMobile ? [0, 0] : isMd ? [0, -100] : [0, -250],
+    getTransform(
+      [0, 0],
+      [0, 150],
+      [-100, 100],
+      [-300, 180],
+      [-100, 300],
+      [-100, 300],
+    ),
   );
 
   const headerTranslateX = useTransform(
     scrollYProgress,
     [0, 0.5],
-    isMobile ? [0, 0] : isMd ? [0, 200] : [0, 600],
+    getTransform(
+      [0, 0],
+      [25, 250],
+      [50, 300],
+      [50, 400],
+      [75, 400],
+      [100, 500],
+    ),
   );
 
-  // MD specific: Less extreme vertical pull so it stays aligned with the card
   const headerTranslateY = useTransform(
     scrollYProgress,
     [0, 0.5],
-    isMobile ? [0, 0] : isMd ? [0, -250] : [0, -400],
+    getTransform(
+      [0, 0],
+      [50, -100],
+      [-400, -300],
+      [-400, -200],
+      [125, -140],
+      [-400, -200],
+    ),
   );
 
   return (
     <div
       ref={containerRef}
-      // Fixed the extreme padding here: md:px-12 is much safer than md:px-60
-      className="h-auto md:h-[65rem] lg:h-[85rem] flex items-center justify-center relative p-4 md:px-12 lg:px-40 overflow-x-hidden">
+      className="h-auto sm:h-[50rem] md:h-[65rem] lg:h-[85rem] flex items-center justify-center relative p-4 sm:px-8 md:px-12 lg:px-40 overflow-x-hidden">
       <div
-        className="md:py-40 w-full max-w-6xl relative flex flex-col items-center justify-center"
+        className="md:py-40 w-full max-w-5xl relative flex flex-col items-center justify-center gap-12 "
         style={{ perspective: isMobile ? "none" : "1200px" }}>
-        <Card
-          rotate={rotate}
-          scale={scale}
-          translateY={translateY}
-          translateX={cardTranslateX}>
-          {children}
-        </Card>
-
         <Header
           translateY={headerTranslateY}
           translateX={headerTranslateX}
           titleComponent={titleComponent}
         />
+
+        <Card
+          rotate={rotate}
+          scale={scale}
+          translateX={translateX}
+          translateY={translateY}>
+          {children}
+        </Card>
       </div>
     </div>
   );
@@ -103,12 +147,8 @@ function Header({
 }) {
   return (
     <motion.div
-      style={{
-        translateY,
-        translateX,
-      }}
-      // Adjusted anchor point so it doesn't default to overlapping the left side
-      className="w-full max-w-sm md:absolute left-0 lg:left-[15%] bottom-[-10%] lg:bottom-0 text-left z-10">
+      style={{ translateY, translateX }}
+      className="w-full max-w-sm md:absolute bottom-0 text-left z-10 ">
       {titleComponent}
     </motion.div>
   );
@@ -136,7 +176,7 @@ function Card({
         translateX,
         transformOrigin: "top center",
       }}
-      className="w-full z-0 ">
+      className="w-full z-10">
       <div className="h-full w-full overflow-hidden rounded-3xl bg-background dark:bg-zinc-900 shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_30px_60px_-15px_rgba(0,0,0,0.5),0_0_100px_-20px_rgba(120,119,198,0.25)]">
         {children}
       </div>

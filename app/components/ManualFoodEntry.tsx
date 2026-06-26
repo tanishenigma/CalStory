@@ -418,11 +418,10 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
               <button
                 key={t}
                 onClick={() => setTime(t)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-colors ${
-                  time === t
-                    ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                    : "bg-subtle text-[#9B9895] hover:bg-[#E8E7E4] dark:hover:bg-[#2a2926]"
-                }`}>
+                className={`px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-colors ${time === t
+                  ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                  : "bg-subtle text-[#9B9895] hover:bg-[#E8E7E4] dark:hover:bg-[#2a2926]"
+                  }`}>
                 {t}
               </button>
             ),
@@ -655,11 +654,10 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
                   <button
                     key={t}
                     onClick={() => setTime(t)}
-                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold capitalize transition-colors border ${
-                      time === t
-                        ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] border-[#1A1916] dark:border-[#f7f6f3]"
-                        : "bg-card text-[#9B9895] border-border hover:border-[#9B9895]"
-                    }`}>
+                    className={`flex-1 py-2.5 rounded-xl  text-sm font-bold capitalize transition-colors border ${time === t
+                      ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] border-[#1A1916] dark:border-[#f7f6f3]"
+                      : "bg-card text-[#9B9895] border-border hover:border-[#9B9895]"
+                      }`}>
                     {t}
                   </button>
                 ),

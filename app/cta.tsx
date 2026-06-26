@@ -32,13 +32,6 @@ const CTASection = ({ handleSignIn }: CtaSectionProps) => {
           <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
 
           <CardContent className="relative z-10 space-y-8 w-full p-0">
-            {!hasProfile && (
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold uppercase tracking-widest text-orange-600 mx-auto">
-                <Sparkles size={12} />
-                Start your transformation
-              </div>
-            )}
-
             <h2 className="text-4xl md:text-7xl font-bold tracking-tight leading-[1.05] text-balance mx-auto font-heading">
               {hasProfile ? "Continue your" : "Ready to hit your"} <br />
               <span className="text-primary">

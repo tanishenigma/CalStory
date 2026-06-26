@@ -4,6 +4,8 @@ import { useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { uid } from "@/app/context/AppContext";
 import { useApp } from "@/app/context/AppContext";
+import { useAuthStore } from "@/app/store/authStore";
+import { getIdToken } from "firebase/auth";
 import type {
   WorkoutChatMessage,
   WorkoutAIResponse,
@@ -37,6 +39,7 @@ export function useWorkoutChat({
   userId: string;
 }) {
   const { addWorkout, saveTemplate } = useApp();
+  const { user } = useAuthStore();
 
   const [messages, setMessages] = useState<WorkoutChatMessage[]>([
     makeGreeting(),
@@ -88,9 +91,22 @@ export function useWorkoutChat({
       setIsLoading(true);
 
       try {
+        // Attach the Firebase ID token so the server can read the user's
+        // personal Gemini API key from Firestore via the REST API.
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (user) {
+          try {
+            const token = await getIdToken(user);
+            headers["Authorization"] = `Bearer ${token}`;
+          } catch {
+            // Non-fatal — falls back to env key
+          }
+        }
         const res = await fetch("/api/ai-log-workout", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
             message: trimmed,
             conversationHistory: messages.slice(-10),
