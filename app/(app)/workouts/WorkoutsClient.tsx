@@ -26,7 +26,6 @@ function fmtDate(key: string): string {
   });
 }
 
-/** Short label for a metric value (e.g. "5.2 km" or "21–18"). */
 function formatMetricValue(field: MetricFieldSchema, raw: unknown): string {
   if (raw === undefined || raw === null || raw === "") return "";
   if (field.kind === "number") {
@@ -306,7 +305,6 @@ export default function WorkoutsPage() {
           date={selDate}
           userId={user.uid}
           onEditWorkout={(workout: PendingWorkout) => {
-            // Convert PendingWorkout → WorkoutForm initialWorkout shape
             setEditingWorkout({
               id: "",
               name: workout.name,
