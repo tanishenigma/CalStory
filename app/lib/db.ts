@@ -10,6 +10,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
+import { logger } from "@/app/lib/logger";
 import type {
   Profile,
   Meal,
@@ -54,16 +55,16 @@ export async function saveProfile(
 }
 
 export async function getProfile(uid: string): Promise<Profile | null> {
-  console.log(`[API Request] getProfile (uid: ${uid})`);
+  logger.debug(`[API Request] getProfile (uid: ${uid})`);
   return safe(async () => {
     const snap = await getDoc(doc(db, "users", uid));
     if (!snap.exists()) {
-      console.log(`[API Response] getProfile (not found in DB)`);
+      logger.debug(`[API Response] getProfile (not found in DB)`);
       return null;
     }
     const data = snap.data() as { profile: Profile };
     const profile = data.profile ?? null;
-    console.log(`[API Response] getProfile success`, profile);
+    logger.debug(`[API Response] getProfile success`, profile);
     return profile;
   }, null);
 }
@@ -75,7 +76,7 @@ export async function saveMeal(
   dateKey: string,
   meal: Meal,
 ): Promise<void> {
-  console.log(`[API Request] saveMeal (uid: ${uid}, date: ${dateKey})`, meal);
+  logger.debug(`[API Request] saveMeal (uid: ${uid}, date: ${dateKey})`, meal);
   await safe(async () => {
     const ref = doc(db, "users", uid, "meals", dateKey, "items", meal.id);
     // Firestore does not support `undefined` field values — strip them.
@@ -85,17 +86,17 @@ export async function saveMeal(
       ),
     );
     await setDoc(ref, data);
-    console.log(`[API Response] saveMeal success`);
+    logger.debug(`[API Response] saveMeal success`);
   }, undefined);
 }
 
 export async function getMeals(uid: string, dateKey: string): Promise<Meal[]> {
-  console.log(`[API Request] getMeals (uid: ${uid}, date: ${dateKey})`);
+  logger.debug(`[API Request] getMeals (uid: ${uid}, date: ${dateKey})`);
   return safe(async () => {
     const col = collection(db, "users", uid, "meals", dateKey, "items");
     const snap = await getDocs(col);
     const meals = snap.docs.map((d) => d.data() as Meal);
-    console.log(`[API Response] getMeals success, got ${meals.length} items`);
+    logger.debug(`[API Response] getMeals success, got ${meals.length} items`);
     return meals;
   }, [] as Meal[]);
 }
@@ -109,7 +110,7 @@ export async function getMealsInRange(
   uid: string,
   dateKeys: string[],
 ): Promise<Record<string, Meal[]>> {
-  console.log(
+  logger.debug(
     `[API Request] getMealsInRange (uid: ${uid}, dates: ${dateKeys.length})`,
   );
   return safe(
@@ -119,7 +120,7 @@ export async function getMealsInRange(
       dateKeys.forEach((k, i) => {
         out[k] = lists[i];
       });
-      console.log(`[API Response] getMealsInRange success`);
+      logger.debug(`[API Response] getMealsInRange success`);
       return out;
     },
     {} as Record<string, Meal[]>,
@@ -131,12 +132,12 @@ export async function deleteMealDB(
   dateKey: string,
   mealId: string,
 ): Promise<void> {
-  console.log(
+  logger.debug(
     `[API Request] deleteMealDB (uid: ${uid}, date: ${dateKey}, id: ${mealId})`,
   );
   await safe(async () => {
     await deleteDoc(doc(db, "users", uid, "meals", dateKey, "items", mealId));
-    console.log(`[API Response] deleteMealDB success`);
+    logger.debug(`[API Response] deleteMealDB success`);
   }, undefined);
 }
 
@@ -146,7 +147,7 @@ export async function saveWorkout(
   dateKey: string,
   workout: Workout,
 ): Promise<void> {
-  console.log(
+  logger.debug(
     `[API Request] saveWorkout (uid: ${uid}, date: ${dateKey})`,
     workout,
   );
@@ -167,7 +168,7 @@ export async function saveWorkout(
       ),
     );
     await setDoc(ref, data);
-    console.log(`[API Response] saveWorkout success`);
+    logger.debug(`[API Response] saveWorkout success`);
   }, undefined);
 }
 
@@ -175,12 +176,12 @@ export async function getWorkouts(
   uid: string,
   dateKey: string,
 ): Promise<Workout[]> {
-  console.log(`[API Request] getWorkouts (uid: ${uid}, date: ${dateKey})`);
+  logger.debug(`[API Request] getWorkouts (uid: ${uid}, date: ${dateKey})`);
   return safe(async () => {
     const col = collection(db, "users", uid, "workouts", dateKey, "sessions");
     const snap = await getDocs(col);
     const workouts = snap.docs.map((d) => d.data() as Workout);
-    console.log(
+    logger.debug(
       `[API Response] getWorkouts success, got ${workouts.length} items`,
     );
     return workouts;
@@ -196,7 +197,7 @@ export async function getWorkoutsInRange(
   uid: string,
   dateKeys: string[],
 ): Promise<Record<string, Workout[]>> {
-  console.log(
+  logger.debug(
     `[API Request] getWorkoutsInRange (uid: ${uid}, dates: ${dateKeys.length})`,
   );
   return safe(
@@ -206,7 +207,7 @@ export async function getWorkoutsInRange(
       dateKeys.forEach((k, i) => {
         out[k] = lists[i];
       });
-      console.log(`[API Response] getWorkoutsInRange success`);
+      logger.debug(`[API Response] getWorkoutsInRange success`);
       return out;
     },
     {} as Record<string, Workout[]>,
@@ -218,14 +219,14 @@ export async function deleteWorkoutDB(
   dateKey: string,
   workoutId: string,
 ): Promise<void> {
-  console.log(
+  logger.debug(
     `[API Request] deleteWorkoutDB (uid: ${uid}, date: ${dateKey}, id: ${workoutId})`,
   );
   await safe(async () => {
     await deleteDoc(
       doc(db, "users", uid, "workouts", dateKey, "sessions", workoutId),
     );
-    console.log(`[API Response] deleteWorkoutDB success`);
+    logger.debug(`[API Response] deleteWorkoutDB success`);
   }, undefined);
 }
 
@@ -234,11 +235,11 @@ export async function saveWorkoutTemplateDB(
   uid: string,
   template: SavedWorkout,
 ): Promise<void> {
-  console.log(`[API Request] saveWorkoutTemplateDB (uid: ${uid})`, template);
+  logger.debug(`[API Request] saveWorkoutTemplateDB (uid: ${uid})`, template);
   await safe(async () => {
     const ref = doc(db, "users", uid, "workout_templates", template.id);
     await setDoc(ref, { ...template, savedAt: serverTimestamp() });
-    console.log(`[API Response] saveWorkoutTemplateDB success`);
+    logger.debug(`[API Response] saveWorkoutTemplateDB success`);
   }, undefined);
 }
 
@@ -257,18 +258,18 @@ export async function deleteWorkoutTemplateDB(
   uid: string,
   templateId: string,
 ): Promise<void> {
-  console.log(
+  logger.debug(
     `[API Request] deleteWorkoutTemplateDB (uid: ${uid}, id: ${templateId})`,
   );
   await safe(async () => {
     await deleteDoc(doc(db, "users", uid, "workout_templates", templateId));
-    console.log(`[API Response] deleteWorkoutTemplateDB success`);
+    logger.debug(`[API Response] deleteWorkoutTemplateDB success`);
   }, undefined);
 }
 
 // ── Recent meals (last 20 unique meal names) ──────────────
 export async function saveRecentMeal(uid: string, meal: Meal): Promise<void> {
-  console.log(`[API Request] saveRecentMeal (uid: ${uid})`, meal);
+  logger.debug(`[API Request] saveRecentMeal (uid: ${uid})`, meal);
   await safe(async () => {
     const key = meal.name.toLowerCase().replace(/\s+/g, "_").slice(0, 40);
     const ref = doc(db, "users", uid, "recents", key);
@@ -282,18 +283,18 @@ export async function saveRecentMeal(uid: string, meal: Meal): Promise<void> {
       usedAt: serverTimestamp(),
     };
     await setDoc(ref, recentMeal);
-    console.log(`[API Response] saveRecentMeal success`);
+    logger.debug(`[API Response] saveRecentMeal success`);
   }, undefined);
 }
 
 export async function getRecentMeals(uid: string): Promise<RecentMeal[]> {
-  console.log(`[API Request] getRecentMeals (uid: ${uid})`);
+  logger.debug(`[API Request] getRecentMeals (uid: ${uid})`);
   return safe(async () => {
     const col = collection(db, "users", uid, "recents");
     const q = query(col, orderBy("usedAt", "desc"));
     const snap = await getDocs(q);
     const recents = snap.docs.map((d) => d.data() as RecentMeal).slice(0, 20);
-    console.log(
+    logger.debug(
       `[API Response] getRecentMeals success, got ${recents.length} items`,
     );
     return recents;
@@ -309,7 +310,7 @@ export async function saveWeightLog(
   uid: string,
   log: WeightLog,
 ): Promise<boolean> {
-  console.log(`[API Request] saveWeightLog (uid: ${uid})`, log);
+  logger.debug(`[API Request] saveWeightLog (uid: ${uid})`, log);
   const result = await safe(async () => {
     const ref = doc(db, "users", uid, "weight_logs", log.id);
     // Firestore does not support `undefined` field values — strip them.
@@ -319,20 +320,20 @@ export async function saveWeightLog(
       ),
     );
     await setDoc(ref, data);
-    console.log(`[API Response] saveWeightLog success`);
+    logger.debug(`[API Response] saveWeightLog success`);
     return true;
   }, false);
   return result ?? false;
 }
 
 export async function getWeightLogs(uid: string): Promise<WeightLog[]> {
-  console.log(`[API Request] getWeightLogs (uid: ${uid})`);
+  logger.debug(`[API Request] getWeightLogs (uid: ${uid})`);
   return safe(async () => {
     const col = collection(db, "users", uid, "weight_logs");
     const q = query(col, orderBy("loggedAt", "desc"));
     const snap = await getDocs(q);
     const logs = snap.docs.map((d) => d.data() as WeightLog);
-    console.log(
+    logger.debug(
       `[API Response] getWeightLogs success, got ${logs.length} items`,
     );
     return logs;
@@ -343,10 +344,10 @@ export async function deleteWeightLogDB(
   uid: string,
   logId: string,
 ): Promise<void> {
-  console.log(`[API Request] deleteWeightLogDB (uid: ${uid}, id: ${logId})`);
+  logger.debug(`[API Request] deleteWeightLogDB (uid: ${uid}, id: ${logId})`);
   await safe(async () => {
     await deleteDoc(doc(db, "users", uid, "weight_logs", logId));
-    console.log(`[API Response] deleteWeightLogDB success`);
+    logger.debug(`[API Response] deleteWeightLogDB success`);
   }, undefined);
 }
 
@@ -366,11 +367,11 @@ export async function saveUserApiKey(
   uid: string,
   apiKey: string,
 ): Promise<void> {
-  console.log(`[API Request] saveUserApiKey (uid: ${uid}, key: [redacted])`);
+  logger.debug(`[API Request] saveUserApiKey (uid: ${uid}, key: [redacted])`);
   await safe(async () => {
     const ref = doc(db, "users", uid, "settings", "api_keys");
     await setDoc(ref, { geminiApiKey: apiKey, updatedAt: serverTimestamp() });
-    console.log(`[API Response] saveUserApiKey success`);
+    logger.debug(`[API Response] saveUserApiKey success`);
   }, undefined);
 }
 
@@ -390,9 +391,9 @@ export async function getUserApiKey(uid: string): Promise<string | null> {
 }
 
 export async function deleteUserApiKey(uid: string): Promise<void> {
-  console.log(`[API Request] deleteUserApiKey (uid: ${uid})`);
+  logger.debug(`[API Request] deleteUserApiKey (uid: ${uid})`);
   await safe(async () => {
     await deleteDoc(doc(db, "users", uid, "settings", "api_keys"));
-    console.log(`[API Response] deleteUserApiKey success`);
+    logger.debug(`[API Response] deleteUserApiKey success`);
   }, undefined);
 }

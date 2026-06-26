@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/app/context/AppContext";
 import { useAuthStore } from "@/app/store/authStore";
+import { getAuthHint } from "@/app/lib/storage";
 import type { Profile } from "@/app/types";
 
 export function useAuthGuard(): {
@@ -16,19 +17,32 @@ export function useAuthGuard(): {
   const { profile } = state;
   const timedOut = useRef(false);
 
-  // Safety timeout: if loading stays true for more than 5s, treat as unauthenticated
+  // ── Paranoia timeout ──
+  // Most refreshes now resolve synchronously from the cached auth hint,
+  // so this only fires if Firebase genuinely never responds (offline,
+  // blocked CDN, etc.). Kept short so a stuck page redirects quickly
+  // instead of staring at a spinner for 5 seconds.
   useEffect(() => {
     const t = setTimeout(() => {
       timedOut.current = true;
-    }, 5000);
+    }, 1500);
     return () => clearTimeout(t);
   }, []);
 
-  // Auth is loading if Firebase hasn't resolved AND we haven't timed out
-  const isLoading = (loading || profile === undefined) && !timedOut.current;
+  // Still loading only if BOTH conditions hold:
+  //   1. Firebase auth hasn't resolved (`loading === true`), AND
+  //   2. We don't have a cached auth hint we can render against.
+  // If we have a cached user (synchronous boot from localStorage), we
+  // can render the page immediately while Firebase re-validates in the
+  // background — the cached user is "best-effort signed in" until the
+  // listener confirms or denies.
+  const cachedHint = getAuthHint();
+  const hasCache = !!cachedHint?.uid;
+  const isLoading =
+    (loading || profile === undefined) && !hasCache && !timedOut.current;
 
   useEffect(() => {
-    if (loading) return; // still waiting for Firebase auth
+    if (loading && !hasCache) return; // still waiting for Firebase, no cache
     if (!user) {
       router.replace("/");
       return;
@@ -40,7 +54,7 @@ export function useAuthGuard(): {
     if (profile === null || (profile && !profile.onboardedAt)) {
       router.replace("/onboarding");
     }
-  }, [profile, user, loading, router]);
+  }, [profile, user, loading, router, hasCache]);
 
   return { profile, isLoading };
 }

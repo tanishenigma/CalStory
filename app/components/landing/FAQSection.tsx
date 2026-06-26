@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Plus, Zap, Shield, Brain, TrendingUp } from "lucide-react";
 
 const FAQS = [
   {
     q: "How does AI meal logging work?",
-    a: "Tap 'Log with AI', describe what you ate in plain language or upload a photo, and CalStory will extract the calories and macros. You can review and adjust the numbers before saving — nothing gets logged without your confirmation.",
+    a: "Tap 'Log with AI', describe what you ate in plain language and CalStory will extract the calories and macros. You can review and adjust the numbers before saving — nothing gets logged without your confirmation.",
     icon: Brain,
     color: "#f97316",
   },
@@ -137,8 +137,6 @@ function FAQItem({
           isOpen
             ? {
                 borderColor: "rgba(249,115,22,0.4)",
-                boxShadow:
-                  "0 0 0 1px rgba(249,115,22,0.15), 0 8px 32px rgba(249,115,22,0.08)",
               }
             : {
                 borderColor: "var(--color-border)",
@@ -241,13 +239,13 @@ function FloatingDot({ x, y, delay }: { x: string; y: string; delay: number }) {
 }
 
 export default function FAQSection() {
-  const [open, setOpen] = useState<number | null>(0);
+  const [open, setOpen] = useState<number | null>(null);
   const titleRef = useRef<HTMLDivElement>(null);
   const titleInView = useInView(titleRef, { once: true, amount: 0.5 });
 
   return (
     <section
-      id="faqFrequ"
+      id="faq"
       className="flex flex-col items-center text-center px-2 relative">
       {/* Floating decorative dots */}
       <FloatingDot x="5%" y="10%" delay={0} />

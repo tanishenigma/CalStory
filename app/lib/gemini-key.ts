@@ -9,7 +9,12 @@
  * The encryption secret lives only in GEMINI_KEY_ENCRYPTION_SECRET (env).
  */
 
-import { encryptApiKey, decryptApiKey, isEncrypted } from "@/app/lib/server-crypto";
+import {
+  encryptApiKey,
+  decryptApiKey,
+  isEncrypted,
+} from "@/app/lib/server-crypto";
+import { logger } from "@/app/lib/logger";
 
 /**
  * Gemini API keys always start with "AIza" followed by exactly 35
@@ -170,7 +175,7 @@ export async function resolveGeminiKey(
     try {
       const personalKey = await fetchApiKeyFromFirestore(userId, idToken);
       if (personalKey && validateKeyFormat(personalKey)) {
-        console.log(`[gemini-key] Using personal key for user ${userId}`);
+        logger.debug(`[gemini-key] Using personal key for user ${userId}`);
         return personalKey;
       }
     } catch (err) {

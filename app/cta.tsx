@@ -7,7 +7,7 @@ import { BlurFade } from "@/app/components/BlurFade";
 import { useApp } from "@/app/context/AppContext";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { ArrowRight, Sparkles } from "lucide-react";
-
+import CurvedLoop from "./components/ui/CurvedLoop";
 interface CtaSectionProps {
   handleSignIn: () => void;
 }
@@ -20,7 +20,7 @@ const CTASection = ({ handleSignIn }: CtaSectionProps) => {
   const hasProfile = !!state.profile;
 
   return (
-    <section className="relative z-10 py-32 px-6 w-full overflow-hidden">
+    <section className="relative z-10 px-6 w-full overflow-hidden">
       <BlurFade delay={0.1} className="w-full flex justify-center">
         <Card className="relative w-full max-w-5xl rounded-[32px] overflow-hidden card-elevated backdrop-blur-3xl px-4 sm:px-6 lg:px-8 py-12 lg:py-24 text-center group mx-auto">
           {/* Atmospheric backgrounds */}

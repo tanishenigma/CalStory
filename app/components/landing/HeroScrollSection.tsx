@@ -1,17 +1,22 @@
 "use client";
 
-import React from "react";
 import dynamic from "next/dynamic";
-import BlurFade from "../animations/BlurFade"; // Update import path if necessary
+import { ReactLenis } from "lenis/react";
+import BlurFade from "../animations/BlurFade";
+import { usePrefsStore, resolveTheme } from "@/app/store/prefsStore";
 
-export const dashboardDark = "/dashboard_dark.png";
+export const dashboardDark = "/screenshots/dashboard_dark.png";
+export const dashboardLight = "/screenshots/dashboard_light.png";
 
 function ScreenshotCard() {
+  const theme = usePrefsStore((s) => s.theme);
+  const isDark = resolveTheme(theme) === "dark";
+
   return (
-    <div className="relative w-full aspect-[7/5] overflow-hidden bg-foreground/[0.04] border border-border/60 rounded-2xl ">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(120,119,198,0.12),transparent_70%)] z-10 pointer-events-none" />
+    <div className="relative w-full aspect-[7/5] overflow-hidden rounded-2xl">
+      <div className="absolute inset-0 z-10 pointer-events-none" />
       <img
-        src={dashboardDark}
+        src={isDark ? dashboardDark : dashboardLight}
         alt="CalStory dashboard"
         className="w-full h-full object-cover"
       />
@@ -63,7 +68,7 @@ function MobileLayout() {
 
 function DesktopLayout() {
   return (
-    <div className="hidden md:block w-full ">
+    <div className="hidden md:block w-full">
       <ContainerScroll titleComponent={<HeroCopy />}>
         <ScreenshotCard />
       </ContainerScroll>
@@ -73,9 +78,11 @@ function DesktopLayout() {
 
 export default function HeroScrollSection() {
   return (
-    <section className="relative w-full z-10 overflow-hidden ">
-      <MobileLayout />
-      <DesktopLayout />
-    </section>
+    <ReactLenis root options={{ lerp: 0.08, duration: 1.4, smoothWheel: true }}>
+      <section className="relative w-full z-10 overflow-hidden">
+        <MobileLayout />
+        <DesktopLayout />
+      </section>
+    </ReactLenis>
   );
 }

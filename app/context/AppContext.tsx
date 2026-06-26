@@ -6,7 +6,12 @@ import {
   useEffect,
   useReducer,
 } from "react";
-import { useAuthStore, initAuthListener } from "@/app/store/authStore";
+import {
+  useAuthStore,
+  initAuthListener,
+  markAuthHintOnboarded,
+} from "@/app/store/authStore";
+import { getAuthHint, LS, LS_KEYS } from "@/app/lib/storage";
 import {
   hydratePrefs,
   persistPrefsForUser,
@@ -249,6 +254,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
     if (!user) {
+      // Clear any stale per-user caches so a different account signing in
+      // on the same device never inherits the previous user's profile.
+      LS.remove(LS_KEYS.PROFILE_USER);
       dispatch({
         type: "HYDRATE",
         payload: {
@@ -264,6 +272,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // ── Synchronous cache hydrate ──
+    // If we have a cached profile in localStorage AND it belongs to the
+    // same uid the auth store just resolved to, dispatch it immediately.
+    // This lets `useAuthGuard` decide between /onboarding and /dashboard
+    // on the very first render after a refresh, instead of waiting on a
+    // Firestore round-trip. The remote refresh still runs below to keep
+    // the cached value honest.
+    const cachedProfile = LS.get<Profile>(LS_KEYS.PROFILE_USER);
+    const hint = getAuthHint();
+    if (
+      cachedProfile &&
+      hint &&
+      hint.uid === user.uid &&
+      state.profile === undefined // only on initial hydrate, don't clobber edits
+    ) {
+      dispatch({ type: "SET_PROFILE", payload: cachedProfile });
+      markAuthHintOnboarded(!!cachedProfile.onboardedAt);
+    }
+
     async function hydrateRemote() {
       if (!user) return;
       // Fetch the profile FIRST so guards can decide (onboarded vs not)
@@ -273,6 +300,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         const profile = await getProfile(user.uid);
         dispatch({ type: "SET_PROFILE", payload: profile ?? null });
+        // Mirror the freshly-fetched profile into the cache so the next
+        // refresh can skip this network call. The cache is per-uid so
+        // swapping accounts doesn't leak data across users.
+        if (profile) {
+          LS.set<Profile>(LS_KEYS.PROFILE_USER, profile);
+        } else {
+          LS.remove(LS_KEYS.PROFILE_USER);
+        }
+        markAuthHintOnboarded(!!profile?.onboardedAt);
         // Kick off the rest in parallel. We don't await it here so the
         // onboarding → dashboard redirect isn't blocked on 5 reads.
         void hydrateSecondary(user.uid);
@@ -357,6 +393,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     async (p: Profile): Promise<void> => {
       dispatch({ type: "SET_PROFILE", payload: p });
       if (!user) return;
+      // Mirror to the per-user cache so a refresh can boot the dashboard
+      // before Firestore responds. Failure is silent — Firestore remains
+      // the source of truth; this is just a hint for synchronous boot.
+      LS.set<Profile>(LS_KEYS.PROFILE_USER, p);
+      markAuthHintOnboarded(!!p.onboardedAt);
       await saveProfile(user.uid, p);
     },
     [user],

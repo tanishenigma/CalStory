@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useScroll, useTransform, motion } from "framer-motion";
 import type { MotionValue } from "framer-motion";
+import BlurFade from "../animations/BlurFade";
 
 interface ContainerScrollProps {
   titleComponent: React.ReactNode;
@@ -177,9 +178,11 @@ function Card({
         transformOrigin: "top center",
       }}
       className="w-full z-10">
-      <div className="h-full w-full overflow-hidden rounded-3xl bg-background dark:bg-zinc-900 shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_30px_60px_-15px_rgba(0,0,0,0.5),0_0_100px_-20px_rgba(120,119,198,0.25)]">
-        {children}
-      </div>
+      <BlurFade delay={0.4} yOffset={2}>
+        <div className="h-full w-full overflow-hidden rounded-3xl bg-background dark:bg-zinc-900 shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_30px_60px_-15px_rgba(0,0,0,0.5),0_0_100px_-20px_rgba(120,119,198,0.25)]">
+          {children}
+        </div>
+      </BlurFade>
     </motion.div>
   );
 }
