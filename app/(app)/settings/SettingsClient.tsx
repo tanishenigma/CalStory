@@ -359,36 +359,39 @@ function SettingsPageContent() {
       {tab === "profile" && (
         <BlurFade>
           {/* Identity card */}
-          <Card className="p-6 mb-5">
-            <div className="flex items-center gap-4 mb-5">
-              <div className="relative">
+          <Card className="p-5 mb-5">
+            <div className="flex flex-row items-center gap-5">
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
                 {user?.photoURL ? (
                   <img
                     src={user.photoURL}
                     alt="avatar"
-                    className="w-18 h-18 rounded-full border-2 border-orange-400"
-                    style={{ width: 72, height: 72 }}
+                    className="rounded-full border-2 border-orange-400"
+                    style={{ width: 64, height: 64 }}
                   />
                 ) : (
-                  <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-2xl font-bold shadow-md">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-xl font-bold shadow-md">
                     {(state.profile?.name || "U")[0].toUpperCase()}
                   </div>
                 )}
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-card flex items-center justify-center">
-                  <CheckCircle2 size={12} className="text-white" />
+                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-card flex items-center justify-center">
+                  <CheckCircle2 size={10} className="text-white" />
                 </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-bold text-xl truncate">
+
+              {/* Name + meta */}
+              <div className="flex flex-col min-w-0 gap-1">
+                <div className="font-bold text-lg truncate leading-tight">
                   {state.profile?.name
                     ? state.profile.name.charAt(0).toUpperCase() +
                       state.profile.name.slice(1)
                     : "New User"}
                 </div>
-                <div className="text-sm text-[#9B9895] truncate">
+                <div className="text-xs text-[#9B9895] truncate">
                   {user?.email || "No email set"}
                 </div>
-                <div className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary text-accent dark:bg-primary dark:text-foreground">
+                <div className="inline-flex w-fit items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-accent dark:text-foreground">
                   {state.profile?.goal === "bulk"
                     ? "💪 Bulking"
                     : state.profile?.goal === "cut"
@@ -396,104 +399,104 @@ function SettingsPageContent() {
                       : "⚖️ Maintaining"}
                 </div>
               </div>
+
+              {/* Vertical divider */}
+              <div className="self-stretch w-px bg-border/60 mx-1" />
+
+              {/* Stats inline */}
+              <div className="flex flex-row items-center gap-5 flex-1">
+                {[
+                  {
+                    label: "Age",
+                    val: `${state.profile?.age ?? "—"}`,
+                    sub: "yrs",
+                  },
+                  {
+                    label: "Weight",
+                    val:
+                      state.profile?.weightUnit === "lbs"
+                        ? `${kgToLbs(state.profile?.weight ?? 0)}`
+                        : `${Math.round(state.profile?.weight ?? 0)}`,
+                    sub: state.profile?.weightUnit === "lbs" ? "lbs" : "kg",
+                  },
+                  {
+                    label: "Height",
+                    val: state.profile
+                      ? displayHeight(
+                          state.profile.height,
+                          state.profile.heightUnit,
+                        )
+                      : "—",
+                    sub:
+                      state.profile?.heightUnit === "imperial" ? "ft/in" : "cm",
+                  },
+                ].map((item) => (
+                  <div key={item.label} className="flex flex-col">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895]">
+                      {item.label}
+                    </span>
+                    <span className="font-bold text-sm leading-tight tabular-nums">
+                      {item.val}
+                      <span className="text-[10px] font-medium text-[#9B9895] ml-1">
+                        {item.sub}
+                      </span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+
               <button
                 onClick={() => setEditProfileOpen(true)}
-                className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground transition-all px-3 py-2 rounded-lg ml-auto">
-                <Pencil size={13} />
+                className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground transition-all px-2.5 py-1.5 rounded-lg flex-shrink-0">
+                <Pencil size={11} />
                 Edit
               </button>
             </div>
 
-            {/* Stats grid */}
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              {[
-                {
-                  label: "Age",
-                  val: `${state.profile?.age ?? "—"} yrs`,
-                  sub: "years old",
-                },
-                {
-                  label: "Weight",
-                  val:
-                    state.profile?.weightUnit === "lbs"
-                      ? `${kgToLbs(state.profile?.weight ?? 0)}`
-                      : `${Math.round(state.profile?.weight ?? 0)}`,
-                  sub: state.profile?.weightUnit === "lbs" ? "lbs" : "kg",
-                },
-                {
-                  label: "Height",
-                  val: state.profile
-                    ? displayHeight(
-                        state.profile.height,
-                        state.profile.heightUnit,
-                      )
-                    : "—",
-                  sub:
-                    state.profile?.heightUnit === "imperial" ? "ft/in" : "cm",
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="bg-muted/60 rounded-xl px-3 py-3 text-center">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] mb-0.5">
-                    {item.label}
-                  </div>
-                  <div className="font-bold text-base truncate leading-tight">
-                    {item.val}
-                  </div>
-                  <div className="text-[9px] text-[#9B9895] mt-0.5">
-                    {item.sub}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Energy targets */}
-            <div className="space-y-4">
-              <div className="flex items-baseline justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/40">
-                  Daily Energy Targets
-                </span>
-                <span className="text-[11px] font-medium text-foreground/40">
-                  kcal
+            {/* Energy targets — slim horizontal row */}
+            <div className="flex flex-row items-center justify-between gap-4 mt-5 pt-4 border-t border-border/40">
+              <div className="flex items-baseline gap-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground/40">
+                  Daily Targets
                 </span>
               </div>
 
-              <div className="flex items-end justify-between gap-6">
-                <div className="flex-1">
-                  <div className="text-[10px] font-medium text-foreground/40 uppercase tracking-wider mb-1">
+              <div className="flex items-baseline gap-5">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[9px] font-medium text-foreground/40 uppercase tracking-wider">
                     TDEE
-                  </div>
-                  <div className="font-bricolage text-2xl font-medium text-foreground/80 leading-none tabular-nums">
+                  </span>
+                  <span className="font-bricolage text-base font-medium text-foreground/80 tabular-nums leading-none">
                     {state.profile?.tdee ?? "—"}
-                  </div>
+                  </span>
                 </div>
 
-                <div className="self-stretch w-px bg-border/60" />
+                <span className="text-foreground/30">·</span>
 
-                <div className="flex-1 text-right">
-                  <div className="text-[10px] font-medium text-foreground/40 uppercase tracking-wider mb-1">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[9px] font-medium text-foreground/40 uppercase tracking-wider">
                     Target
-                  </div>
-                  <div className="font-bricolage text-2xl font-medium text-foreground leading-none tabular-nums">
+                  </span>
+                  <span className="font-bricolage text-base font-medium text-foreground tabular-nums leading-none">
                     {state.profile?.calTarget ?? "—"}
-                  </div>
+                  </span>
+                  <span className="text-[9px] text-foreground/40 font-medium">
+                    kcal
+                  </span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-border/40">
+              <div className="flex items-center gap-3">
                 {[
-                  { label: "Protein", val: `${state.profile?.protein ?? 0}g` },
-                  { label: "Carbs", val: `${state.profile?.carbs ?? 0}g` },
-                  { label: "Fat", val: `${state.profile?.fat ?? 0}g` },
+                  { label: "P", val: `${state.profile?.protein ?? 0}g` },
+                  { label: "C", val: `${state.profile?.carbs ?? 0}g` },
+                  { label: "F", val: `${state.profile?.fat ?? 0}g` },
                 ].map((m) => (
-                  <div
-                    key={m.label}
-                    className="flex flex-col items-center gap-0.5">
-                    <span className="text-[10px] font-medium text-foreground/40 uppercase tracking-wider">
+                  <div key={m.label} className="flex items-baseline gap-1">
+                    <span className="text-[9px] font-medium text-foreground/40">
                       {m.label}
                     </span>
-                    <span className="text-sm font-medium text-foreground/70 tabular-nums">
+                    <span className="text-xs font-medium text-foreground/70 tabular-nums">
                       {m.val}
                     </span>
                   </div>
