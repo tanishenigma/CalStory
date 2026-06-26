@@ -1,19 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import BlurFade from "@/app/components/animations/BlurFade";
-import { useToast } from "@/app/components/ToastContainer";
 import { calcTDEE } from "@/app/lib/tdee";
 import { lbsToKg } from "@/app/lib/units";
-import type {
-  Profile,
-  GoalKey,
-  IntensityKey,
-  WeightUnit,
-} from "@/app/types";
-import { ActivityInputs } from "./goals/ActivityInputs";
+import type { Profile, GoalKey, IntensityKey, WeightUnit } from "@/app/types";
+import {
+  ActivityInputs,
+  type ActivitySaveTarget,
+} from "./goals/ActivityInputs";
 import { GoalDirectionCard } from "./goals/GoalDirectionCard";
 import { SaveBar } from "./goals/SaveBar";
+import { useAutoSave } from "./goals/useAutoSave";
 
 interface GoalsTabProps {
   profile: Profile;
@@ -52,9 +49,8 @@ export function GoalsTab({
   setProfile,
   logWeight,
 }: GoalsTabProps) {
-  const toast = useToast();
-  const [saving, setSaving] = useState(false);
-
+  // Convert the displayed weight string → kg once and share between
+  // the live preview and every save path so they can never drift.
   const weightKg =
     weightUnit === "lbs" ? lbsToKg(Number(weightInput)) : Number(weightInput);
 
@@ -67,35 +63,97 @@ export function GoalsTab({
     workoutsPerWeek,
   });
 
-  async function saveGoal() {
-    setSaving(true);
-    const base = {
+  // Three independent auto-save hooks — one per card — so each
+  // card can show its own "Saving…" indicator without flickering
+  // when another card saves.
+  const stepsSaver = useAutoSave(persistSteps, 700);
+  const workoutsSaver = useAutoSave(persistWorkouts, 0);
+  const weightSaver = useAutoSave(persistWeight, 700);
+
+  async function persistSteps() {
+    const calc = calcTDEE({
       ...profile,
-      goal,
-      intensity,
-      weight: weightKg,
       steps,
-      workoutsPerWeek,
-    };
-    const calc = calcTDEE(base);
+      weight: profile.weight,
+    });
     await setProfile({
-      ...base,
+      ...profile,
+      steps,
       tdee: calc.tdee,
       calTarget: calc.calTarget,
       protein: calc.protein,
       carbs: calc.carbs,
       fat: calc.fat,
     });
+  }
 
-    // Same bidirectional contract as the Edit profile modal:
-    // a real weight change is logged as a new weigh-in so the
-    // progress page picks it up immediately.
+  async function persistWorkouts() {
+    const calc = calcTDEE({
+      ...profile,
+      workoutsPerWeek,
+      weight: profile.weight,
+    });
+    await setProfile({
+      ...profile,
+      workoutsPerWeek,
+      tdee: calc.tdee,
+      calTarget: calc.calTarget,
+      protein: calc.protein,
+      carbs: calc.carbs,
+      fat: calc.fat,
+    });
+  }
+
+  async function persistWeight() {
+    const calc = calcTDEE({
+      ...profile,
+      weight: weightKg,
+    });
+    await setProfile({
+      ...profile,
+      weight: weightKg,
+      tdee: calc.tdee,
+      calTarget: calc.calTarget,
+      protein: calc.protein,
+      carbs: calc.carbs,
+      fat: calc.fat,
+    });
+    // Bidirectional: a real weight change also creates a weigh-in
+    // so the progress page picks it up immediately.
     const previousWeight = profile.weight ?? 0;
     if (Math.abs(weightKg - previousWeight) > 0.05) {
       await logWeight(weightKg, weightUnit);
     }
-    setSaving(false);
-    toast("Goals updated ✓");
+  }
+
+  // The bottom Save button covers goal direction + intensity
+  // (the live preview updates as the user clicks — this just
+  // persists the change).
+  async function saveGoal() {
+    const calc = calcTDEE({
+      ...profile,
+      goal,
+      intensity,
+      weight: weightKg,
+      steps,
+      workoutsPerWeek,
+    });
+    await setProfile({
+      ...profile,
+      goal,
+      intensity,
+      tdee: calc.tdee,
+      calTarget: calc.calTarget,
+      protein: calc.protein,
+      carbs: calc.carbs,
+      fat: calc.fat,
+    });
+  }
+
+  function triggerSave(target: ActivitySaveTarget) {
+    if (target === "steps") stepsSaver.run();
+    else if (target === "weight") weightSaver.run();
+    else workoutsSaver.run();
   }
 
   return (
@@ -109,6 +167,10 @@ export function GoalsTab({
           weightInput={weightInput}
           setWeightInput={setWeightInput}
           weightUnit={weightUnit}
+          onAutoSave={triggerSave}
+          savingSteps={stepsSaver.saving}
+          savingWorkouts={workoutsSaver.saving}
+          savingWeight={weightSaver.saving}
         />
 
         <GoalDirectionCard
@@ -119,7 +181,7 @@ export function GoalsTab({
           preview={preview}
         />
 
-        <SaveBar saving={saving} onSave={saveGoal} />
+        <SaveBar saving={false} onSave={saveGoal} />
       </div>
     </BlurFade>
   );

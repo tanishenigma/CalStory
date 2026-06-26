@@ -40,7 +40,7 @@ export function ProfileTab({
                 <img
                   src={user.photoURL}
                   alt="avatar"
-                  className="w-18 h-18 rounded-full border-2 border-orange-400"
+                  className="w-18 h-18 rounded-full "
                   style={{ width: 72, height: 72 }}
                 />
               ) : (
@@ -48,9 +48,6 @@ export function ProfileTab({
                   {(name || "U")[0].toUpperCase()}
                 </div>
               )}
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-card flex items-center justify-center">
-                <CheckCircle2 size={12} className="text-white" />
-              </div>
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-bold text-xl truncate">
