@@ -6,6 +6,7 @@ import ToastContainer from "@/app/components/ToastContainer";
 import LenisProvider from "@/app/components/LenisProvider";
 import { cn } from "@/app/lib/utils";
 import { Toaster } from "@/app/components/ui/sonner";
+import { DynamicBackground } from "@/app/components/DynamicBackground";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -137,6 +138,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-instrument antialiased selection:bg-primary/30 selection:text-orange-950 bg-background text-foreground">
+        <DynamicBackground />
         <AppProvider>
           <ToastContainer>
             <LenisProvider>{children}</LenisProvider>

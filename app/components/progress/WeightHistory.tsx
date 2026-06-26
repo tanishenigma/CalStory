@@ -101,7 +101,7 @@ export function WeightHistory() {
 
   return (
     <Card className="p-0 overflow-hidden h-full">
-      <div className="p-4 border-b border-border flex items-center justify-between">
+      <div className="p-4 border-b border-border flex items-center justify-between bg-card">
         <div className="flex items-center gap-2">
           <Scale size={16} className="text-[#9B9895]" />
           <h3 className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
@@ -116,8 +116,6 @@ export function WeightHistory() {
         </button>
       </div>
 
-      {/* Inline form — animates in/out so the user gets a clear
-          affordance that they can dismiss it without saving. */}
       <AnimatePresence initial={false}>
         {adding && (
           <motion.div
@@ -127,7 +125,7 @@ export function WeightHistory() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden border-b border-border bg-background/40">
+            className="overflow-hidden border-b border-border ">
             <div className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>

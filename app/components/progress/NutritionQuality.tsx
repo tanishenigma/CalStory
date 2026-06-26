@@ -63,28 +63,6 @@ type Stat = {
   sublabel: string;
 };
 
-/* ─────────────────────────────────────────────
-   MAIN COMPONENT
-   ───────────────────────────────────────────── */
-
-/**
- * Nutrition Quality card — sits next to the consistency heatmap.
- *
- * Three tiles, all framed on a 30-day window:
- *   • Protein Goal Hit — how many of the last 30 days the user
- *     hit their daily protein target. Tight coupling between
- *     protein intake and training results makes this the most
- *     "earnable" stat on the page.
- *   • Calorie Goal Hit — same window, hit the calorie target
- *     (within a small ±10% band so a 2050 vs 2000 day still counts).
- *   • Best Streak — longest run of consecutive days meeting the
- *     calorie goal. The motivational number: "I did this 11 days
- *     in a row."
- *
- * Colors mirror the consistency heatmap's orange tone so the two
- * cards read as a pair, with blue and green accents to keep the
- * three tiles visually distinct from each other.
- */
 export function NutritionQuality() {
   const { state } = useApp();
   const meals = state.meals ?? {};

@@ -26,7 +26,7 @@ export function Streak() {
     // A day counts only if at least one meal was actually saved on that date
     // (not backdated). Meals without savedDate are old data — count them as valid.
     const hasMeals = (meals[key] ?? []).some(
-      (m) => !m.savedDate || m.savedDate === key
+      (m) => !m.savedDate || m.savedDate === key,
     );
 
     if (i === 0 && !hasMeals) {
@@ -52,16 +52,16 @@ export function Streak() {
     return {
       dayStr: d.toLocaleDateString("en-IN", { weekday: "short" }).charAt(0),
       isActive: (meals[key] ?? []).some(
-        (m) => !m.savedDate || m.savedDate === key
+        (m) => !m.savedDate || m.savedDate === key,
       ),
     };
   });
 
   return (
-    <div className="mb-6">
-      <Card className="p-4 w-full overflow-hidden">
-        <CardContent className="p-0 flex flex-col justify-between h-full min-w-0">
-          <div className="relative flex flex-col h-full min-w-0">
+    <div className="mb-6 bg-card">
+      <Card className="p-4 w-full overflow-hidden bg-card">
+        <CardContent className="p-0 flex flex-col justify-between h-full min-w-0 bg-card">
+          <div className="relative flex flex-col h-full min-w-0 ">
             <div className="text-[13px] font-bold text-[#9B9895] p-4 pb-0">
               Day streak
             </div>

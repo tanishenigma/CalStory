@@ -40,7 +40,7 @@ export default function CalorieHero({ eaten, target }: Props) {
     <Card className="flex items-center justify-between px-4 sm:px-6 py-5 h-full min-w-0 overflow-hidden">
       {/* ── Left: stat ── */}
       <div className="min-w-0 flex-1 overflow-hidden">
-        <div className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-[44px] font-extrabold leading-none tracking-tight text-[#1A1916] dark:text-[#f7f6f3] tabular-nums truncate pr-2">
+        <div className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-[44px] font-extrabold leading-none tracking-tight text-[#1A1916] dark:text-foreground tabular-nums truncate pr-2  ">
           {left.toLocaleString()}
         </div>
         <div className="text-[13px] font-semibold text-[#9B9895] mt-1 mb-3 truncate">

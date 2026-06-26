@@ -11,10 +11,13 @@ interface PrefsState {
   setNavbarStyle: (s: NavbarStyle) => void;
   theme: Theme;
   setTheme: (t: Theme) => void;
+  dynamicBackground: boolean;
+  setDynamicBackground: (v: boolean) => void;
 }
 
 const DEFAULT_NAVBAR: NavbarStyle = "floating";
 const DEFAULT_THEME: Theme = "light";
+const DEFAULT_DYNAMIC_BG = false;
 
 /** Resolve "system" to the actual OS preference at call time. */
 export function resolveTheme(t: Theme): "light" | "dark" {
@@ -45,6 +48,11 @@ export const usePrefsStore = create<PrefsState>((set) => ({
     LS.set<Theme>("ft_theme", t);
     syncBlockingKey(t);
   },
+  dynamicBackground: DEFAULT_DYNAMIC_BG,
+  setDynamicBackground: (v) => {
+    set({ dynamicBackground: v });
+    LS.set<boolean>("ft_dynamic_bg", v);
+  },
 }));
 
 export function hydratePrefs(uid?: string | null): void {
@@ -56,12 +64,21 @@ export function hydratePrefs(uid?: string | null): void {
   const fromGuestTheme = LS.get<Theme>("ft_theme", null);
   const valueTheme = fromUserTheme ?? fromGuestTheme ?? DEFAULT_THEME;
 
-  usePrefsStore.setState({ navbarStyle: valueNav, theme: valueTheme });
+  const fromUserDynBg = uid ? getUserKey<boolean>(uid, "dynamic_bg") : null;
+  const fromGuestDynBg = LS.get<boolean>("ft_dynamic_bg", null);
+  const valueDynBg = fromUserDynBg ?? fromGuestDynBg ?? DEFAULT_DYNAMIC_BG;
+
+  usePrefsStore.setState({
+    navbarStyle: valueNav,
+    theme: valueTheme,
+    dynamicBackground: valueDynBg,
+  });
 }
 
 export function persistPrefsForUser(uid: string): void {
   const state = usePrefsStore.getState();
   setUserKey<NavbarStyle>(uid, "navbar_style", state.navbarStyle);
   setUserKey<Theme>(uid, "theme", state.theme);
+  setUserKey<boolean>(uid, "dynamic_bg", state.dynamicBackground);
   syncBlockingKey(state.theme);
 }

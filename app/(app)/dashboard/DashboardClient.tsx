@@ -86,14 +86,14 @@ export default function DashboardPage() {
                 </span>
                 <Link
                   href="/workouts"
-                  className="text-[13px] font-semibold text-[#9B9895] hover:text-[#1A1916] transition-colors">
+                  className="text-[13px] font-semibold text-[#9B9895] hover:text-[#1A1916] transition-colors dark:hover:text-foreground">
                   See all →
                 </Link>
               </div>
 
               {todayWorkouts.length === 0 ? (
                 <Link href="/workouts" className="block">
-                  <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px] hover:bg-gray-50 transition-colors cursor-pointer">
+                  <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px] hover:bg-gray-50 transition-colors cursor-pointer ">
                     <div className="text-3xl mb-1">🏋️</div>
                     <div className="font-bold text-[14px] text-[#1A1916] dark:text-[#f7f6f3]">
                       No workout yet
@@ -104,11 +104,11 @@ export default function DashboardPage() {
                   </Card>
                 </Link>
               ) : (
-                <Card className="flex flex-col gap-2">
+                <Card className="flex flex-col gap-2 ">
                   {recentWorkouts.map((w) => (
                     <CardContent
                       key={w.id}
-                      className="flex flex-col divide-y divide-[#F0EFEC] p-2 ">
+                      className="flex flex-col divide-y divide-[#F0EFEC] p-2  ">
                       <div className="flex items-center gap-4 p-4 hover:bg-subtle transition-colors rounded-xl">
                         <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
                           💪
@@ -137,7 +137,7 @@ export default function DashboardPage() {
                 </span>
                 <Link
                   href="/nutrition"
-                  className="text-[13px] font-semibold text-[#9B9895] hover:text-[#1A1916] transition-colors">
+                  className="text-[13px] font-semibold text-[#9B9895] hover:text-[#1A1916] transition-colors dark:hover:text-foreground">
                   See all →
                 </Link>
               </div>

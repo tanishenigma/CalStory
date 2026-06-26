@@ -8,8 +8,10 @@ import {
   Monitor,
   Sun,
   Moon,
+  Sparkles,
 } from "lucide-react";
 import { Card } from "@/app/components/ui/card";
+import { Switch } from "@/app/components/ui/switch";
 import BlurFade from "@/app/components/animations/BlurFade";
 import { animateThemeTransition } from "@/app/components/ThemeToggle";
 import {
@@ -24,6 +26,8 @@ export function AppearanceTab() {
   const setTheme = usePrefsStore((s) => s.setTheme);
   const navbarStyle = usePrefsStore((s) => s.navbarStyle);
   const setNavbarStyle = usePrefsStore((s) => s.setNavbarStyle);
+  const dynamicBackground = usePrefsStore((s) => s.dynamicBackground);
+  const setDynamicBackground = usePrefsStore((s) => s.setDynamicBackground);
 
   return (
     <BlurFade>
@@ -98,6 +102,26 @@ export function AppearanceTab() {
               );
             })}
           </div>
+        </div>
+
+        {/* Dynamic Background toggle */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-sm font-bold mb-1 flex items-center gap-1.5">
+              <Sparkles size={14} className="text-primary" />
+              Dynamic Background
+            </div>
+            <p className="text-xs text-[#9B9895] leading-relaxed">
+              Animates a full-screen colour gradient that slowly cycles through
+              hues — based on your current theme.
+            </p>
+          </div>
+          <Switch
+            id="dynamic-bg-toggle"
+            checked={dynamicBackground}
+            onCheckedChange={setDynamicBackground}
+            className="mt-0.5 shrink-0"
+          />
         </div>
 
         <div className="hidden lg:block">

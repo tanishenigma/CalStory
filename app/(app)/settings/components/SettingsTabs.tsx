@@ -11,7 +11,7 @@ interface SettingsTabsProps {
 
 export function SettingsTabs({ active, onChange, tabs }: SettingsTabsProps) {
   return (
-    <div className="flex gap-1 p-1 bg-[#F0EFEC] dark:bg-[#2a2a2a] rounded-xl overflow-x-auto">
+    <div className="flex gap-1 p-1 bg-subtle/40 dark:bg-[#2a2a2a]/40 rounded-xl overflow-x-auto">
       {tabs.map((t) => (
         <button
           key={t.key}

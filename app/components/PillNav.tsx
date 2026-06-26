@@ -203,7 +203,7 @@ function FloatingSidebar({ pathname }: { pathname: string }) {
   return (
     <>
       {/* Desktop floating sidebar — lg and up */}
-      <nav className="fixed left-3 lg:left-4 inset-y-4 w-64 bg-background dark:bg-[#1a1916]/80 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-none hidden lg:flex flex-col gap-1 py-4 px-3 z-[200] ">
+      <nav className="fixed left-3 lg:left-4 inset-y-4 w-64 bg-background/40 dark:bg-[#1a1916]/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-none hidden lg:flex flex-col gap-1 py-4 px-3 z-[200] ">
         {/* Brand */}
         <div className="flex items-center gap-2.5 px-2 py-1.5 mb-3 ">
           <Link

@@ -190,8 +190,8 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
       const prevMonth = prevCol ? new Date(prevCol.dateKey).getMonth() : -1;
       return thisMonth !== prevMonth
         ? new Date(firstDay.dateKey).toLocaleDateString("en-GB", {
-          month: "short",
-        })
+            month: "short",
+          })
         : null;
     });
   }, [cells]);
@@ -202,9 +202,9 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
     <motion.div
       ref={containerRef}
       transition={{ duration: 0.55, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className="w-full ">
+      className="w-full">
       <div
-        className="relative bg-card border border-border rounded-2xl overflow-visible
+        className="relative border border-border rounded-2xl overflow-visible
                    cursor-default transition-[border-color,box-shadow] duration-300
                ">
         <div className="relative z-10 p-4 sm:p-6">

@@ -198,62 +198,68 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
         </div>
       )}
 
-      <div>
-        <label
-          htmlFor="settings-ai-key-input"
-          className="text-xs font-bold text-[#9B9895] uppercase tracking-wider mb-2 block">
-          {apiKeyHasKey ? "Replace key" : "Enter key"}
-        </label>
-        <div className="relative">
-          <input
-            id="settings-ai-key-input"
-            type={showKey ? "text" : "password"}
-            value={apiKeyInput}
-            onChange={(e) => {
-              setApiKeyInput(e.target.value);
-              setApiKeyError(null);
-              setApiKeySuccess(false);
-            }}
-            placeholder="AIza…"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            data-1p-ignore
-            data-lpignore="true"
-            data-gramm="false"
-            className="w-full font-mono text-sm px-3.5 py-3 pr-12 border border-transparent rounded-lg bg-background focus:bg-card focus:border-border outline-none transition-all"
-          />
-          <button
-            type="button"
-            onClick={() => setShowKey((v) => !v)}
-            aria-label={showKey ? "Hide key" : "Show key"}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9B9895] hover:text-foreground transition-colors p-2">
-            {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
-          </button>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!apiKeySaving && apiKeyInput.trim()) saveApiKey();
+        }}>
+        <div>
+          <label
+            htmlFor="settings-ai-key-input"
+            className="text-xs font-bold text-[#9B9895] uppercase tracking-wider mb-2 block">
+            {apiKeyHasKey ? "Replace key" : "Enter key"}
+          </label>
+          <div className="relative">
+            <input
+              id="settings-ai-key-input"
+              type={showKey ? "text" : "password"}
+              value={apiKeyInput}
+              onChange={(e) => {
+                setApiKeyInput(e.target.value);
+                setApiKeyError(null);
+                setApiKeySuccess(false);
+              }}
+              placeholder="AIza…"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              data-1p-ignore
+              data-lpignore="true"
+              data-gramm="false"
+              className="w-full font-mono text-sm px-3.5 py-3 pr-12 border border-transparent rounded-lg bg-background focus:bg-card focus:border-border outline-none transition-all"
+            />
+            <button
+              type="button"
+              onClick={() => setShowKey((v) => !v)}
+              aria-label={showKey ? "Hide key" : "Show key"}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9B9895] hover:text-foreground transition-colors p-2">
+              {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+          </div>
+
+          {apiKeyError && (
+            <div className="flex items-start gap-2 mt-2.5 text-xs text-[#EF4444]">
+              <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
+              {apiKeyError}
+            </div>
+          )}
+          {apiKeySuccess && !apiKeyError && (
+            <div className="flex items-center gap-2 mt-2.5 text-xs text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 size={13} />
+              Key saved successfully.
+            </div>
+          )}
         </div>
 
-        {apiKeyError && (
-          <div className="flex items-start gap-2 mt-2.5 text-xs text-[#EF4444]">
-            <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
-            {apiKeyError}
-          </div>
-        )}
-        {apiKeySuccess && !apiKeyError && (
-          <div className="flex items-center gap-2 mt-2.5 text-xs text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 size={13} />
-            Key saved successfully.
-          </div>
-        )}
-      </div>
-
-      <button
-        id="settings-ai-save-key"
-        onClick={saveApiKey}
-        disabled={apiKeySaving || !apiKeyInput.trim()}
-        className="w-full py-3.5 rounded-xl bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-40">
-        {apiKeySaving ? "Saving…" : apiKeyHasKey ? "Replace Key" : "Save Key"}
-      </button>
+        <button
+          id="settings-ai-save-key"
+          type="submit"
+          disabled={apiKeySaving || !apiKeyInput.trim()}
+          className="w-full py-3.5 rounded-xl bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-40 mt-6">
+          {apiKeySaving ? "Saving…" : apiKeyHasKey ? "Replace Key" : "Save Key"}
+        </button>
+      </form>
 
       <p className="text-[11px] text-[#9B9895] leading-relaxed">
         Your key is <strong>never exposed to the browser</strong> after saving.

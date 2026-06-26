@@ -73,11 +73,11 @@ export default function AIWorkoutLogger({
       glowRadius={35}
       glowIntensity={1.2}
       edgeSensitivity={25}
-      animated={true}>
+      animated>
       <div
         className={cn(
           "rounded-2xl border border-orange-200 dark:border-orange-900/40",
-          "bg-card shadow-sm overflow-hidden",
+          " bg-transparent shadow-sm overflow-hidden",
         )}>
         {/* ── Message thread ──────────────────────────────────── */}
         <div

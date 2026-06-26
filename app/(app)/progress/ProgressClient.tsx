@@ -12,7 +12,6 @@ import { YourBMI } from "@/app/components/progress/YourBMI";
 import WeightChanges from "@/app/components/progress/WeightChanges";
 import { WeightHistory } from "@/app/components/progress/WeightHistory";
 import { ConsistencyHeatmap } from "@/app/components/progress/ConsistencyHeatmap";
-import { NutritionQuality } from "@/app/components/progress/NutritionQuality";
 import { CalorieVsTdeeChart } from "@/app/components/progress/CalorieVsTdeeChart";
 
 export default function ProgressPage() {
@@ -26,11 +25,11 @@ export default function ProgressPage() {
 
   const chartData = useMemo(() => {
     if (!profile) return [];
-    
+
     const days = 14;
     const today = new Date();
     const data = [];
-    
+
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
@@ -38,17 +37,17 @@ export default function ProgressPage() {
       const month = String(d.getMonth() + 1).padStart(2, "0");
       const day = String(d.getDate()).padStart(2, "0");
       const key = `${year}-${month}-${day}`;
-      
+
       const dayMeals = state?.meals?.[key] || [];
       const intake = dayMeals.reduce((sum, m) => sum + (m.cal || 0), 0);
-      
+
       data.push({
         date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
         intake,
         tdee: profile.tdee || 0,
       });
     }
-    
+
     return data;
   }, [state?.meals, profile]);
 
@@ -60,8 +59,8 @@ export default function ProgressPage() {
         Progress
       </h1>
       <Streak />
-      <div className="mb-4 grid grid-cols-1 lg:grid-cols-2 gap-4 items-center p-2">
-        <ConsistencyHeatmap mode="meals" />
+      <div className="mb-4  grid grid-cols-1 lg:grid-cols-2 gap-4 items-center p-2">
+        <ConsistencyHeatmap  mode="meals" />
         <WeightHistory />
         {/* <NutritionQuality /> */}
       </div>
