@@ -138,7 +138,7 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
   }
 
   return (
-    <Card className="p-6 flex flex-col gap-8 mb-6">
+    <Card className="p-4 sm:p-4 flex flex-col  gap-6 mb-6 h-full justify-evenly">
       <div>
         <div className="flex items-center gap-2 mb-1">
           <Key size={16} className="text-[#9B9895]" />
@@ -170,25 +170,28 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
       )}
 
       {apiKeyHasKey && apiKeyPreview && (
-        <div className="flex items-center justify-between gap-3 bg-background rounded-xl px-4 py-3">
-          <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] mb-0.5">
-              Stored key{" "}
-              {!apiKeyNeedsReEncrypt && (
-                <span className="normal-case font-normal text-emerald-600 dark:text-emerald-400 ml-1">
-                  · encrypted
-                </span>
-              )}
+        <div className="flex flex-col	gap-4 sm:gap-6">
+          {" "}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-background rounded-xl px-4 py-3">
+            <div className="w-full sm:w-auto break-all">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] mb-0.5">
+                Stored key{" "}
+                {!apiKeyNeedsReEncrypt && (
+                  <span className="normal-case font-normal text-emerald-600 dark:text-emerald-400 ml-1">
+                    · encrypted
+                  </span>
+                )}
+              </div>
+              <div className="font-mono text-sm tracking-widest">
+                {apiKeyPreview}
+              </div>
             </div>
-            <div className="font-mono text-sm tracking-widest">
-              {apiKeyPreview}
-            </div>
-          </div>
+          </div>{" "}
           <button
             id="settings-ai-remove-key"
             onClick={removeApiKey}
             disabled={apiKeyDeleting}
-            className="flex items-center gap-1.5 text-xs font-semibold text-[#EF4444] hover:text-red-600 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 disabled:opacity-50">
+            className="flex items-center py-3.5 justify-center w-full sm:w-auto gap-1.5 text-xs w-full py-3.5 rounded-xl border border-[#EF4444] text-[#EF4444] text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
             <Trash2 size={13} />
             {apiKeyDeleting ? "Removing…" : "Remove"}
           </button>
@@ -225,7 +228,7 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
             type="button"
             onClick={() => setShowKey((v) => !v)}
             aria-label={showKey ? "Hide key" : "Show key"}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9B9895] hover:text-foreground transition-colors">
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9B9895] hover:text-foreground transition-colors p-2">
             {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
         </div>
@@ -253,10 +256,8 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
       </button>
 
       <p className="text-[11px] text-[#9B9895] leading-relaxed">
-        🔒 Your key is stored in Firestore under your account and is only used
-        server-side to call the Gemini API. It is{" "}
-        <strong>never exposed to the browser</strong> after saving. To revoke
-        access, remove it here or rotate it in{" "}
+        Your key is <strong>never exposed to the browser</strong> after saving.
+        To revoke access, remove it here or rotate it in{" "}
         <a
           href="https://aistudio.google.com/app/apikey"
           target="_blank"
