@@ -51,7 +51,7 @@ export function UnitsTab({
               className={`relative p-5 rounded-xl border text-center transition-colors ${
                 weightUnit === u.key
                   ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                  : "border-transparent hover:border-[#1A1916] dark:border-[#f7f6f3] dark:hover:border-[#f7f6f3]"
+                  : "border-foreground/10 hover:border-[#1A1916] dark:border-foreground/10 dark:hover:border-[#f7f6f3]"
               }`}>
               {weightUnit === u.key && (
                 <motion.div
@@ -84,7 +84,7 @@ export function UnitsTab({
               className={`relative p-5 rounded-xl border text-center transition-colors ${
                 heightUnit === u.key
                   ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                  : "border-transparent hover:border-[#1A1916] dark:border-[#f7f6f3] dark:hover:border-[#f7f6f3]"
+                  : "border-foreground/10 hover:border-[#1A1916] dark:border-foreground/10 dark:hover:border-foreground"
               }`}>
               {heightUnit === u.key && (
                 <motion.div

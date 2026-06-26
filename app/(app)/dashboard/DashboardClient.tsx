@@ -106,10 +106,10 @@ export default function DashboardPage() {
               ) : (
                 <Card className="flex flex-col gap-2">
                   {recentWorkouts.map((w) => (
-                    <CardContent className="flex flex-col divide-y divide-[#F0EFEC] p-2 ">
-                      <div
-                        key={w.id}
-                        className="flex items-center gap-4 p-4 hover:bg-subtle transition-colors rounded-xl">
+                    <CardContent
+                      key={w.id}
+                      className="flex flex-col divide-y divide-[#F0EFEC] p-2 ">
+                      <div className="flex items-center gap-4 p-4 hover:bg-subtle transition-colors rounded-xl">
                         <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
                           💪
                         </div>

@@ -16,19 +16,19 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuthStore } from "@/app/store/authStore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const NAV: {
   href: string;
   label: string;
   Icon: React.ComponentType<{ size?: number; className?: string }>;
 }[] = [
-    { href: "/dashboard", label: "Home", Icon: Home },
-    { href: "/nutrition", label: "Nutrition", Icon: UtensilsCrossed },
-    { href: "/workouts", label: "Workouts", Icon: Dumbbell },
-    { href: "/progress", label: "Progress", Icon: TrendingUp },
-    { href: "/settings", label: "Settings", Icon: Settings },
-  ];
+  { href: "/dashboard", label: "Home", Icon: Home },
+  { href: "/nutrition", label: "Nutrition", Icon: UtensilsCrossed },
+  { href: "/workouts", label: "Workouts", Icon: Dumbbell },
+  { href: "/progress", label: "Progress", Icon: TrendingUp },
+  { href: "/settings", label: "Settings", Icon: Settings },
+];
 
 export default function PillNav() {
   const pathname = usePathname();
@@ -147,10 +147,8 @@ export default function PillNav() {
 // }
 
 function PillNavInner({ pathname }: { pathname: string }) {
-
   return (
     <>
-
       {/* Desktop sidebar — hidden below lg */}
       <nav className="fixed left-3 lg:left-4 top-1/2 -translate-y-1/2 w-16 bg-background border border-border rounded-[30px] shadow-[0_4px_24px_rgba(0,0,0,0.07)] dark:shadow-none hidden lg:flex flex-col items-center gap-[2px] py-[10px] px-2 z-[200]">
         <div className="w-[38px] h-[38px] bg-foreground rounded-full flex items-center justify-center mb-[10px]">
@@ -195,9 +193,15 @@ function FloatingSidebar({ pathname }: { pathname: string }) {
   const { user } = useAuthStore();
   const { state } = useApp();
 
+  // The auth store hydrates on the client after SSR, so the
+  // avatar URL is undefined on the server. Render the same
+  // placeholder on the first client render to avoid hydration
+  // mismatches, then swap to the real <img> after mount.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <>
-
       {/* Desktop floating sidebar — lg and up */}
       <nav className="fixed left-3 lg:left-4 inset-y-4 w-64 bg-background dark:bg-[#1a1916]/80 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-none hidden lg:flex flex-col gap-1 py-4 px-3 z-[200] ">
         {/* Brand */}
@@ -252,19 +256,17 @@ function FloatingSidebar({ pathname }: { pathname: string }) {
         <Link
           href="/settings"
           className="flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-subtle transition-colors group">
-          {user?.photoURL ? (
+          {mounted && user?.photoURL ? (
             <img
               src={user.photoURL}
               alt="avatar"
               className="w-8 h-8 rounded-full border-2 border-border"
             />
-          ) : (
-            ""
-          )}
+          ) : null}
           <span className="text-sm font-semibold text-[#1A1916] dark:text-[#f7f6f3] flex-1 truncate">
             {state.profile?.name
               ? state.profile.name.charAt(0).toUpperCase() +
-              state.profile.name.slice(1)
+                state.profile.name.slice(1)
               : ""}
           </span>
           <Settings

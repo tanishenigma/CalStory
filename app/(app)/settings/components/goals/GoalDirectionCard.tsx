@@ -114,17 +114,17 @@ export function GoalDirectionCard({
         </>
       )}
 
-      <div className="bg-background rounded-xl p-5">
-        <div className="text-xs font-bold uppercase tracking-wider text-[#9B9895] mb-2">
+      <div className="relative overflow-hidden rounded-xl p-5 bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400 dark:from-orange-600/80 dark:via-amber-600/70 dark:to-yellow-500/60 text-white">
+        <div className="text-xs font-bold uppercase tracking-wider text-white/80 mb-2">
           Estimated Target
         </div>
-        <div className="font-mono text-3xl font-medium">
+        <div className="font-mono text-3xl font-medium text-white">
           {preview.calTarget} kcal
         </div>
-        <div className="text-[11px] text-[#9B9895] mt-2 font-medium">
+        <div className="text-[11px] text-white/90 mt-2 font-medium">
           P {preview.protein}g · C {preview.carbs}g · F {preview.fat}g
         </div>
-        <div className="text-[11px] text-[#9B9895] mt-1 font-medium">
+        <div className="text-[11px] text-white/90 mt-1 font-medium">
           TDEE {preview.tdee} kcal
         </div>
       </div>

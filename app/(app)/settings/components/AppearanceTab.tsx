@@ -69,7 +69,7 @@ export function AppearanceTab() {
                     "relative flex flex-col items-center gap-2 p-4 rounded-2xl border transition-colors",
                     active
                       ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                      : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-white/10",
+                      : "border-foreground/10 hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-white/10",
                   ].join(" ")}>
                   {active && (
                     <motion.div
@@ -130,7 +130,7 @@ export function AppearanceTab() {
                     "relative flex flex-col gap-3 text-left p-4 rounded-2xl border transition-colors",
                     active
                       ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                      : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-white/10",
+                      : "border-foreground/10 hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-white/10",
                   ].join(" ")}>
                   {active && (
                     <motion.div

@@ -58,7 +58,7 @@ export function ProfileTab({
               <div className="text-sm text-[#9B9895] truncate">
                 {user?.email || "No email set"}
               </div>
-              <div className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary text-accent dark:bg-primary dark:text-foreground">
+              <div className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/20 text-foreground dark:bg-primary/20 dark:text-foreground">
                 {GOAL_BADGE[goal] ?? "⚖️ Maintaining"}
               </div>
             </div>
