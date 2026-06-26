@@ -355,81 +355,142 @@ function SettingsPageContent() {
       {/* ── Profile tab ── */}
       {tab === "profile" && (
         <BlurFade>
-          <Card className="p-6">
-            <div className="flex items-center gap-4 mb-8">
-              {user?.photoURL ? (
-                <img
-                  src={user.photoURL}
-                  alt="avatar"
-                  className="w-16 h-16 rounded-full border border-transparent"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-[#1A1916] dark:bg-[#f7f6f3] flex items-center justify-center text-white dark:text-[#1A1916] text-2xl font-bold">
-                  {(state.profile?.name || "U")[0].toUpperCase()}
+          {/* Identity card */}
+          <Card className="p-6 mb-5">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="relative">
+                {user?.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt="avatar"
+                    className="w-18 h-18 rounded-full border-2 border-orange-400"
+                    style={{ width: 72, height: 72 }}
+                  />
+                ) : (
+                  <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-2xl font-bold shadow-md">
+                    {(state.profile?.name || "U")[0].toUpperCase()}
+                  </div>
+                )}
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-card flex items-center justify-center">
+                  <CheckCircle2 size={12} className="text-white" />
                 </div>
-              )}
-              <div>
-                <div className="font-bold text-lg">
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-xl truncate">
                   {state.profile?.name
                     ? state.profile.name.charAt(0).toUpperCase() +
                     state.profile.name.slice(1)
-                    : "User"}
+                    : "New User"}
                 </div>
-                <div className="text-sm text-[#9B9895]">
-                  {user?.email || "Guest"}
+                <div className="text-sm text-[#9B9895] truncate">
+                  {user?.email || "No email set"}
+                </div>
+                <div className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400">
+                  {state.profile?.goal === "bulk"
+                    ? "💪 Bulking"
+                    : state.profile?.goal === "cut"
+                      ? "🔥 Cutting"
+                      : "⚖️ Maintaining"}
                 </div>
               </div>
-            </div>
-
-            {/* Edit profile — opens a modal for DOB + weight. Age
-                is shown here as a derived value of the stored DOB. */}
-            <div className="flex justify-end mb-3">
               <button
                 onClick={() => setEditProfileOpen(true)}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9B9895] hover:text-foreground transition-colors px-2.5 py-1.5 rounded-lg hover:bg-muted">
-                <Pencil size={12} />
-                Edit profile
+                className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-orange-400 hover:text-orange-600 transition-all px-3 py-2 rounded-lg ml-auto">
+                <Pencil size={13} />
+                Edit
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
+            {/* Stats grid */}
+            <div className="grid grid-cols-3 gap-2 mb-4">
               {[
-                { label: "Age", val: `${state.profile?.age} yrs` },
+                {
+                  label: "Age",
+                  val: `${state.profile?.age ?? "—"} yrs`,
+                  sub: "years old",
+                },
                 {
                   label: "Weight",
                   val:
                     state.profile?.weightUnit === "lbs"
-                      ? `${kgToLbs(state.profile?.weight ?? 0)} lbs`
-                      : `${state.profile?.weight} kg`,
+                      ? `${kgToLbs(state.profile?.weight ?? 0)}`
+                      : `${Math.round(state.profile?.weight ?? 0)}`,
+                  sub: state.profile?.weightUnit === "lbs" ? "lbs" : "kg",
                 },
                 {
                   label: "Height",
                   val: state.profile
-                    ? displayHeight(
-                      state.profile.height,
-                      state.profile.heightUnit,
-                    )
+                    ? displayHeight(state.profile.height, state.profile.heightUnit)
                     : "—",
-                },
-                { label: "TDEE", val: `${state.profile?.tdee} kcal` },
-                { label: "Target", val: `${state.profile?.calTarget} kcal` },
-                {
-                  label: "Goal",
-                  val: `${state.profile?.goal} (${state.profile?.intensity || "moderate"})`,
+                  sub: state.profile?.heightUnit === "imperial" ? "ft/in" : "cm",
                 },
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="bg-background rounded-xl p-3 sm:p-4 min-w-0">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] mb-1">
+                  className="bg-muted/60 rounded-xl px-3 py-3 text-center">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] mb-0.5">
                     {item.label}
                   </div>
-                  <div className="font-mono text-xs sm:text-base font-medium truncate">
+                  <div className="font-bold text-base truncate leading-tight">
                     {item.val}
                   </div>
+                  <div className="text-[9px] text-[#9B9895] mt-0.5">{item.sub}</div>
                 </div>
               ))}
-            </div>    <Card className="p-6 flex flex-col gap-8 mb-6">
+            </div>
+
+            {/* Energy targets */}
+            <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-xl p-4">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] mb-3">
+                Daily Energy Targets
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center">
+                  <div className="text-[10px] text-[#9B9895] mb-0.5">TDEE</div>
+                  <div className="font-bold text-orange-600 dark:text-orange-400 text-lg leading-tight">
+                    {state.profile?.tdee ?? "—"}
+                  </div>
+                  <div className="text-[9px] text-[#9B9895]">kcal</div>
+                </div>
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute inset-x-0 top-1/2 h-px bg-border -translate-y-1/2" />
+                </div>
+                <div className="text-center">
+                  <div className="text-[10px] text-[#9B9895] mb-0.5">Target</div>
+                  <div className="font-bold text-emerald-600 dark:text-emerald-400 text-lg leading-tight">
+                    {state.profile?.calTarget ?? "—"}
+                  </div>
+                  <div className="text-[9px] text-[#9B9895]">kcal</div>
+                </div>
+              </div>
+              {/* Macros row */}
+              <div className="mt-3 pt-3 border-t border-orange-200 dark:border-orange-800/50 flex justify-around">
+                {[
+                  {
+                    label: "Protein",
+                    val: `${state.profile?.protein ?? 0}g`,
+                    color: "text-blue-600 dark:text-blue-400",
+                  },
+                  {
+                    label: "Carbs",
+                    val: `${state.profile?.carbs ?? 0}g`,
+                    color: "text-amber-600 dark:text-amber-400",
+                  },
+                  {
+                    label: "Fat",
+                    val: `${state.profile?.fat ?? 0}g`,
+                    color: "text-purple-600 dark:text-purple-400",
+                  },
+                ].map((m) => (
+                  <div key={m.label} className="text-center">
+                    <div className="text-[9px] text-[#9B9895] mb-0.5">{m.label}</div>
+                    <div className={`font-bold text-sm ${m.color}`}>{m.val}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+          <Card className="p-6 flex flex-col gap-8 mb-6">
               {/* Header */}
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -576,7 +637,6 @@ function SettingsPageContent() {
                 Sign out
               </button>
             )}
-          </Card>
         </BlurFade>
       )}
 

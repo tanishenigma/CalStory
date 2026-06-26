@@ -44,13 +44,6 @@ export async function generateMetadata({
   };
 }
 
-/**
- * Tell Next.js which dynamic paths to pre-render at build time.
- *
- * Note: `generateStaticParams` itself is *not* async — its return type
- * is a synchronous array of param objects. The route handler and
- * `generateMetadata` are the ones that await `params`.
- */
 export function generateStaticParams(): { id: string }[] {
   return Object.values(BLOG_POSTS).map((p) => ({ id: p.id }));
 }
@@ -417,9 +410,6 @@ export default async function PostPage({
 }: {
   params: Promise<Params>;
 }) {
-  // Next.js 16: `params` is a Promise. Awaiting it gives us the actual
-  // segment values for this request. Reading `params.id` synchronously
-  // (without await) returned `undefined` on Next 15+ and would 404 here.
   const { id } = await params;
   const post = getBlogPost(id);
   const content = POST_BODIES[id];

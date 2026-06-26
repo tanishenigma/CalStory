@@ -14,7 +14,7 @@ interface PrefsState {
 }
 
 const DEFAULT_NAVBAR: NavbarStyle = "floating";
-const DEFAULT_THEME: Theme = "system";
+const DEFAULT_THEME: Theme = "light";
 
 /** Resolve "system" to the actual OS preference at call time. */
 export function resolveTheme(t: Theme): "light" | "dark" {

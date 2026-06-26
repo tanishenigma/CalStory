@@ -87,22 +87,12 @@ export default function LandingPage() {
     return () => ctx.revert();
   }, []);
 
-  // The landing page's three "Get started" entry points (Navbar "Get
-  // Started", hero "Start Tracking", CTASection "Get started free") all
-  // route through here. We delegate to /auth instead of triggering the
-  // Google popup directly so the user gets a dedicated, on-brand sign-in
-  // surface with the privacy/terms context around it.
   function handleSignIn() {
     router.push("/auth");
   }
 
   return (
     <ReactLenis root options={{ lerp: 0.1, duration: 1.5 }}>
-      {/* ── Animated gradient orbs ──────────────────────────────────
-          Rendered as a sibling BEFORE the content wrapper so they are
-          NOT inside the bg-background stacking context. Body already
-          owns the page background colour. Orbs sit at z-0, content at z-10.
-      ────────────────────────────────────────────────────────────── */}
       <div className="pointer-events-none fixed inset-0" style={{ zIndex: 0 }}>
         {/* Primary orange orb — top-right */}
         <div
@@ -209,25 +199,6 @@ export default function LandingPage() {
           </BlurFade>
 
           <HeroScrollSection />
-        </section>
-        {/* FEATURES GRID */}
-        <section
-          id="features"
-          className="relative z-10 pb-24 md:mt-24 px-6 w-full flex justify-center">
-          <div className="max-w-5xl mx-auto w-full">
-            <BlurFade className="text-center mb-16 w-full flex flex-col items-center">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4 font-heading">
-                Data, without the noise.
-              </h2>
-              <p className="text-muted-foreground-foreground text-base font-medium">
-                Built for the obsessive. Engineered for clarity.
-              </p>
-            </BlurFade>
-
-            <div>
-              <EngineeredPerformance />
-            </div>
-          </div>
         </section>
         {/* METHOD SECTION */}
         <section

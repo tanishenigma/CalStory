@@ -31,11 +31,7 @@ const SITE_URL =
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    // Default title — used by routes that don't export their own `metadata.title`.
-    // Stays under 60 chars so it isn't truncated in SERPs.
     default: `${SITE_NAME} - Free Calorie Tracker`,
-    // Template applied to every child route that exports `title: "Foo"`.
-    // Result renders as: "Foo | CalStory".
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -123,15 +119,12 @@ export default function RootLayout({
         geist.variable,
       )}>
       <head>
-        {/* Inline blocking script: restore theme before first paint to avoid FOUC.
-            Reads "ft_theme" (JSON, written by prefsStore) or falls back to
-            "theme" (raw string) or OS preference. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{
   var raw=localStorage.getItem('ft_theme');
   var t=raw?JSON.parse(raw):localStorage.getItem('theme');
-  var dark=t==='dark'||((!t||t==='"system"'||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  var dark=t==='dark'||(t!=='light'&&(!t||t==='"system"'||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);
   if(dark)document.documentElement.classList.add('dark');
 }catch(e){}})();`,
           }}
