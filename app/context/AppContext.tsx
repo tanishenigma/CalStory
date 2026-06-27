@@ -6,12 +6,7 @@ import {
   useEffect,
   useReducer,
 } from "react";
-import {
-  useAuthStore,
-  initAuthListener,
-  markAuthHintOnboarded,
-} from "@/app/store/authStore";
-import { getAuthHint, LS, LS_KEYS } from "@/app/lib/storage";
+import { useAuthStore, initAuthListener } from "@/app/store/authStore";
 import {
   hydratePrefs,
   persistPrefsForUser,
@@ -213,6 +208,43 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     initAuthListener();
   }, []);
 
+  // One-time migration: clear legacy localStorage keys from before the
+  // privacy-tightening refactor. Previously we cached the full profile
+  // (weight, height, age, DOB) and an auth hint (uid, email,
+  // displayName, photoURL) in localStorage. Those keys are no longer
+  // written by the app — purge them on first boot so users who
+  // visited before this change don't keep that data on disk.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const LEGACY_KEYS = [
+      "ft_auth_hint",
+      "ft_profile",
+      "ft_meals",
+      "ft_workouts",
+      "ft_profile_user",
+      "ft_meals_user",
+      "ft_workouts_user",
+    ];
+    const PREFIXES = [
+      "ft_profile_user_",
+      "ft_meals_user_",
+      "ft_workouts_user_",
+    ];
+    try {
+      for (const k of LEGACY_KEYS) localStorage.removeItem(k);
+      // Sweep per-uid mirrors — localStorage is small in practice so
+      // iterating once is cheap.
+      const toRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && PREFIXES.some((p) => k.startsWith(p))) toRemove.push(k);
+      }
+      for (const k of toRemove) localStorage.removeItem(k);
+    } catch {
+      // Ignore quota / privacy-mode errors — nothing critical here.
+    }
+  }, []);
+
   useEffect(() => {
     hydratePrefs(null);
   }, []);
@@ -254,9 +286,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      // Clear any stale per-user caches so a different account signing in
-      // on the same device never inherits the previous user's profile.
-      LS.remove(LS_KEYS.PROFILE_USER);
       dispatch({
         type: "HYDRATE",
         payload: {
@@ -272,43 +301,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // ── Synchronous cache hydrate ──
-    // If we have a cached profile in localStorage AND it belongs to the
-    // same uid the auth store just resolved to, dispatch it immediately.
-    // This lets `useAuthGuard` decide between /onboarding and /dashboard
-    // on the very first render after a refresh, instead of waiting on a
-    // Firestore round-trip. The remote refresh still runs below to keep
-    // the cached value honest.
-    const cachedProfile = LS.get<Profile>(LS_KEYS.PROFILE_USER);
-    const hint = getAuthHint();
-    if (
-      cachedProfile &&
-      hint &&
-      hint.uid === user.uid &&
-      state.profile === undefined // only on initial hydrate, don't clobber edits
-    ) {
-      dispatch({ type: "SET_PROFILE", payload: cachedProfile });
-      markAuthHintOnboarded(!!cachedProfile.onboardedAt);
-    }
-
     async function hydrateRemote() {
       if (!user) return;
       // Fetch the profile FIRST so guards can decide (onboarded vs not)
       // as early as possible. The rest of the data hydrates in the
       // background and dispatches separately — no need to block the
       // redirect on meals / recents / templates.
+      //
+      // We deliberately do NOT read a cached profile from localStorage
+      // here. Profile PII (weight, height, age, DOB) stays in Firestore;
+      // the user sees a skeleton until the first read completes. With
+      // Firebase's browserLocalPersistence, onAuthStateChanged resolves
+      // synchronously from IndexedDB on hard refresh, so the only
+      // network round-trip on a warm cache is this getProfile().
       try {
         const profile = await getProfile(user.uid);
         dispatch({ type: "SET_PROFILE", payload: profile ?? null });
-        // Mirror the freshly-fetched profile into the cache so the next
-        // refresh can skip this network call. The cache is per-uid so
-        // swapping accounts doesn't leak data across users.
-        if (profile) {
-          LS.set<Profile>(LS_KEYS.PROFILE_USER, profile);
-        } else {
-          LS.remove(LS_KEYS.PROFILE_USER);
-        }
-        markAuthHintOnboarded(!!profile?.onboardedAt);
         // Kick off the rest in parallel. We don't await it here so the
         // onboarding → dashboard redirect isn't blocked on 5 reads.
         void hydrateSecondary(user.uid);
@@ -393,11 +401,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     async (p: Profile): Promise<void> => {
       dispatch({ type: "SET_PROFILE", payload: p });
       if (!user) return;
-      // Mirror to the per-user cache so a refresh can boot the dashboard
-      // before Firestore responds. Failure is silent — Firestore remains
-      // the source of truth; this is just a hint for synchronous boot.
-      LS.set<Profile>(LS_KEYS.PROFILE_USER, p);
-      markAuthHintOnboarded(!!p.onboardedAt);
+      // Firestore is the only source of truth for profile data. We no
+      // longer mirror the profile to localStorage — keeping it there
+      // would have put weight, height, age, DOB etc. on disk in plain
+      // JSON for every visitor.
       await saveProfile(user.uid, p);
     },
     [user],

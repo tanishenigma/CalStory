@@ -39,7 +39,7 @@ export default function NutritionPage() {
     null,
   );
 
-  if (isLoading || !profile) return <Spinner />;
+  if (isLoading || !profile) return <Spinner variant="nutrition" />;
 
   const dayMeals = meals[selDate] || [];
 

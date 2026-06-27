@@ -1,3 +1,17 @@
+/**
+ * storage.ts — localStorage helpers.
+ *
+ * Scope: this module is intentionally tiny. It is for **UI prefs only**
+ * (theme, navbar style, dynamic-background toggle) — nothing that has
+ * any meaningful security or privacy implication. Profile data, auth
+ * state, meals and workouts are NOT stored here. The Firebase JS SDK
+ * persists its own auth session via IndexedDB (browserLocalPersistence),
+ * and all domain data lives in Firestore. The auth-hint and per-user
+ * profile caches that previously lived in this module were removed
+ * because they duplicated Firebase's own session persistence while
+ * adding a localStorage surface for PII.
+ */
+
 export const LS = {
   get<T>(key: string, defaultVal: T | null = null): T | null {
     if (typeof window === "undefined") return defaultVal;
@@ -23,14 +37,11 @@ export const LS = {
 };
 
 export const LS_KEYS = {
-  PROFILE: "ft_profile",
-  MEALS: "ft_meals",
-  WORKOUTS: "ft_workouts",
-  PROFILE_USER: "ft_profile_user",
-  MEALS_USER: "ft_meals_user",
-  WORKOUTS_USER: "ft_workouts_user",
-
-  AUTH_HINT: "ft_auth_hint",
+  // UI prefs only. Per-uid mirrors live under `ft_<pref>_<uid>` and are
+  // read via getUserKey() / written via setUserKey() below.
+  NAVBAR_STYLE: "ft_navbar_style",
+  THEME: "ft_theme",
+  DYNAMIC_BG: "ft_dynamic_bg",
 } as const;
 
 export function getUserKey<T>(uid: string, suffix: string): T | null {
@@ -41,25 +52,4 @@ export function getUserKey<T>(uid: string, suffix: string): T | null {
 export function setUserKey<T>(uid: string, suffix: string, value: T): void {
   if (!uid) return;
   LS.set<T>(`ft_${suffix}_${uid}`, value);
-}
-
-export interface AuthHint {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  photoURL: string | null;
-  onboarded: boolean;
-  cachedAt: number;
-}
-
-export function getAuthHint(): AuthHint | null {
-  return LS.get<AuthHint>(LS_KEYS.AUTH_HINT);
-}
-
-export function setAuthHint(hint: AuthHint): void {
-  LS.set<AuthHint>(LS_KEYS.AUTH_HINT, hint);
-}
-
-export function clearAuthHint(): void {
-  LS.remove(LS_KEYS.AUTH_HINT);
 }

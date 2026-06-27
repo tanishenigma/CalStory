@@ -5,11 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { Spinner } from "@/app/hooks/useAuthGuard";
+import { PageSkeleton } from "@/app/components/PageSkeleton";
 import { useAuthStore } from "@/app/store/authStore";
 import { useApp } from "@/app/context/AppContext";
 import { signInWithGoogle } from "@/app/lib/auth";
-import { setAuthHint } from "@/app/lib/storage";
 import { toast } from "sonner";
 
 export default function AuthPage() {
@@ -26,22 +25,18 @@ export default function AuthPage() {
   }, [user, loading, state.profile, router]);
 
   if (loading && !user) {
-    return <Spinner />;
+    return <PageSkeleton variant="auth" />;
   }
 
   async function handleGoogleSignIn() {
     if (submitting) return;
     setSubmitting(true);
     try {
-      const cred = await signInWithGoogle();
-      setAuthHint({
-        uid: cred.user.uid,
-        email: cred.user.email,
-        displayName: cred.user.displayName,
-        photoURL: cred.user.photoURL,
-        onboarded: false,
-        cachedAt: Date.now(),
-      });
+      await signInWithGoogle();
+      // The Firebase auth listener (initAuthListener → onAuthStateChanged)
+      // updates useAuthStore.user, which makes the redirect effect above
+      // push us to /dashboard. No need to write a hint to localStorage —
+      // Firebase's browserLocalPersistence handles session persistence.
       router.push("/dashboard");
     } catch (err) {
       const code =

@@ -51,7 +51,7 @@ export default function ProgressPage() {
     return data;
   }, [state?.meals, profile]);
 
-  if (isLoading || !profile || !mounted) return <Spinner />;
+  if (isLoading || !profile || !mounted) return <Spinner variant="progress" />;
 
   return (
     <div className="pb-24 p-4 md:p-6 lg:p-8 min-w-0 w-full">

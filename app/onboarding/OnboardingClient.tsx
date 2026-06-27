@@ -128,7 +128,7 @@ export default function OnboardingPage() {
   // briefly flash the form for users who are about to be redirected away.
   // Must come *after* all useState calls to satisfy the rules of hooks.
   if (loading || (user && state.profile === undefined)) {
-    return <Spinner />;
+    return <Spinner compact />;
   }
 
   function preview() {

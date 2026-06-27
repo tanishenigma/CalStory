@@ -147,7 +147,7 @@ export default function WorkoutsPage() {
   const [showTemplates, setShowTemplates] = React.useState(false);
   const [viewingTemplate, setViewingTemplate] = React.useState<any>(null);
 
-  if (isLoading || !profile) return <Spinner />;
+  if (isLoading || !profile) return <Spinner variant="workouts" />;
 
   const dayWorkouts = workouts[selDate] || [];
 

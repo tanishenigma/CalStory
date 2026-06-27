@@ -71,7 +71,7 @@ function SettingsPageContent() {
     state.profile?.heightUnit || "metric",
   );
 
-  if (isLoading || !profile) return <Spinner />;
+  if (isLoading || !profile) return <Spinner variant="settings" />;
 
   async function handleSignOut() {
     await signOut();

@@ -43,7 +43,7 @@ export default function DashboardPage() {
     return () => lenis.destroy();
   }, []);
 
-  if (isLoading || !profile) return <Spinner />;
+  if (isLoading || !profile) return <Spinner variant="dashboard" />;
 
   const todayMeals = meals[selDate] || [];
   const todayWorkouts = workouts[selDate] || [];
