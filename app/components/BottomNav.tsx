@@ -44,7 +44,7 @@ export default function BottomNav() {
 
   if (pathname === "/") return null;
   return (
-    <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 lg:hidden z-[200] w-[calc(100vw-24px)] max-w-md mx-auto h-[72px] flex items-center justify-around px-2 bg-background/95 dark:bg-foreground/95 backdrop-blur-xl border border-border rounded-3xl shadow-[0_10px_30px_oklch(0_0_0/_0.12)]">
+    <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 lg:hidden z-[200] w-[calc(100vw-24px)] max-w-md mx-auto h-[72px] flex items-center justify-around px-2 bg-background/95 dark:bg-background backdrop-blur-xl border border-border rounded-3xl shadow-[0_10px_30px_oklch(0_0_0/_0.12)]">
       {TABS.map(({ href, label, icon }) => {
         const active = pathname === href || pathname.startsWith(href + "/");
 
@@ -58,18 +58,14 @@ export default function BottomNav() {
             }}>
             <div
               className={`transition-all duration-200 ${
-                active
-                  ? "text-foreground"
-                  : "text-muted-foreground"
+                active ? "text-foreground" : "text-muted-foreground"
               }`}>
               {icon}
             </div>
 
             <span
               className={`text-[11px] font-semibold transition-colors duration-200 ${
-                active
-                  ? "text-foreground"
-                  : "text-muted-foreground"
+                active ? "text-foreground" : "text-muted-foreground"
               }`}>
               {label}
             </span>

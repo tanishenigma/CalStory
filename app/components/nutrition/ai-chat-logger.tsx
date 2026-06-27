@@ -190,7 +190,7 @@ function MessageBubble({
         className={cn(
           "max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed",
           isUser
-            ? "bg-ink text-white bg-foreground text-foreground rounded-tr-sm"
+            ? " text-white bg-primary rounded-tr-sm"
             : "bg-subtle border border-border text-ink rounded-tl-sm",
         )}>
         <span

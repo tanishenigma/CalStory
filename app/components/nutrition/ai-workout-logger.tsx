@@ -222,7 +222,7 @@ function WorkoutMessageBubble({
         className={cn(
           "max-w-[85%] px-4 py-2.5 rounded-md text-sm leading-relaxed",
           isUser
-            ? "bg-foreground text-background dark:bg-foreground dark:text-background rounded-tr-sm"
+            ? " text-white bg-primary rounded-tr-sm"
             : "bg-subtle border border-border text-ink rounded-tl-sm",
         )}>
         <span
