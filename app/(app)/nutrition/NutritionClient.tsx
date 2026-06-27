@@ -177,7 +177,7 @@ export default function NutritionPage() {
             <EnergyRing
               label="Expenditure"
               value={profile.tdee || calTarget}
-              max={calTarget}
+              max={profile.tdee || calTarget}
               ringColor="#3b82f6"
               trackColor="rgba(59, 130, 246, 0.18)"
             />
