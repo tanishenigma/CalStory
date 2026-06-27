@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -32,6 +32,7 @@ const timeframes = ["This wk", "Last wk", "2 wk ago", "3 wk ago"];
 export function WeeklyEnergy() {
   const { state } = useApp();
   const [activeFrame, setActiveFrame] = useState("This wk");
+  const fullLabelsRef = useRef<string[]>([]);
 
   const meals = state?.meals || {};
   const workouts = state?.workouts || {};
@@ -51,9 +52,12 @@ export function WeeklyEnergy() {
       const key = `${year}-${month}-${day}`;
       return {
         label: d.toLocaleDateString("en-IN", { weekday: "short" }).charAt(0),
+        fullLabel: d.toLocaleDateString("en-IN", { weekday: "long" }),
         key,
       };
     });
+
+    fullLabelsRef.current = days.map((d) => d.fullLabel);
 
     const consumedData = days.map((d) => {
       const dayMeals = meals[d.key] || [];
@@ -80,8 +84,8 @@ export function WeeklyEnergy() {
           {
             label: "Consumed",
             data: consumedData,
-            borderColor: "#1A1916",
-            backgroundColor: "#1A1916",
+            borderColor: "#22c55e",
+            backgroundColor: "#22c55e",
             tension: 0.4,
             pointRadius: 3,
             borderWidth: 2,
@@ -89,8 +93,8 @@ export function WeeklyEnergy() {
           {
             label: "Burned",
             data: burnedData,
-            borderColor: "#EF4444",
-            backgroundColor: "#EF4444",
+            borderColor: "#ef4444",
+            backgroundColor: "#ef4444",
             tension: 0.4,
             pointRadius: 3,
             borderWidth: 2,
@@ -106,11 +110,17 @@ export function WeeklyEnergy() {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: "#1A1916",
+        backgroundColor: "var(--color-ink)",
         titleFont: { family: "DM Mono", size: 11 },
         bodyFont: { family: "DM Mono", size: 13 },
         padding: 10,
         cornerRadius: 8,
+        callbacks: {
+          title: (items) => {
+            const idx = items[0]?.dataIndex ?? 0;
+            return fullLabelsRef.current[idx] || "";
+          },
+        },
       },
     },
     scales: {
@@ -118,17 +128,17 @@ export function WeeklyEnergy() {
         grid: { display: false },
         ticks: {
           font: { family: "Inter", size: 11 },
-          color: "rgba(155, 152, 149, 0.6)",
+          color: "oklch(0.5517 0.0138 285.9385 / 0.6)",
         },
       },
       y: {
         // Subtle gridline that works on both light and dark cards.
         // Earlier this was a hard-coded light hex (#F0EFEC) which
         // read as stark white in dark mode and fought the data.
-        grid: { color: "rgba(155, 152, 149, 0.15)" },
+        grid: { color: "oklch(0.5517 0.0138 285.9385 / 0.15)" },
         ticks: {
           font: { family: "DM Mono", size: 11 },
-          color: "rgba(155, 152, 149, 0.6)",
+          color: "oklch(0.5517 0.0138 285.9385 / 0.6)",
         },
         beginAtZero: true,
       },
@@ -149,8 +159,8 @@ export function WeeklyEnergy() {
                 onClick={() => setActiveFrame(tf)}
                 className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors whitespace-nowrap ${
                   activeFrame === tf
-                    ? "bg-card text-[#1A1916] dark:text-[#f7f6f3] shadow-sm"
-                    : "text-[#9B9895]"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground"
                 }`}>
                 {tf}
               </button>
@@ -164,26 +174,26 @@ export function WeeklyEnergy() {
         </div>
         <div className="flex justify-between items-center border-t border-border pt-4 px-2">
           <div className="text-center">
-            <div className="text-[11px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+            <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
               Consumed
             </div>
-            <div className="text-xl font-mono font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+            <div className="text-xl font-mono font-bold text-[#22c55e]">
               {chartData.avgConsumed}
             </div>
           </div>
           <div className="text-center">
-            <div className="text-[11px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+            <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
               Burned
             </div>
-            <div className="text-xl font-mono font-bold text-[#EF4444]">
+            <div className="text-xl font-mono font-bold text-destructive">
               {chartData.avgBurned}
             </div>
           </div>
           <div className="text-center">
-            <div className="text-[11px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+            <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
               Energy
             </div>
-            <div className="text-xl font-mono font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+            <div className="text-xl font-mono font-bold text-[#3b82f6]">
               {chartData.avgEnergy}
             </div>
           </div>

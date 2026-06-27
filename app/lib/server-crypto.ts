@@ -1,43 +1,6 @@
-/**
- * server-crypto.ts — SERVER ONLY
- *
- * AES-256-GCM symmetric encryption for Gemini API keys stored in Firestore.
- *
- * Why AES-256-GCM?
- *   • AES-256 is the industry-standard symmetric cipher — the same one
- *     banks and governments use for data at rest.
- *   • GCM (Galois/Counter Mode) provides both encryption AND authentication
- *     (via an auth tag). If the ciphertext is tampered with even one bit,
- *     decryption throws — making any Firestore-side mutation detectable.
- *   • The IV (initialisation vector) is random per encryption call, so
- *     encrypting the same key twice produces different ciphertext — no
- *     fingerprinting via pattern matching.
- *
- * Why NOT hashing (bcrypt / SHA)?
- *   Hashing is one-way. We need to recover the original key to pass it
- *   to the Gemini SDK, so hashing is the wrong primitive here.
- *
- * Secret management:
- *   The encryption key lives ONLY in GEMINI_KEY_ENCRYPTION_SECRET (env var).
- *   It is never stored in Firestore, never logged, and never sent to the
- *   client. If the env var is missing or malformed, all encrypt/decrypt
- *   calls throw — the system refuses to operate rather than silently
- *   falling back to plaintext.
- *
- * Ciphertext format stored in Firestore:
- *   enc:<iv_hex>:<authTag_hex>:<ciphertext_hex>
- *
- *   The "enc:" prefix lets us detect already-encrypted values vs any
- *   plaintext key a user may have saved before this was deployed, so
- *   we can handle migration gracefully.
- *
- * Node.js `crypto` is built-in — no additional packages required.
- */
-
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 
 const ALGORITHM = "aes-256-gcm" as const;
-/** AES-256 requires a 32-byte key → stored as 64 hex chars in env. */
 const EXPECTED_SECRET_HEX_LENGTH = 64;
 
 function getEncryptionKey(): Buffer {
@@ -53,13 +16,8 @@ function getEncryptionKey(): Buffer {
   return Buffer.from(secret, "hex");
 }
 
-/** Prefix that marks an encrypted value — lets us detect plaintext migrations. */
 const ENC_PREFIX = "enc:";
 
-/**
- * Encrypt a Gemini API key for storage in Firestore.
- * Returns a string in the format `enc:<iv>:<authTag>:<ciphertext>` (all hex).
- */
 export function encryptApiKey(plaintext: string): string {
   const key = getEncryptionKey();
   // 96-bit (12-byte) random IV — the GCM recommended size
@@ -72,15 +30,14 @@ export function encryptApiKey(plaintext: string): string {
   const authTag = cipher.getAuthTag(); // 16 bytes by default
   return (
     ENC_PREFIX +
-    [iv.toString("hex"), authTag.toString("hex"), encrypted.toString("hex")].join(":")
+    [
+      iv.toString("hex"),
+      authTag.toString("hex"),
+      encrypted.toString("hex"),
+    ].join(":")
   );
 }
 
-/**
- * Decrypt a stored ciphertext back to the original API key.
- * Throws if the ciphertext is malformed OR if the auth tag fails
- * (i.e. the data was tampered with in Firestore).
- */
 export function decryptApiKey(stored: string): string {
   if (!stored.startsWith(ENC_PREFIX)) {
     throw new Error(
@@ -101,15 +58,13 @@ export function decryptApiKey(stored: string): string {
   const decipher = createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
   // If Firestore data was tampered with, this throws — that's intentional.
-  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+  const decrypted = Buffer.concat([
+    decipher.update(ciphertext),
+    decipher.final(),
+  ]);
   return decrypted.toString("utf8");
 }
 
-/**
- * Returns true if `value` was produced by encryptApiKey().
- * Used to detect plaintext keys saved before encryption was added
- * so we can prompt the user to re-save.
- */
 export function isEncrypted(value: string): boolean {
   return value.startsWith(ENC_PREFIX);
 }

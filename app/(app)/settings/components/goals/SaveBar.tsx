@@ -15,7 +15,7 @@ export function SaveBar({ saving, onSave }: SaveBarProps) {
     <button
       onClick={onSave}
       disabled={saving}
-      className="w-full py-3.5 rounded-xl bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-60">
+      className="w-full py-3.5 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-60">
       {saving ? "Saving…" : "Save Goals"}
     </button>
   );

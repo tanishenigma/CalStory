@@ -55,7 +55,7 @@ export default function ProgressPage() {
 
   return (
     <div className="pb-24 p-4 md:p-6 lg:p-8 min-w-0 w-full">
-      <h1 className="mb-4 sm:mb-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+      <h1 className="mb-4 sm:mb-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
         Progress
       </h1>
       <Streak />

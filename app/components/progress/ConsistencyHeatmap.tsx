@@ -3,13 +3,18 @@
 import React, { useRef, useState, useMemo } from "react";
 import { Flame, Calendar, TrendingUp, Zap, Dumbbell } from "lucide-react";
 import { motion, useInView } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/app/components/ui/card";
 import { useApp } from "@/app/context/AppContext";
 
 /* ─────────────────────────────────────────────
    HELPERS
    ───────────────────────────────────────────── */
 
-/** Return a local YYYY-MM-DD string for a Date (avoids UTC offset issues) */
 function toDateKey(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -17,7 +22,6 @@ function toDateKey(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-/** Return the Monday of the week containing `d` */
 function startOfWeek(d: Date): Date {
   const day = d.getDay(); // 0=Sun
   const diff = day === 0 ? -6 : 1 - day; // shift to Monday
@@ -31,9 +35,9 @@ type DayCell = {
   dateKey: string; // YYYY-MM-DD
   label: string; // day label for tooltip (e.g. "Mon 2 Jun")
   intensity: number; // 0–1 (0 = no data)
-  /** kcal logged (meals mode) */
+
   kcal: number;
-  /** minutes of workout (workouts mode) */
+
   workoutMinutes: number;
   hasWorkout: boolean;
   isFuture: boolean;
@@ -49,12 +53,9 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
 
   const WORKOUT_MIN_TARGET = 60;
 
-  const accent = mode === "workouts" ? "34,197,94" : "249,115,22"; // green vs orange
-  const accentClass = mode === "workouts" ? "text-[#22C55E]" : "text-[#F97316]";
-  const accentSoft =
-    mode === "workouts"
-      ? "bg-[#22C55E]/10 border-[#22C55E]/20"
-      : "bg-primary/10 border-primary/20";
+  const accentRgb = "48, 158, 134";
+  const accentClass = "text-primary";
+  const accentSoft = "bg-primary/10 border-primary/20";
 
   const WEEKS = 16; // columns
   const DAYS = 7; // rows (Mon–Sun)
@@ -199,50 +200,45 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
   const dayNames = ["M", "T", "W", "T", "F", "S", "S"];
 
   return (
-    <motion.div
+    <Card
       ref={containerRef}
-      transition={{ duration: 0.55, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className="w-full">
-      <div
-        className="relative border border-border rounded-2xl overflow-visible
-                   cursor-default transition-[border-color,box-shadow] duration-300
-               ">
-        <div className="relative z-10 p-4 sm:p-6">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <div
-                  className={`w-7 h-7 rounded-lg border flex items-center justify-center ${accentSoft}`}>
-                  {mode === "workouts" ? (
-                    <Dumbbell size={14} className={accentClass} />
-                  ) : (
-                    <Calendar size={14} className="text-primary" />
-                  )}
-                </div>
-                <span className="font-bold text-base sm:text-lg tracking-tight font-heading text-foreground">
+      className="flex p-4 items-center justify-center overflow-hidden h-full ">
+      <div className="relative z-10">
+        <CardHeader className="px-5 py-4 border-b border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0 m-1">
+            <div className="flex items-center gap-2 min-w-0">
+              <div
+                className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 ${accentSoft}`}>
+                {mode === "workouts" ? (
+                  <Dumbbell size={14} className={accentClass} />
+                ) : (
+                  <Calendar size={14} className="text-primary" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <CardTitle className="text-base font-bold">
                   {mode === "workouts"
                     ? "Workout Heatmap"
                     : "Consistency Heatmap"}
-                </span>
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  {WEEKS} weeks ·{" "}
+                  {mode === "workouts"
+                    ? "workout minutes per day"
+                    : "based on meals logged"}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground ml-9">
-                {WEEKS} weeks ·{" "}
-                {mode === "workouts"
-                  ? "workout minutes per day"
-                  : "based on meals logged"}
-              </p>
             </div>
 
             {/* Stat chips */}
-            <div className="flex items-center gap-2 flex-wrap ml-9 sm:ml-0">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground/[0.04] border border-border/60">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border">
                 <TrendingUp size={12} className="text-muted-foreground" />
                 <span className="text-xs font-semibold text-foreground">
                   Best: {bestStreak}d
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground/[0.04] border border-border/60">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border">
                 <Zap size={12} className="text-muted-foreground" />
                 <span className="text-xs font-semibold text-foreground">
                   {totalDays} {mode === "workouts" ? "workouts" : "days"} total
@@ -250,7 +246,9 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
               </div>
             </div>
           </div>
+        </CardHeader>
 
+        <CardContent className="px-5 py-5">
           {/* Month row */}
           <div className="flex gap-[2px] sm:gap-[3px] mb-1 pl-5 sm:pl-6">
             {monthLabels.map((label, wi) => (
@@ -284,18 +282,6 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
                 className="flex flex-col gap-[2px] sm:gap-[3px] shrink-0"
                 style={{ width: "clamp(10px, 1.4vw, 20px)" }}>
                 {col.map((cell, di) => {
-                  const bg = cell.isFuture
-                    ? "transparent"
-                    : cell.intensity > 0
-                      ? `rgba(${accent},${cell.intensity})`
-                      : "rgba(0,0,0,0.05)";
-
-                  const emptyBg = cell.isFuture
-                    ? "transparent"
-                    : cell.intensity > 0
-                      ? `rgba(${accent},${cell.intensity})`
-                      : "bg-foreground/10 dark:bg-foreground/15";
-
                   return (
                     <motion.div
                       key={di}
@@ -306,19 +292,18 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
                         duration: 0.25,
                         ease: "backOut",
                       }}
-                      className={`rounded-[3px] relative group/cell cursor-pointer ${cell.intensity === 0 && !cell.isFuture ? "dark:bg-foreground/15 bg-foreground/10" : ""}`}
+                      className={`rounded-[3px] relative group/cell cursor-pointer ${cell.intensity === 0 && !cell.isFuture ? "bg-foreground/10 dark:bg-foreground/15" : ""}`}
                       style={{
                         backgroundColor: cell.isFuture
                           ? "transparent"
                           : cell.intensity > 0
-                            ? `rgba(${accent},${cell.intensity})`
+                            ? `rgba(${accentRgb},${cell.intensity})`
                             : undefined,
-                        // In meals mode, the orange workout border is a useful
-                        // cross-signal. In workouts mode, every cell already
-                        // represents a workout day, so the border is noise.
+                        // Workout cross-signal uses the same brand primary
+                        // so the heatmap reads as one color language.
                         border:
                           mode === "meals" && cell.hasWorkout && !cell.isFuture
-                            ? "1px solid rgba(249,115,22,0.5)"
+                            ? "1px solid oklch(0.7227 0.1920 149.5793 / 0.6)"
                             : "1px solid transparent",
                         aspectRatio: "1",
                         minHeight: "clamp(10px, 2vw, 14px)",
@@ -345,7 +330,7 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
           </div>
 
           {/* Legend */}
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-border">
             <div
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${accentSoft}`}>
               <Flame size={12} className={accentClass} />
@@ -361,20 +346,25 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
                   className={`w-3 h-3 rounded-[3px] ${a === 0 ? "bg-foreground/10 dark:bg-foreground/15" : ""}`}
                   style={{
                     backgroundColor:
-                      a === 0 ? undefined : `rgba(${accent},${a})`,
+                      a === 0 ? undefined : `rgba(${accentRgb},${a})`,
                   }}
                 />
               ))}
               <span className="text-[9px] text-muted-foreground">More</span>
               {mode === "meals" && (
                 <span className="text-[9px] text-muted-foreground ml-1 sm:ml-2 border-l border-border pl-1 sm:pl-2 flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-[3px] inline-block border border-primary/50 bg-transparent" />
+                  <span
+                    className="w-3 h-3 rounded-[3px] inline-block bg-transparent"
+                    style={{
+                      border: "1px solid oklch(0.7227 0.1920 149.5793 / 0.6)",
+                    }}
+                  />
                   + workout
                 </span>
               )}
             </div>
           </div>
-        </div>
+        </CardContent>
       </div>
 
       {/* Floating tooltip (portal-like, fixed position) */}
@@ -414,6 +404,6 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
           </div>
         </motion.div>
       )}
-    </motion.div>
+    </Card>
   );
 }

@@ -17,9 +17,9 @@ interface EatenMacros {
 }
 
 const MACROS: MacroDef[] = [
-  { n: "Protein", k: "p", target: "protein", col: "#FF0000" },
-  { n: "Carbs", k: "c", target: "carbs", col: "#22C55E" },
-  { n: "Fat", k: "f", target: "fat", col: "#FFC000" },
+  { n: "Protein", k: "p", target: "protein", col: "oklch(0.6271 0.1699 149.2138)" },
+  { n: "Carbs", k: "c", target: "carbs", col: "var(--color-primary)" },
+  { n: "Fat", k: "f", target: "fat", col: "oklch(0.7951 0.1841 84.4000)" },
 ];
 
 export default function MacroBars() {
@@ -43,17 +43,17 @@ export default function MacroBars() {
         return (
           <div className="flex flex-col gap-1.5" key={k}>
             <div className="flex items-center justify-between text-xs font-semibold">
-              <span className="text-[#9B9895] uppercase tracking-wider text-[10px] font-bold">
+              <span className="text-muted-foreground uppercase tracking-wider text-[10px] font-bold">
                 {n}
               </span>
-              <span className="font-mono text-[#1A1916] dark:text-[#f7f6f3] font-bold">
+              <span className="font-mono text-foreground font-bold">
                 {val}
-                <span className="text-[#9B9895] font-normal text-[11px]">
+                <span className="text-muted-foreground font-normal text-[11px]">
                   /{t}g
                 </span>
               </span>
             </div>
-            <div className="w-full h-2.5 bg-[#EEEDEA] rounded-full overflow-hidden">
+            <div className="w-full h-2.5 bg-border rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-700"
                 style={{ width: `${pct}%`, backgroundColor: col }}

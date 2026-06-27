@@ -11,7 +11,7 @@ import {
 } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Flame, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 const NAV_LINKS = [
   { label: "Features", href: "/#features" },
@@ -19,17 +19,50 @@ const NAV_LINKS = [
   { label: "FAQ", href: "/#faq" },
 ];
 
-function useThemeColors() {
-  const [colors, setColors] = useState({ fg: "#1a1916", bg: "#ffffff" });
+function useNavbarTokens() {
+  const parseTriplet = (raw: string, fallback: [number, number, number]) => {
+    const m = raw.trim().match(/^(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)/);
+    if (!m) return fallback;
+    return [Number(m[1]), Number(m[2]), Number(m[3])] as [
+      number,
+      number,
+      number,
+    ];
+  };
+
+  const fallback: [number, number, number] = [255, 255, 255];
+
+  const [tokens, setTokens] = useState({
+    bg: [255, 255, 255] as [number, number, number],
+    fg: [26, 25, 22] as [number, number, number],
+    bgScrolled: [255, 255, 255] as [number, number, number],
+    fgScrolled: [26, 25, 22] as [number, number, number],
+    icon: [26, 25, 22] as [number, number, number],
+    iconScrolled: [26, 25, 22] as [number, number, number],
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const compute = () => {
       const cs = getComputedStyle(document.documentElement);
-      const fg = cs.getPropertyValue("--color-foreground").trim() || "#1a1916";
-      const bg = cs.getPropertyValue("--color-background").trim() || "#ffffff";
-      setColors({ fg, bg });
+      setTokens({
+        bg: parseTriplet(cs.getPropertyValue("--navbar-bg-rgb"), fallback),
+        fg: parseTriplet(cs.getPropertyValue("--navbar-fg-rgb"), fallback),
+        bgScrolled: parseTriplet(
+          cs.getPropertyValue("--navbar-bg-scrolled-rgb"),
+          fallback,
+        ),
+        fgScrolled: parseTriplet(
+          cs.getPropertyValue("--navbar-fg-scrolled-rgb"),
+          fallback,
+        ),
+        icon: parseTriplet(cs.getPropertyValue("--navbar-icon-rgb"), fallback),
+        iconScrolled: parseTriplet(
+          cs.getPropertyValue("--navbar-icon-scrolled-rgb"),
+          fallback,
+        ),
+      });
     };
 
     compute();
@@ -43,14 +76,7 @@ function useThemeColors() {
     return () => observer.disconnect();
   }, []);
 
-  return colors;
-}
-
-function hexToRgb(hex: string): [number, number, number] {
-  const m = hex.match(/^#([0-9a-f]{6})$/i);
-  if (!m) return [26, 25, 22];
-  const intVal = parseInt(m[1], 16);
-  return [(intVal >> 16) & 255, (intVal >> 8) & 255, intVal & 255];
+  return tokens;
 }
 
 export function Navbar({
@@ -62,16 +88,7 @@ export function Navbar({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const themeColors = useThemeColors();
-  const [fgRGB, setFgRGB] = useState<[number, number, number]>([26, 25, 22]);
-  const [bgRGB, setBgRGB] = useState<[number, number, number]>([255, 255, 255]);
-
-  useEffect(() => {
-    setFgRGB(hexToRgb(themeColors.fg));
-    setBgRGB(hexToRgb(themeColors.bg));
-  }, [themeColors]);
-
-  const isLightMode = (bgRGB[0] + bgRGB[1] + bgRGB[2]) / 3 > 127;
+  const tokens = useNavbarTokens();
 
   const handleHashClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     const href = event.currentTarget.getAttribute("href");
@@ -114,44 +131,34 @@ export function Navbar({
   const maxWidth = useTransform(smoothScroll, [0, 80], [1400, 720], easeConfig);
   const top = useTransform(smoothScroll, [0, 80], [0, 12], easeConfig);
 
-  // --- BACKGROUND COLOR ANIMATION FIX ---
-  // Always target a dark color (e.g., [26, 25, 22]) when scrolled so white text is readable.
-  const targetBgR = 26;
-  const targetBgG = 25;
-  const targetBgB = 22;
-
-  // Animate the actual RGB channels from the current theme background to the dark target
+  // Animate the navbar background from the unscrolled (transparent)
+  // state toward the theme-defined scrolled background. Both endpoints
+  // come from CSS tokens so dark mode just works.
   const bgR = useTransform(
     smoothScroll,
     [0, 80],
-    [bgRGB[0], targetBgR],
+    [tokens.bg[0], tokens.bgScrolled[0]],
     easeConfig,
   );
   const bgG = useTransform(
     smoothScroll,
     [0, 80],
-    [bgRGB[1], targetBgG],
+    [tokens.bg[1], tokens.bgScrolled[1]],
     easeConfig,
   );
   const bgB = useTransform(
     smoothScroll,
     [0, 80],
-    [bgRGB[2], targetBgB],
+    [tokens.bg[2], tokens.bgScrolled[2]],
     easeConfig,
   );
 
-  // Ensure opacity is high enough in light mode to block out the white page content behind the glass
-  const targetOpacity = isLightMode ? 0.4 : 0.2;
-  const bgOpacity = useTransform(
-    smoothScroll,
-    [0, 80],
-    [0, targetOpacity],
-    easeConfig,
-  );
+  // Opacity is higher in light mode so the glass actually blocks
+  // out the bright page background; in dark mode a lighter veil
+  // reads as a subtle scrim without crushing the page beneath.
+  const bgOpacity = useTransform(smoothScroll, [0, 80], [0, 0.45], easeConfig);
 
-  // Use backgroundColor explicitly to prevent shorthand conflicts with backgroundImage
   const backgroundColor = useMotionTemplate`rgba(${bgR}, ${bgG}, ${bgB}, ${bgOpacity})`;
-  // --------------------------------------
 
   const borderOpacity = useTransform(
     smoothScroll,
@@ -187,27 +194,44 @@ export function Navbar({
   const textR = useTransform(
     smoothScroll,
     [0, 80],
-    [fgRGB[0], 255],
+    [tokens.fg[0], tokens.fgScrolled[0]],
     easeConfig,
   );
   const textG = useTransform(
     smoothScroll,
     [0, 80],
-    [fgRGB[1], 255],
+    [tokens.fg[1], tokens.fgScrolled[1]],
     easeConfig,
   );
   const textB = useTransform(
     smoothScroll,
     [0, 80],
-    [fgRGB[2], 255],
+    [tokens.fg[2], tokens.fgScrolled[2]],
     easeConfig,
   );
   const textColor = useMotionTemplate`rgb(${textR}, ${textG}, ${textB})`;
 
+  // The chip background inverts to whatever the current text color
+  // is, so the flame icon always sits on a contrast pill.
   const chipBg = textColor;
-  const iconR = useTransform(smoothScroll, [0, 80], [bgRGB[0], 24], easeConfig);
-  const iconG = useTransform(smoothScroll, [0, 80], [bgRGB[1], 20], easeConfig);
-  const iconB = useTransform(smoothScroll, [0, 80], [bgRGB[2], 15], easeConfig);
+  const iconR = useTransform(
+    smoothScroll,
+    [0, 80],
+    [tokens.icon[0], tokens.iconScrolled[0]],
+    easeConfig,
+  );
+  const iconG = useTransform(
+    smoothScroll,
+    [0, 80],
+    [tokens.icon[1], tokens.iconScrolled[1]],
+    easeConfig,
+  );
+  const iconB = useTransform(
+    smoothScroll,
+    [0, 80],
+    [tokens.icon[2], tokens.iconScrolled[2]],
+    easeConfig,
+  );
   const iconColor = useMotionTemplate`rgb(${iconR}, ${iconG}, ${iconB})`;
 
   const boxShadow = useMotionTemplate`
@@ -215,7 +239,7 @@ export function Navbar({
   inset 0 1px 1px rgba(255, 255, 255, ${highlightOpacity}),
   inset 0 0 0 1px rgba(255, 255, 255, ${staticInsetOpacity})
 `;
-  const border = useMotionTemplate`1px solid rgba(194, 120, 3, ${borderOpacity})`;
+  const border = useMotionTemplate`1px solid rgba(128, 128, 128, ${borderOpacity})`;
   const backgroundImage = useMotionTemplate`radial-gradient(circle, rgba(255, 255, 255, ${dotOpacity}) 1px, transparent 1px)`;
   const overflow = useMotionTemplate`hidden`;
 
@@ -240,20 +264,34 @@ export function Navbar({
         }}
         className="relative w-[calc(100%-2rem)] flex items-center justify-between will-change-transform">
         <motion.div
-          style={{ opacity: highlightOpacity }}
-          className="absolute inset-0 pointer-events-none bg-gradient-to-t from-foreground/20 via-primary/10 to-transparent border-t-background border-t-2"
+          style={{
+            opacity: highlightOpacity,
+            backgroundImage:
+              "linear-gradient(to top, var(--navbar-highlight-from), var(--navbar-highlight-via), transparent)",
+            borderTopColor: "var(--color-background)",
+          }}
+          className="absolute inset-0 pointer-events-none border-t-2"
         />
 
         <Link
           href="/"
           className="flex items-center relative z-10 shrink-0 gap-2.5 cursor-pointer">
-          <motion.div
-            style={{ backgroundColor: chipBg }}
-            className="w-10 h-10 rounded-full flex items-center justify-center">
-            <motion.span style={{ color: iconColor }} className="inline-flex">
-              <Flame size={24} className="fill-current" />
-            </motion.span>
-          </motion.div>
+          {/* Light-mode mark */}
+          <img
+            src="/light.png"
+            alt="CalStory"
+            width={32}
+            height={32}
+            className="w-10 h-10 object-contain block dark:hidden"
+          />
+          {/* Dark-mode mark */}
+          <img
+            src="/dark.png"
+            alt="CalStory"
+            width={32}
+            height={32}
+            className="w-10 h-10 object-contain hidden dark:block"
+          />
           <motion.span
             style={{ color: textColor }}
             className="font-bold text-lg tracking-tight font-heading ">
@@ -294,7 +332,7 @@ export function Navbar({
             onClick={() => {
               void onSignIn();
             }}
-            className="hidden md:inline-flex cursor-pointer relative z-10 shrink-0 h-9 px-5 rounded-full bg-foreground text-background text-xs font-bold text-center items-center uppercase tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-all shadow-lg shadow-black/5 whitespace-nowrap">
+            className="hidden md:inline-flex cursor-pointer relative z-10 shrink-0 h-9 px-5 rounded-full bg-foreground text-background text-xs font-bold text-center items-center uppercase tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-all shadow-lg shadow-foreground/10 whitespace-nowrap">
             Get Started
           </button>
         )}
@@ -330,7 +368,7 @@ export function Navbar({
             transition={{ duration: 0.18, ease: "easeOut" }}
             style={{ top }}
             className="absolute w-[calc(100%-2rem)] max-w-[44rem]">
-            <div className="mt-16 rounded-2xl border border-border/40 backdrop-blur-3xl shadow-lg overflow-hidden bg-background/80">
+            <div className="mt-16 rounded-2xl border border-border backdrop-blur-3xl shadow-2xl overflow-hidden bg-background/95">
               <div className="flex flex-col py-2">
                 {NAV_LINKS.map((link) => {
                   const isHash =

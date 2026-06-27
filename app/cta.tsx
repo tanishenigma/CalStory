@@ -39,7 +39,7 @@ const CTASection = ({ handleSignIn }: CtaSectionProps) => {
               </span>
             </h2>
 
-            <p className="text-muted-foreground-foreground text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
+            <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
               {hasProfile
                 ? "Your progress is waiting. Dive back into your data and keep hitting your targets."
                 : "Stop guessing. Start tracking with the elite interface designed for high-performance individuals."}

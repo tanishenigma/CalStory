@@ -56,10 +56,10 @@ export default function BlogIndexPage() {
                 <h2 className="text-2xl md:text-3xl font-bold text-foreground group-hover:text-primary transition-colors font-heading tracking-tight mb-2">
                   {p.title}
                 </h2>
-                <p className="text-muted-foreground-foreground">
+                <p className="text-muted-foreground">
                   {p.description}
                 </p>
-                <span className="text-sm text-muted-foreground-foreground mt-2 inline-block">
+                <span className="text-sm text-muted-foreground mt-2 inline-block">
                   Read the guide →
                 </span>
               </Link>

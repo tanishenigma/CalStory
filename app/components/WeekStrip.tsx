@@ -73,10 +73,10 @@ export default function WeekStrip() {
         {/* Mobile-only header: logo + streak above the week strip */}
         <div className="lg:hidden flex items-center justify-between px-1 pb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#1A1916] dark:bg-[#f7f6f3] rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center">
               <Flame
                 size={18}
-                className="text-white dark:text-[#1a1916] fill-white dark:fill-[#1a1916]"
+                className="text-background fill-background"
               />
             </div>
             <span className="font-heading font-bold text-base text-foreground tracking-tight">
@@ -86,8 +86,8 @@ export default function WeekStrip() {
           <div className="flex items-center justify-center gap-1.5 px-2.5 h-14 w-14 rounded-full border border-border bg-card shadow-md mb-2">
             <Flame
               size={20}
-              className={hasLoggedToday ? "text-[#F97316]" : "text-[#9B9895]"}
-              fill={hasLoggedToday ? "#F97316" : "#E8E7E4"}
+              className={hasLoggedToday ? "text-primary" : "text-muted-foreground"}
+              fill={hasLoggedToday ? "var(--color-primary)" : "var(--color-border)"}
             />
             <span className="text-xl font-bold text-foreground">{streak}</span>
           </div>
@@ -101,7 +101,7 @@ export default function WeekStrip() {
             <div className="hidden lg:flex items-center gap-1.5 flex-shrink-0  ">
               <button
                 onClick={() => setWeekOffset((w) => w - 1)}
-                className="w-10 h-10 rounded-xl border border-border bg-card flex items-center justify-center text-[#9B9895] hover:bg-background transition-colors cursor-pointer shadow-sm"
+                className="w-10 h-10 rounded-xl border border-border bg-card flex items-center justify-center text-muted-foreground hover:bg-background transition-colors cursor-pointer shadow-sm"
                 title="Previous week"
                 aria-label="Previous week">
                 <ChevronLeft size={18} />
@@ -110,7 +110,7 @@ export default function WeekStrip() {
               <button
                 onClick={() => setWeekOffset((w) => w + 1)}
                 disabled={disableNextWeek}
-                className="w-10 h-10 rounded-xl border border-border bg-card flex items-center justify-center text-[#9B9895] hover:bg-background transition-colors cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded-xl border border-border bg-card flex items-center justify-center text-muted-foreground hover:bg-background transition-colors cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Next week"
                 aria-label="Next week">
                 <ChevronRight size={18} />
@@ -143,7 +143,7 @@ export default function WeekStrip() {
                         ? "opacity-20 cursor-not-allowed"
                         : "cursor-pointer",
                       isToday &&
-                        "bg-[#1A1916] dark:bg-[#f7f6f3] border-transparent",
+                        "bg-foreground border-transparent",
                       isSel &&
                         !isToday &&
                         "border-black border-dotted bg-foreground/5",
@@ -159,8 +159,8 @@ export default function WeekStrip() {
                       className={[
                         "text-[10px] font-bold tracking-wider uppercase leading-none",
                         isToday
-                          ? "text-white dark:text-[#1a1916]"
-                          : "text-[#9B9895]",
+                          ? "text-background"
+                          : "text-muted-foreground",
                       ].join(" ")}>
                       {DAY_LABELS[i]}
                     </span>
@@ -168,14 +168,14 @@ export default function WeekStrip() {
                       className={[
                         "font-mono text-base font-semibold leading-none",
                         isToday
-                          ? "text-white dark:text-[#1a1916]"
-                          : "text-[#1A1916] dark:text-[#f7f6f3]",
+                          ? "text-background"
+                          : "text-foreground",
                       ].join(" ")}>
                       {d.getDate()}
                     </span>
                     <span
                       className={[
-                        "w-1.5 h-1.5 rounded-full bg-[#22C55E] transition-opacity duration-200",
+                        "w-1.5 h-1.5 rounded-full bg-primary transition-opacity duration-200",
                         hasData ? "opacity-100" : "opacity-0",
                       ].join(" ")}
                     />
@@ -187,7 +187,7 @@ export default function WeekStrip() {
             {/* Calendar button — visible on both mobile and desktop */}
             <button
               onClick={() => setShowPicker(true)}
-              className="flex-shrink-0 w-9 h-9 lg:w-10 lg:h-10 rounded-full lg:rounded-xl border border-border bg-card flex items-center justify-center text-[#9B9895] hover:bg-background transition-colors cursor-pointer shadow-sm"
+              className="flex-shrink-0 w-9 h-9 lg:w-10 lg:h-10 rounded-full lg:rounded-xl border border-border bg-card flex items-center justify-center text-muted-foreground hover:bg-background transition-colors cursor-pointer shadow-sm"
               title="Pick any date"
               aria-label="Pick any date">
               <svg
@@ -212,10 +212,10 @@ export default function WeekStrip() {
             <div className="flex items-center justify-center gap-1.5 px-2.5 h-14 w-14 rounded-full border border-border bg-card shadow-md">
               <Flame
                 size={20}
-                className={hasLoggedToday ? "text-[#F97316]" : "text-[#9B9895]"}
-                fill={hasLoggedToday ? "#F97316" : "#E8E7E4"}
+                className={hasLoggedToday ? "text-primary" : "text-muted-foreground"}
+                fill={hasLoggedToday ? "var(--color-primary)" : "var(--color-border)"}
               />
-              <span className="font-mono text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+              <span className="font-mono text-lg font-bold text-foreground">
                 {streak}
               </span>
             </div>

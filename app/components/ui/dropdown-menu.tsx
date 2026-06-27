@@ -34,7 +34,7 @@ function useDropdown() {
 
 interface DropdownMenuProps {
   children: React.ReactNode;
-  /** Optional: open the menu by default. */
+
   defaultOpen?: boolean;
 }
 
@@ -84,17 +84,16 @@ export const DropdownMenuTrigger = React.forwardRef<
         setOpen(!open);
       }}
       className={cn(
-        "w-full flex items-center justify-between gap-2 px-3.5 py-3 border border-border rounded-lg text-sm bg-background hover:bg-white dark:hover:bg-[#1a1916] dark:bg-[#1a1916] hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-[#f7f6f3] outline-none transition-all cursor-pointer text-left",
-        open &&
-          "bg-card border-[#1A1916] dark:border-[#f7f6f3]",
+        "w-full flex items-center justify-between gap-2 px-3.5 py-3 border border-border rounded-lg text-sm bg-background hover:bg-white hover:bg-foreground bg-foreground hover:border-foreground dark:hover:border-foreground border-foreground outline-none transition-all cursor-pointer text-left",
+        open && "bg-card border-[#1A1916] border-foreground",
         className,
       )}
       {...props}>
       {children}
       <svg
         className={cn(
-          "h-4 w-4 text-[#9B9895] transition-transform duration-200",
-          open && "rotate-180 text-[#1A1916] dark:text-[#f7f6f3]",
+          "h-4 w-4 text-muted-foreground transition-transform duration-200",
+          open && "rotate-180 text-foreground",
         )}
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 20"
@@ -109,7 +108,7 @@ DropdownMenuTrigger.displayName = "DropdownMenuTrigger";
 
 interface DropdownMenuContentProps extends React.HTMLAttributes<HTMLDivElement> {
   align?: "start" | "end" | "center";
-  /** Offset from the trigger in pixels. */
+
   sideOffset?: number;
 }
 
@@ -199,7 +198,7 @@ export const DropdownMenuItem = React.forwardRef<
       className={cn(
         "w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold text-left",
         "cursor-pointer transition-colors",
-        "hover:bg-background dark:bg-[#0f0f0e] focus:bg-background focus:outline-none",
+        "hover:bg-background bg-foreground focus:bg-background focus:outline-none",
         active && "bg-background",
         className,
       )}
@@ -208,7 +207,7 @@ export const DropdownMenuItem = React.forwardRef<
       <span className="flex-1 truncate">{children}</span>
       {active && (
         <svg
-          className="h-4 w-4 text-[#1A1916] dark:text-[#f7f6f3] flex-shrink-0"
+          className="h-4 w-4 text-foreground flex-shrink-0"
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden>
@@ -227,7 +226,7 @@ export function DropdownMenuLabel({
   return (
     <div
       className={cn(
-        "px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#9B9895]",
+        "px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground",
         className,
       )}
       {...props}
@@ -242,7 +241,7 @@ export function DropdownMenuSeparator({
   return (
     <div
       role="separator"
-      className={cn("h-px bg-[#E8E7E4] my-1", className)}
+      className={cn("h-px bg-muted my-1", className)}
       {...props}
     />
   );

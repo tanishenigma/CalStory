@@ -50,13 +50,13 @@ export function UnitsTab({
               onClick={() => setWeightUnit(u.key)}
               className={`relative p-5 rounded-xl border text-center transition-colors ${
                 weightUnit === u.key
-                  ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                  : "border-foreground/10 hover:border-[#1A1916] dark:border-foreground/10 dark:hover:border-[#f7f6f3]"
+                  ? "border-transparent bg-foreground text-background"
+                  : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
               }`}>
               {weightUnit === u.key && (
                 <motion.div
                   layoutId="active-weight-unit"
-                  className="absolute inset-0 rounded-xl bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                  className="absolute inset-0 rounded-xl bg-foreground text-background"
                   transition={{ type: "spring", stiffness: 320, damping: 28 }}
                 />
               )}
@@ -83,13 +83,13 @@ export function UnitsTab({
               onClick={() => setHeightUnit(u.key)}
               className={`relative p-5 rounded-xl border text-center transition-colors ${
                 heightUnit === u.key
-                  ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                  : "border-foreground/10 hover:border-[#1A1916] dark:border-foreground/10 dark:hover:border-foreground"
+                  ? "border-transparent bg-foreground text-background"
+                  : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
               }`}>
               {heightUnit === u.key && (
                 <motion.div
                   layoutId="active-height-unit"
-                  className="absolute inset-0 rounded-xl  bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                  className="absolute inset-0 rounded-xl  bg-foreground text-background"
                   transition={{ type: "spring", stiffness: 320, damping: 28 }}
                 />
               )}
@@ -106,7 +106,7 @@ export function UnitsTab({
         <button
           onClick={saveUnits}
           disabled={saving}
-          className="w-full py-3.5 rounded-xl bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-60">
+          className="w-full py-3.5 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-60">
           {saving ? "Saving…" : "Save Units"}
         </button>
       </Card>

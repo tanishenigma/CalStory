@@ -19,7 +19,6 @@ const DEFAULT_NAVBAR: NavbarStyle = "floating";
 const DEFAULT_THEME: Theme = "light";
 const DEFAULT_DYNAMIC_BG = false;
 
-/** Resolve "system" to the actual OS preference at call time. */
 export function resolveTheme(t: Theme): "light" | "dark" {
   if (t === "system") {
     if (typeof window === "undefined") return "light";
@@ -30,7 +29,6 @@ export function resolveTheme(t: Theme): "light" | "dark" {
   return t;
 }
 
-/** Write the resolved theme to the blocking-script key so it survives refresh. */
 function syncBlockingKey(t: Theme): void {
   if (typeof window === "undefined") return;
   localStorage.setItem("theme", resolveTheme(t));

@@ -15,6 +15,15 @@ interface Props {
   onConfirm: (saveAsTemplate: boolean) => void;
   onEdit: () => void;
   isLogging?: boolean;
+  /**
+   * True when this workout was loaded from one of the user's saved
+   * routines. In that case the "Save as reusable template" toggle is
+   * hidden by default — there's nothing new to save. The parent can
+   * flip `dirty={true}` once the user edits the workout, which
+   * re-shows the toggle with a "Save changes" label.
+   */
+  fromSavedRoutine?: boolean;
+  dirty?: boolean;
 }
 
 /* ------------------------------------------------------------------
@@ -22,7 +31,7 @@ interface Props {
  *
  * Blue/indigo gradient card shown when the AI parses a workout.
  * Includes an optional "Save as template" toggle when the AI detects
- * a structured routine.
+ * a structured routine (or when the user edits a loaded routine).
  * ------------------------------------------------------------------ */
 export default function WorkoutConfirmationCard({
   workout,
@@ -30,19 +39,28 @@ export default function WorkoutConfirmationCard({
   onConfirm,
   onEdit,
   isLogging = false,
+  fromSavedRoutine = false,
+  dirty = false,
 }: Props) {
   const [saveTemplate, setSaveTemplate] = useState(false);
+
+  // Show the toggle when the AI recommends it OR when the user has
+  // edited a previously-saved routine (so changes can be persisted).
+  const showToggle = askSaveTemplate || (fromSavedRoutine && dirty);
+  const toggleLabel = fromSavedRoutine
+    ? "Save changes to routine"
+    : "Save as reusable template";
 
   return (
     <div
       className={cn(
-        "rounded-2xl overflow-hidden",
-        "bg-gradient-to-br from-orange-500 to-amber-500",
-        "shadow-lg shadow-orange-200 dark:shadow-orange-900/30",
+        "rounded-2xl overflow-hidden ",
+        "bg-gradient-to-br from-primary to-primary/70",
+        "shadow-lg shadow-primary/20 dark:shadow-primary/30",
         "text-white w-full mt-2 mb-1",
       )}>
       {/* ── Header ─────────────────────────────────────────── */}
-      <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3">
+      <div className="px-4 sm:px-5 pt-5 pb-3 flex items-start justify-between gap-3">
         <div>
           <div className="font-bold text-lg leading-tight">{workout.name}</div>
           <div className="flex items-center gap-2 mt-1">
@@ -167,7 +185,7 @@ export default function WorkoutConfirmationCard({
       )}
 
       {/* ── Save as template toggle ─────────────────────────── */}
-      {askSaveTemplate && (
+      {showToggle && (
         <div className="px-5 pb-3">
           <label className="flex items-center gap-2.5 cursor-pointer select-none bg-white/10 rounded-xl px-3 py-2.5">
             <div
@@ -178,30 +196,28 @@ export default function WorkoutConfirmationCard({
               )}>
               <div
                 className={cn(
-                  "absolute top-0.5 w-4 h-4 rounded-full bg-orange-600 shadow transition-transform",
+                  "absolute top-0.5 w-4 h-4 rounded-full bg-primary shadow transition-transform",
                   saveTemplate ? "translate-x-4" : "translate-x-0.5",
                 )}
               />
             </div>
-            <span className="text-xs font-semibold">
-              Save as reusable template
-            </span>
+            <span className="text-xs font-semibold">{toggleLabel}</span>
           </label>
         </div>
       )}
 
       {/* ── Actions ─────────────────────────────────────────── */}
-      <div className="px-5 pb-5 pt-1 flex gap-2">
+      <div className="px-4 sm:px-5 pb-5 pt-1 flex flex-col sm:flex-row gap-2">
         <button
           onClick={() => onConfirm(saveTemplate)}
           disabled={isLogging}
           className={cn(
             "flex-1 py-2.5 rounded-xl font-bold text-sm",
-            "bg-white text-orange-600",
-            "hover:bg-orange-50 transition-colors",
+            "bg-white text-primary",
+            "hover:bg-white/90 transition-colors",
             "disabled:opacity-60 disabled:cursor-not-allowed",
           )}>
-          {isLogging ? "Logging…" : "Log Workout ✓"}
+          {isLogging ? "Logging…" : "Save"}
         </button>
         <button
           onClick={onEdit}

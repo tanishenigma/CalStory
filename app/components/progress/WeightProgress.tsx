@@ -175,8 +175,8 @@ export function WeightProgress() {
         {
           label: "Daily",
           data: rawWindow,
-          borderColor: "rgba(155, 152, 149, 0.5)",
-          backgroundColor: "rgba(155, 152, 149, 0.5)",
+          borderColor: "oklch(0.5517 0.0138 285.9385 / 0.5)",
+          backgroundColor: "oklch(0.5517 0.0138 285.9385 / 0.5)",
           borderWidth: 1.5,
           borderDash: [3, 3],
           tension: 0.3,
@@ -189,14 +189,14 @@ export function WeightProgress() {
         {
           label: "Trend",
           data: trendWindow,
-          borderColor: "#F97316",
-          backgroundColor: "rgba(249, 115, 22, 0.12)",
+          borderColor: "#22c55e",
+          backgroundColor: "oklch(0.7227 0.1920 149.5793 / 0.12)",
           borderWidth: 2.5,
           tension: 0.35,
           pointRadius: 0,
           pointHoverRadius: 5,
-          pointBackgroundColor: "#F97316",
-          pointBorderColor: "#fff",
+          pointBackgroundColor: "#22c55e",
+          pointBorderColor: "#22c55e",
           pointBorderWidth: 2,
           fill: true,
           order: 1,
@@ -233,14 +233,14 @@ export function WeightProgress() {
         grid: { display: false },
         ticks: {
           font: { family: "Inter", size: 11 },
-          color: "rgba(155, 152, 149, 0.6)",
+          color: "oklch(0.5517 0.0138 285.9385 / 0.6)",
         },
       },
       y: {
-        grid: { color: "rgba(155, 152, 149, 0.15)" },
+        grid: { color: "oklch(0.5517 0.0138 285.9385 / 0.15)" },
         ticks: {
           font: { family: "DM Mono", size: 11 },
-          color: "rgba(155, 152, 149, 0.6)",
+          color: "oklch(0.5517 0.0138 285.9385 / 0.6)",
         },
       },
     },
@@ -265,18 +265,18 @@ export function WeightProgress() {
         : Minus;
   const rateColorClass =
     rateDirection === "lose"
-      ? "text-[#22C55E]"
+      ? "text-primary"
       : rateDirection === "gain"
-        ? "text-[#F97316]"
-        : "text-[#9B9895]";
+        ? "text-primary"
+        : "text-muted-foreground";
 
   const barFillClass = (() => {
-    if (!progress.hasTarget) return "bg-[#9B9895]";
+    if (!progress.hasTarget) return "bg-muted-foreground";
     const movingToward =
       (profile?.goal === "cut" && ratePerWeek < 0) ||
       (profile?.goal === "bulk" && ratePerWeek > 0);
-    if (rateDirection === "stable") return "bg-[#9B9895]";
-    return movingToward ? "bg-[#22C55E]" : "bg-[#F97316]";
+    if (rateDirection === "stable") return "bg-muted-foreground";
+    return movingToward ? "bg-primary" : "bg-primary";
   })();
 
   return (
@@ -293,8 +293,8 @@ export function WeightProgress() {
                 onClick={() => setActiveFrame(tf)}
                 className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors whitespace-nowrap ${
                   activeFrame === tf
-                    ? "bg-card text-[#1A1916] dark:text-[#f7f6f3] shadow-sm"
-                    : "text-[#9B9895]"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground"
                 }`}>
                 {TF_LABEL[tf]}
               </button>
@@ -305,7 +305,7 @@ export function WeightProgress() {
       <CardContent className="px-5 py-4">
         <div className="h-48 w-full relative mb-4">
           {isEmpty ? (
-            <div className="h-full w-full flex items-center justify-center text-sm text-[#9B9895] text-center px-6">
+            <div className="h-full w-full flex items-center justify-center text-sm text-muted-foreground text-center px-6">
               Log a weight to start tracking your progress.
             </div>
           ) : (
@@ -316,23 +316,23 @@ export function WeightProgress() {
         <div className="flex flex-wrap justify-between items-end gap-y-3 border-t border-border pt-4 mb-4">
           <div className="flex gap-6">
             <div>
-              <div className="text-[11px] font-bold text-[#9B9895] mb-1 uppercase tracking-wider">
+              <div className="text-[11px] font-bold text-muted-foreground mb-1 uppercase tracking-wider">
                 Current
               </div>
-              <div className="text-2xl font-mono font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+              <div className="text-2xl font-mono font-bold text-foreground">
                 {currentWeight > 0 ? currentWeight.toFixed(1) : "—"}{" "}
-                <span className="text-sm font-sans font-medium text-[#9B9895]">
+                <span className="text-sm font-sans font-medium text-muted-foreground">
                   {displayUnit}
                 </span>
               </div>
             </div>
             <div>
-              <div className="text-[11px] font-bold text-[#9B9895] mb-1 uppercase tracking-wider">
+              <div className="text-[11px] font-bold text-muted-foreground mb-1 uppercase tracking-wider">
                 Trend
               </div>
-              <div className="text-2xl font-mono font-bold text-[#F97316]">
+              <div className="text-2xl font-mono font-bold text-primary">
                 {trendCurrent !== undefined ? trendCurrent.toFixed(1) : "—"}{" "}
-                <span className="text-sm font-sans font-medium text-[#9B9895]">
+                <span className="text-sm font-sans font-medium text-muted-foreground">
                   {displayUnit}
                 </span>
               </div>
@@ -344,7 +344,7 @@ export function WeightProgress() {
               <RateIcon size={14} />
               {rateText}
             </div>
-            <div className="text-[11px] text-[#9B9895] mt-1">
+            <div className="text-[11px] text-muted-foreground mt-1">
               Goal: {goalLabel}
             </div>
           </div>
@@ -352,7 +352,7 @@ export function WeightProgress() {
 
         {!isEmpty && (
           <div className="border-t border-border pt-4">
-            <div className="flex justify-between items-center text-[10px] font-bold text-[#9B9895] mb-1.5 uppercase tracking-wider">
+            <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">
               <span>
                 Start: {progress.start.toFixed(1)} {displayUnit}
               </span>
@@ -362,25 +362,25 @@ export function WeightProgress() {
                   : "Maintain"}
               </span>
             </div>
-            <div className="relative h-2.5 w-full rounded-full bg-[#E8E7E4] dark:bg-[#3a3a3a] overflow-hidden">
+            <div className="relative h-2.5 w-full rounded-full bg-muted dark:bg-[#3a3a3a] overflow-hidden">
               <div
                 className={`absolute inset-y-0 left-0 ${barFillClass} rounded-full transition-[width] duration-500`}
                 style={{ width: `${progress.pct}%` }}
               />
             </div>
             <div className="flex justify-between items-center mt-1.5">
-              <div className="text-[11px] text-[#9B9895]">
+              <div className="text-[11px] text-muted-foreground">
                 Current:{" "}
-                <span className="font-mono font-semibold text-[#1A1916] dark:text-[#f7f6f3]">
+                <span className="font-mono font-semibold text-foreground">
                   {progress.current.toFixed(1)} {displayUnit}
                 </span>
               </div>
               {progress.hasTarget ? (
-                <div className="text-[11px] font-semibold text-[#1A1916] dark:text-[#f7f6f3]">
+                <div className="text-[11px] font-semibold text-foreground">
                   {progress.pct.toFixed(0)}% Complete
                 </div>
               ) : (
-                <div className="text-[11px] text-[#9B9895]">
+                <div className="text-[11px] text-muted-foreground">
                   Keep logging to see your trend
                 </div>
               )}

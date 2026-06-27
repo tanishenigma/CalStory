@@ -64,49 +64,53 @@ const sideVariants: Record<SheetSide, string> = {
 };
 
 // ── Content ──────────────────────────────────────────────────────
-interface SheetContentProps
-  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+interface SheetContentProps extends React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Content
+> {
   side?: SheetSide;
-  /** Hide the default × close button */
+
   hideClose?: boolean;
 }
 
 const SheetContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   SheetContentProps
->(({ side = "right", hideClose = false, className, children, ...props }, ref) => (
-  <SheetPortal>
-    <SheetOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed z-50 flex flex-col",
-        "bg-card text-ink shadow-xl",
-        "duration-300",
-        "data-[state=open]:animate-in data-[state=closed]:animate-out",
-        sideVariants[side],
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      {!hideClose && (
-        <DialogPrimitive.Close
-          className={cn(
-            "absolute top-4 right-4",
-            "p-1.5 rounded-lg",
-            "text-muted-foreground hover:text-ink hover:bg-background",
-            "transition-colors",
-            "focus:outline-none focus:ring-2 focus:ring-border",
-          )}
-          aria-label="Close panel"
-        >
-          <X size={18} />
-        </DialogPrimitive.Close>
-      )}
-    </DialogPrimitive.Content>
-  </SheetPortal>
-));
+>(
+  (
+    { side = "right", hideClose = false, className, children, ...props },
+    ref,
+  ) => (
+    <SheetPortal>
+      <SheetOverlay />
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(
+          "fixed z-50 flex flex-col",
+          "bg-card text-ink shadow-xl",
+          "duration-300",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          sideVariants[side],
+          className,
+        )}
+        {...props}>
+        {children}
+        {!hideClose && (
+          <DialogPrimitive.Close
+            className={cn(
+              "absolute top-4 right-4",
+              "p-1.5 rounded-lg",
+              "text-muted-foreground hover:text-ink hover:bg-background",
+              "transition-colors",
+              "focus:outline-none focus:ring-2 focus:ring-border",
+            )}
+            aria-label="Close panel">
+            <X size={18} />
+          </DialogPrimitive.Close>
+        )}
+      </DialogPrimitive.Content>
+    </SheetPortal>
+  ),
+);
 SheetContent.displayName = "SheetContent";
 
 // ── Semantic slots ───────────────────────────────────────────────
@@ -115,7 +119,10 @@ const SheetHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("flex flex-col gap-1 px-5 pt-5 pb-4 border-b border-border", className)}
+    className={cn(
+      "flex flex-col gap-1 px-5 pt-5 pb-4 border-b border-border",
+      className,
+    )}
     {...props}
   />
 );
@@ -139,7 +146,7 @@ const SheetDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-xs text-muted-foreground-foreground", className)}
+    className={cn("text-xs text-muted-foreground", className)}
     {...props}
   />
 ));

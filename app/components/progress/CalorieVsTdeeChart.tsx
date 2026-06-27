@@ -40,7 +40,7 @@ interface DayEntry {
 
 interface Props {
   data: DayEntry[];
-  /** ISO date string where TDEE algorithm reset / weight changed notably */
+
   tdeeResetDate?: string;
 }
 
@@ -62,17 +62,17 @@ function SummaryRow({ data }: { data: DayEntry[] }) {
     {
       label: "Avg Intake",
       value: `${avgIntake.toLocaleString()} kcal`,
-      color: "text-orange-400",
+      color: "text-foreground",
     },
     {
       label: "Avg TDEE",
       value: `${avgTdee.toLocaleString()} kcal`,
-      color: "text-emerald-400",
+      color: "text-primary",
     },
     {
       label: avgDeficit >= 0 ? "Avg Deficit" : "Avg Surplus",
       value: `${Math.abs(avgDeficit).toLocaleString()} kcal`,
-      color: avgDeficit >= 0 ? "text-sky-400" : "text-rose-400",
+      color: avgDeficit >= 0 ? "text-cyan" : "text-amber",
     },
   ];
 
@@ -104,26 +104,26 @@ export function CalorieVsTdeeChart({
         {
           label: "Calorie Intake",
           data: data.map((d) => d.intake),
-          borderColor: "#f97316",
-          backgroundColor: "rgba(249, 115, 22, 0.2)",
+          borderColor: "#22c55e",
+          backgroundColor: "oklch(0.7227 0.1920 149.5793 / 0.2)",
           fill: true,
           tension: 0.4,
           pointRadius: 0,
           pointHoverRadius: 4,
-          pointHoverBackgroundColor: "#f97316",
+          pointHoverBackgroundColor: "#22c55e",
           pointHoverBorderWidth: 0,
         },
         {
           label: "Adaptive TDEE",
           data: data.map((d) => d.tdee),
-          borderColor: "#34d399",
-          backgroundColor: "rgba(52, 211, 153, 0.1)",
+          borderColor: "#36a3c9",
+          backgroundColor: "rgba(54, 163, 201, 0.1)",
           fill: true,
           tension: 0.4,
           borderDash: [6, 3],
           pointRadius: 0,
           pointHoverRadius: 4,
-          pointHoverBackgroundColor: "#34d399",
+          pointHoverBackgroundColor: "#36a3c9",
           pointHoverBorderWidth: 0,
         },
       ],
@@ -147,7 +147,7 @@ export function CalorieVsTdeeChart({
             boxHeight: 8,
             borderRadius: 4,
             useBorderRadius: true,
-            color: "rgba(155,152,149,0.8)",
+            color: "oklch(0.5517 0.0138 285.9385 / 0.8)",
             font: {
               size: 11,
             },
@@ -156,24 +156,24 @@ export function CalorieVsTdeeChart({
         tooltip: {
           backgroundColor: (context) =>
             document.documentElement.classList.contains("dark")
-              ? "#1A1916"
-              : "#ffffff",
+              ? "rgba(23, 23, 23, 0.95)"
+              : "rgba(255, 255, 255, 0.98)",
           titleColor: (context) =>
             document.documentElement.classList.contains("dark")
-              ? "rgba(255,255,255,0.8)"
-              : "rgba(30,30,30,0.9)",
-          titleFont: { family: "DM Mono", size: 11 },
+              ? "rgba(255, 255, 255, 0.95)"
+              : "rgba(23, 23, 23, 0.95)",
+          titleFont: { family: "DM Mono", size: 11, weight: "bold" },
           bodyColor: (context) =>
             document.documentElement.classList.contains("dark")
-              ? "rgba(255,255,255,0.7)"
-              : "rgba(30,30,30,0.8)",
+              ? "rgba(255, 255, 255, 0.9)"
+              : "rgba(23, 23, 23, 0.85)",
           bodyFont: { family: "DM Mono", size: 13 },
           padding: 10,
           cornerRadius: 8,
           borderColor: (context) =>
             document.documentElement.classList.contains("dark")
-              ? "rgba(255,255,255,0.1)"
-              : "rgba(155,152,149,0.2)",
+              ? "rgba(255, 255, 255, 0.15)"
+              : "rgba(0, 0, 0, 0.12)",
           borderWidth: 1,
           callbacks: {
             label: (context) => {
@@ -192,8 +192,8 @@ export function CalorieVsTdeeChart({
           ticks: {
             color: (context) =>
               document.documentElement.classList.contains("dark")
-                ? "rgba(255,255,255,0.35)"
-                : "rgba(155,152,149,0.6)",
+                ? "oklch(1 0 0 / 0.35)"
+                : "oklch(0.5517 0.0138 285.9385 / 0.6)",
             font: {
               size: 11,
             },
@@ -206,14 +206,14 @@ export function CalorieVsTdeeChart({
           grid: {
             color: (context) =>
               document.documentElement.classList.contains("dark")
-                ? "rgba(255,255,255,0.06)"
-                : "rgba(155,152,149,0.15)",
+                ? "oklch(1 0 0 / 0.06)"
+                : "oklch(0.5517 0.0138 285.9385 / 0.15)",
           },
           ticks: {
             color: (context) =>
               document.documentElement.classList.contains("dark")
-                ? "rgba(255,255,255,0.35)"
-                : "rgba(155,152,149,0.6)",
+                ? "oklch(1 0 0 / 0.35)"
+                : "oklch(0.5517 0.0138 285.9385 / 0.6)",
             font: {
               size: 11,
             },
@@ -244,7 +244,7 @@ export function CalorieVsTdeeChart({
         </div>
         <SummaryRow data={data} />
         <p className="pt-5 text-xs text-center text-muted-foreground font-bold font-sans">
-          To Lose weight, eat below the green line!
+          To lose weight, eat below the blue line & To gain, eat above it.
         </p>
       </CardContent>
     </Card>

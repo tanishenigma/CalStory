@@ -62,7 +62,6 @@ async function verifyFirebaseToken(
   }
 }
 
-/** Extract and verify the Firebase ID token from Authorization header. */
 async function authenticate(
   req: NextRequest,
 ): Promise<{ uid: string; idToken: string } | NextResponse> {
@@ -109,7 +108,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   const raw = await readRawStoredValue(uid, idToken);
   if (!raw) {
-    return NextResponse.json({ hasKey: false, preview: null, needsReEncrypt: false });
+    return NextResponse.json({
+      hasKey: false,
+      preview: null,
+      needsReEncrypt: false,
+    });
   }
 
   // Detect pre-encryption plaintext keys ("AIza...") vs encrypted ("enc:...")

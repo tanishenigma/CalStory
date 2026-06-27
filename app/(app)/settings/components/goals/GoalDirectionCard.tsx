@@ -20,11 +20,6 @@ interface GoalDirectionCardProps {
   };
 }
 
-/**
- * Full-width card containing the goal direction selector, optional
- * intensity selector (cut/bulk only), and a live "Estimated Target"
- * preview tile that mirrors the TDEE math.
- */
 export function GoalDirectionCard({
   goal,
   setGoal,
@@ -42,13 +37,13 @@ export function GoalDirectionCard({
             onClick={() => setGoal(g.key as GoalKey)}
             className={`relative p-5 rounded-xl border text-center transition-colors ${
               goal === g.key
-                ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3]"
+                ? "border-transparent bg-foreground text-background"
+                : "border-transparent hover:border-foreground dark:hover:border-foreground"
             }`}>
             {goal === g.key && (
               <motion.div
                 layoutId="active-goal"
-                className="absolute inset-0 rounded-xl bg-[#1A1916] dark:bg-[#f7f6f3]"
+                className="absolute inset-0 rounded-xl bg-foreground/20"
                 transition={{ type: "spring", stiffness: 320, damping: 28 }}
               />
             )}
@@ -56,9 +51,7 @@ export function GoalDirectionCard({
             <div className="relative z-10 text-sm font-bold">{g.label}</div>
             <div
               className={`relative z-10 text-xs mt-1 ${
-                goal === g.key
-                  ? "text-white dark:text-[#1a1916]/60"
-                  : "text-[#9B9895]"
+                goal === g.key ? "text-background/60" : "text-muted-foreground"
               }`}>
               {g.sub}
             </div>
@@ -76,20 +69,20 @@ export function GoalDirectionCard({
                 onClick={() => setIntensity(i.key)}
                 className={`relative flex items-center gap-4 p-4 rounded-xl border text-left transition-colors ${
                   intensity === i.key
-                    ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                    : "border-transparent hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-[#f7f6f3]"
+                    ? "border-transparent bg-foreground text-background"
+                    : "border-transparent hover:border-foreground dark:hover:border-foreground dark:border-foreground"
                 }`}>
                 {intensity === i.key && (
                   <motion.div
                     layoutId="active-intensity"
-                    className="absolute inset-0 rounded-xl bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                    className="absolute inset-0 rounded-xl bg-foreground text-background"
                     transition={{ type: "spring", stiffness: 320, damping: 28 }}
                   />
                 )}
                 <div
                   className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                     intensity === i.key
-                      ? "bg-card text-[#1A1916] dark:text-[#f7f6f3]"
+                      ? "bg-card text-foreground"
                       : "bg-background"
                   }`}>
                   {goal === "cut" ? "−" : "+"}
@@ -102,8 +95,8 @@ export function GoalDirectionCard({
                   <div
                     className={`text-xs mt-0.5 ${
                       intensity === i.key
-                        ? "text-white dark:text-[#1a1916]/70"
-                        : "text-[#9B9895]"
+                        ? "text-background/70"
+                        : "text-muted-foreground"
                     }`}>
                     {getIntensityLabel(i.key, goal).desc}
                   </div>
@@ -114,7 +107,7 @@ export function GoalDirectionCard({
         </>
       )}
 
-      <div className="relative overflow-hidden rounded-xl p-5 bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-400 dark:from-orange-600/80 dark:via-amber-600/70 dark:to-yellow-500/60 text-white">
+      <div className="relative overflow-hidden rounded-xl p-5 bg-gradient-to-br from-primary via-primary/70 to-primary/40 dark:from-primary/80 dark:via-primary/70 dark:to-primary/60 text-white">
         <div className="text-xs font-bold uppercase tracking-wider text-white/80 mb-2">
           Estimated Target
         </div>

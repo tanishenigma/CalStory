@@ -24,7 +24,7 @@ const Footer = () => {
           </div>
           {/* Between:  links */}
           <div>
-            <div className="flex flex-2 items-center justify-end gap-3 text-[11px] font-medium text-muted-foreground-foreground/80">
+            <div className="flex flex-2 items-center justify-end gap-3 text-[11px] font-medium text-muted-foreground/80">
               {" "}
               <Link
                 href="/blog"
@@ -51,7 +51,7 @@ const Footer = () => {
           </div>
         </div>
         {/* Bottom: Sitemap & Copyright*/}
-        <div className="hidden md:flex-col md:flex pt-4 items-center  justify-around  gap-3 text-[11px] font-medium text-muted-foreground-foreground/80 border-t border-border/30  ">
+        <div className="hidden md:flex-col md:flex pt-4 items-center  justify-around  gap-3 text-[11px] font-medium text-muted-foreground/80 border-t border-border/30  ">
           <Link
             href="https://github.com/tanishenigma"
             target="_blank"
@@ -78,7 +78,7 @@ const Footer = () => {
             </Link>
 
             {/* Legal links */}
-            <div className="grid grid-cols-2 items-center gap-4 text-xs font-medium text-muted-foreground-foreground">
+            <div className="grid grid-cols-2 items-center gap-4 text-xs font-medium text-muted-foreground">
               <Link
                 href="/blog"
                 className="hover:text-foreground transition-colors">
@@ -104,7 +104,7 @@ const Footer = () => {
 
           <div className="flex flex-col gap-2.5 text-xs justify-center items-center pt-5  border-t border-border/70">
             {/* Sitemap links */}
-            <div className="flex  items-center gap-5 text-xs font-medium text-muted-foreground-foreground">
+            <div className="flex  items-center gap-5 text-xs font-medium text-muted-foreground">
               <Link
                 href="https://github.com/tanishenigma"
                 target="_blank"

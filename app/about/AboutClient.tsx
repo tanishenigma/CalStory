@@ -33,7 +33,7 @@ export function AboutClient() {
           </BlurFade>
 
           <BlurFade delay={0.2}>
-            <div className="space-y-6 text-muted-foreground-foreground leading-relaxed text-lg">
+            <div className="space-y-6 text-muted-foreground leading-relaxed text-lg">
               <p>
                 CalStory is a calorie, macro, and workout tracker built because
                 of the trackers that punished you for logging. Logging food

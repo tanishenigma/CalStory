@@ -34,7 +34,7 @@ export function AppearanceTab() {
       <Card className="p-6 flex flex-col gap-8">
         <div>
           <div className="text-sm font-bold mb-1">Theme</div>
-          <p className="text-xs text-[#9B9895] leading-relaxed mb-5">
+          <p className="text-xs text-muted-foreground leading-relaxed mb-5">
             Choose between light mode, dark mode, or follow your system
             preference.
           </p>
@@ -72,13 +72,13 @@ export function AppearanceTab() {
                   className={[
                     "relative flex flex-col items-center gap-2 p-4 rounded-2xl border transition-colors",
                     active
-                      ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                      : "border-foreground/10 hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-white/10",
+                      ? "border-transparent bg-foreground text-background"
+                      : "border-foreground/10 hover:border-foreground dark:hover:border-foreground dark:border-white/10",
                   ].join(" ")}>
                   {active && (
                     <motion.div
                       layoutId="active-theme"
-                      className="absolute inset-0 rounded-2xl bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                      className="absolute inset-0 rounded-2xl bg-foreground text-background"
                       transition={{
                         type: "spring",
                         stiffness: 320,
@@ -90,9 +90,7 @@ export function AppearanceTab() {
                     size={20}
                     className={[
                       "relative z-10",
-                      active
-                        ? "text-white dark:text-[#1a1916]"
-                        : "text-[#1A1916] dark:text-[#f7f6f3]",
+                      active ? "text-background" : "text-foreground",
                     ].join(" ")}
                   />
                   <span className="relative z-10 font-bold text-sm">
@@ -108,10 +106,9 @@ export function AppearanceTab() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-sm font-bold mb-1 flex items-center gap-1.5">
-              <Sparkles size={14} className="text-primary" />
               Dynamic Background
             </div>
-            <p className="text-xs text-[#9B9895] leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Animates a full-screen colour gradient that slowly cycles through
               hues — based on your current theme.
             </p>
@@ -126,7 +123,7 @@ export function AppearanceTab() {
 
         <div className="hidden lg:block">
           <div className="text-sm font-bold mb-1">Navigation</div>
-          <p className="text-xs text-[#9B9895] leading-relaxed mb-5">
+          <p className="text-xs text-muted-foreground leading-relaxed mb-5">
             Pick how the side navigation looks on desktop. The mobile bottom bar
             is always shown.
           </p>
@@ -153,13 +150,13 @@ export function AppearanceTab() {
                   className={[
                     "relative flex flex-col gap-3 text-left p-4 rounded-2xl border transition-colors",
                     active
-                      ? "border-transparent bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                      : "border-foreground/10 hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-white/10",
+                      ? "border-transparent bg-foreground text-background"
+                      : "border-foreground/10 hover:border-foreground dark:hover:border-foreground dark:border-white/10",
                   ].join(" ")}>
                   {active && (
                     <motion.div
                       layoutId="active-nav-style"
-                      className="absolute inset-0 rounded-2xl  bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
+                      className="absolute inset-0 rounded-2xl  bg-foreground text-background"
                       transition={{
                         type: "spring",
                         stiffness: 320,
@@ -170,17 +167,13 @@ export function AppearanceTab() {
                   <div className="relative z-10 flex items-center gap-2">
                     <opt.Icon
                       size={16}
-                      className={
-                        active
-                          ? "text-white dark:text-[#1a1916]"
-                          : "text-[#1A1916] dark:text-[#f7f6f3]"
-                      }
+                      className={active ? "text-background" : "text-foreground"}
                     />
                     <span className="font-bold text-sm">{opt.title}</span>
                     {active && (
                       <ChevronRight
                         size={13}
-                        className="ml-auto text-white dark:text-[#1a1916]/60"
+                        className="ml-auto text-background/60"
                       />
                     )}
                   </div>
@@ -188,8 +181,8 @@ export function AppearanceTab() {
                     className={[
                       "relative z-10 text-[11px] leading-relaxed",
                       active
-                        ? "text-white/70 dark:text-[#1a1916]/60"
-                        : "text-[#9B9895]",
+                        ? "text-white/70 dark:text-foreground/60"
+                        : "text-muted-foreground",
                     ].join(" ")}>
                     {opt.sub}
                   </p>
@@ -199,7 +192,7 @@ export function AppearanceTab() {
           </div>
         </div>
 
-        <p className="text-[11px] text-[#9B9895] italic">
+        <p className="text-[11px] text-muted-foreground italic">
           Saves instantly. Your choice is remembered on this device.
         </p>
       </Card>

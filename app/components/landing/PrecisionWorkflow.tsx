@@ -33,7 +33,7 @@ export default function PrecisionWorkflow() {
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight font-heading text-foreground">
           Precision Workflow
         </h2>
-        <p className="text-sm text-muted-foreground-foreground mt-2 max-w-md">
+        <p className="text-sm text-muted-foreground mt-2 max-w-md">
           Three steps to metabolic clarity. Simple, automated, and scientific.
         </p>
       </BlurFade>
@@ -49,7 +49,7 @@ export default function PrecisionWorkflow() {
                 <div className="font-bold text-base tracking-tight font-heading text-foreground">
                   {step.n}. {step.title}
                 </div>
-                <div className="text-muted-foreground-foreground text-xs sm:text-sm leading-relaxed">
+                <div className="text-muted-foreground text-xs sm:text-sm leading-relaxed">
                   {step.desc}
                 </div>
               </CardContent>

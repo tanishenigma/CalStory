@@ -44,7 +44,7 @@ export function ProfileTab({
                   style={{ width: 72, height: 72 }}
                 />
               ) : (
-                <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-2xl font-bold shadow-md">
+                <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-br from-primary to-primary-foreground/70 flex items-center justify-center text-white text-2xl font-bold shadow-md">
                   {(name || "U")[0].toUpperCase()}
                 </div>
               )}
@@ -55,10 +55,10 @@ export function ProfileTab({
                   ? name.charAt(0).toUpperCase() + name.slice(1)
                   : "New User"}
               </div>
-              <div className="text-sm text-[#9B9895] truncate">
+              <div className="text-sm text-muted-foreground truncate">
                 {user?.email || "No email set"}
               </div>
-              <div className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/20 text-foreground dark:bg-primary/20 dark:text-foreground">
+              <div className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted/60 text-foreground dark:bg-muted/60 dark:text-foreground">
                 {GOAL_BADGE[goal] ?? "⚖️ Maintaining"}
               </div>
             </div>
@@ -76,6 +76,7 @@ export function ProfileTab({
                 label: "Age",
                 val: `${profile?.age ?? "—"} yrs`,
                 sub: "years old",
+                
               },
               {
                 label: "Weight",
@@ -96,13 +97,13 @@ export function ProfileTab({
               <div
                 key={item.label}
                 className="bg-muted/60 rounded-xl px-3 py-3 text-center">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] mb-0.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
                   {item.label}
                 </div>
                 <div className="font-bold text-base truncate leading-tight">
                   {item.val}
                 </div>
-                <div className="text-[9px] text-[#9B9895] mt-0.5">
+                <div className="text-[9px] text-muted-foreground mt-0.5">
                   {item.sub}
                 </div>
               </div>
@@ -166,7 +167,7 @@ export function ProfileTab({
             {user && (
               <button
                 onClick={onSignOut}
-                className="w-full py-3.5 rounded-xl border border-[#EF4444] text-[#EF4444] text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
+                className="w-full py-3.5 rounded-xl border border-destructive text-destructive text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
                 Sign out
               </button>
             )}

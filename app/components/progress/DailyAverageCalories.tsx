@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -25,6 +25,7 @@ const timeframes = ["This wk", "Last wk", "2 wk ago", "3 wk ago"];
 export function DailyAverageCalories() {
   const { state } = useApp();
   const [activeFrame, setActiveFrame] = useState("This wk");
+  const fullLabelsRef = useRef<string[]>([]);
 
   const meals = state?.meals || {};
 
@@ -43,9 +44,12 @@ export function DailyAverageCalories() {
       const key = `${year}-${month}-${day}`;
       return {
         label: d.toLocaleDateString("en-IN", { weekday: "short" }).charAt(0),
+        fullLabel: d.toLocaleDateString("en-IN", { weekday: "long" }),
         key,
       };
     });
+
+    fullLabelsRef.current = days.map((d) => d.fullLabel);
 
     const proteinData = days.map((d) => {
       const dayMeals = meals[d.key] || [];
@@ -66,7 +70,7 @@ export function DailyAverageCalories() {
         {
           label: "Protein",
           data: proteinData,
-          backgroundColor: "#EF4444",
+          backgroundColor: "#f0583c",
           stack: "Stack 0",
           borderRadius: {
             topLeft: 0,
@@ -78,13 +82,13 @@ export function DailyAverageCalories() {
         {
           label: "Carbs",
           data: carbsData,
-          backgroundColor: "#00E676",
+          backgroundColor: "#ef974a",
           stack: "Stack 0",
         },
         {
           label: "Fat",
           data: fatData,
-          backgroundColor: "#FFEA00",
+          backgroundColor: "#f4d25e",
           stack: "Stack 0",
           borderRadius: {
             topLeft: 4,
@@ -103,11 +107,17 @@ export function DailyAverageCalories() {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: "#1A1916",
+        backgroundColor: "var(--color-ink)",
         titleFont: { family: "DM Mono", size: 11 },
         bodyFont: { family: "DM Mono", size: 13 },
         padding: 10,
         cornerRadius: 8,
+        callbacks: {
+          title: (items) => {
+            const idx = items[0]?.dataIndex ?? 0;
+            return fullLabelsRef.current[idx] || "";
+          },
+        },
       },
     },
     scales: {
@@ -116,18 +126,15 @@ export function DailyAverageCalories() {
         stacked: true,
         ticks: {
           font: { family: "Inter", size: 11 },
-          color: "rgba(155, 152, 149, 0.6)",
+          color: "oklch(0.5517 0.0138 285.9385 / 0.6)",
         },
       },
       y: {
-        // Subtle gridline that works on both light and dark cards.
-        // Earlier this was a hard-coded light hex (#F0EFEC) which
-        // read as stark white in dark mode and fought the data.
-        grid: { color: "rgba(155, 152, 149, 0.15)" },
+        grid: { color: "oklch(0.5517 0.0138 285.9385 / 0.15)" },
         stacked: true,
         ticks: {
           font: { family: "DM Mono", size: 11 },
-          color: "rgba(155, 152, 149, 0.6)",
+          color: "oklch(0.5517 0.0138 285.9385 / 0.6)",
         },
       },
     },
@@ -147,8 +154,8 @@ export function DailyAverageCalories() {
                 onClick={() => setActiveFrame(tf)}
                 className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors whitespace-nowrap ${
                   activeFrame === tf
-                    ? "bg-card text-[#1A1916] dark:text-[#f7f6f3] shadow-sm"
-                    : "text-[#9B9895]"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground"
                 }`}>
                 {tf}
               </button>
@@ -162,18 +169,22 @@ export function DailyAverageCalories() {
         </div>
         <div className="flex justify-center items-center gap-6 pt-2">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
-            <span className="text-xs font-semibold text-[#9B9895]">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#f0583c]" />
+            <span className="text-xs font-semibold text-muted-foreground">
               Protein
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#00E676]" />
-            <span className="text-xs font-semibold text-[#9B9895]">Carbs</span>
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ef974a]" />
+            <span className="text-xs font-semibold text-muted-foreground">
+              Carbs
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#FFEA00]" />
-            <span className="text-xs font-semibold text-[#9B9895]">Fat</span>
+            <div className="w-2.5 h-2.5 rounded-full bg-[#f4d25e]" />
+            <span className="text-xs font-semibold text-muted-foreground">
+              Fat
+            </span>
           </div>
         </div>
       </CardContent>

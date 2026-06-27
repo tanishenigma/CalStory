@@ -11,15 +11,15 @@ interface SettingsTabsProps {
 
 export function SettingsTabs({ active, onChange, tabs }: SettingsTabsProps) {
   return (
-    <div className="flex gap-1 p-1 bg-subtle/40 dark:bg-[#2a2a2a]/40 rounded-xl overflow-x-auto">
+    <div className="flex gap-1 p-1 bg-muted-foreground/20 dark:bg-muted-foreground/20 rounded-xl overflow-x-auto">
       {tabs.map((t) => (
         <button
           key={t.key}
           onClick={() => onChange(t.key)}
           className={`relative flex-1 min-w-[70px] px-2 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-colors ${
             active === t.key
-              ? "text-[#1A1916] dark:text-[#f7f6f3]"
-              : "text-[#9B9895] hover:text-[#1A1916] dark:text-[#f7f6f3] dark:hover:text-white"
+              ? "text-foreground"
+              : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"
           }`}>
           {active === t.key && (
             <motion.div

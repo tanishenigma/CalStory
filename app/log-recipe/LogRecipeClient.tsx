@@ -247,7 +247,7 @@ function LogRecipeForm() {
                 key={r.id}
                 type="button"
                 onClick={() => applyPreset(r)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-border bg-card hover:bg-background hover:border-[#1A1916] dark:hover:border-[#f7f6f3] text-xs font-semibold transition-all cursor-pointer">
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-border bg-card hover:bg-background hover:border-foreground dark:hover:border-foreground text-xs font-semibold transition-all cursor-pointer">
                 <span className="text-sm">{pairingEmojiFor(r.name)}</span>
                 <span>{r.name}</span>
               </button>
@@ -258,7 +258,7 @@ function LogRecipeForm() {
 
       {/* ── Basics ── */}
       <Card className="p-5">
-        <div className="text-sm font-bold mb-4 text-[#1A1916] dark:text-[#f7f6f3]">
+        <div className="text-sm font-bold mb-4 text-foreground">
           Basics
         </div>
         <div className="grid grid-cols-2 gap-3 mb-4">
@@ -386,7 +386,7 @@ function LogRecipeForm() {
                 placeholder="e.g. 420"
                 className="w-full px-3.5 py-3 pr-14 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-wider text-[#9B9895]">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 kcal
               </span>
             </div>
@@ -425,7 +425,7 @@ function LogRecipeForm() {
             />
           </Field>
         </div>
-        <p className="text-[11px] text-[#9B9895]">
+        <p className="text-[11px] text-muted-foreground">
           💡 Macros auto-estimated from calories if left blank
         </p>
       </Card>
@@ -436,10 +436,10 @@ function LogRecipeForm() {
           <CardTitle>% of daily target</CardTitle>
         </CardHeader>
         <CardContent>
-          <DVBar label="Calories" pct={pPct} color="#1A1916" />
-          <DVBar label="Protein" pct={pPctP} color="#EF4444" />
-          <DVBar label="Carbs" pct={pPctC} color="#4ADE80" />
-          <DVBar label="Fat" pct={pPctF} color="#FACC15" />
+          <DVBar label="Calories" pct={pPct} color="var(--color-ink)" />
+          <DVBar label="Protein" pct={pPctP} color="var(--color-red)" />
+          <DVBar label="Carbs" pct={pPctC} color="var(--color-primary)" />
+          <DVBar label="Fat" pct={pPctF} color="var(--color-amber)" />
         </CardContent>
       </Card>
 
@@ -512,10 +512,10 @@ function LogRecipeForm() {
             footer={
               netCarbs > 0 ? (
                 <div className="flex justify-between text-[11px] pt-2 border-t border-border mt-2">
-                  <span className="font-semibold text-[#1A1916] dark:text-[#f7f6f3]">
+                  <span className="font-semibold text-foreground">
                     Net carbs
                   </span>
-                  <span className="font-mono text-[#1A1916] dark:text-[#f7f6f3]">
+                  <span className="font-mono text-foreground">
                     {netCarbs.toFixed(1)} g
                   </span>
                 </div>
@@ -617,13 +617,13 @@ function LogRecipeForm() {
         <button
           onClick={handleSave}
           type="button"
-          className="w-full py-3.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer">
+          className="w-full py-3.5 bg-foreground text-background border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer">
           {repeatDays > 1 ? `Save to next ${repeatDays} days` : "Save Meal"}
         </button>
         <button
           onClick={() => router.back()}
           type="button"
-          className="w-full py-3.5 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-all cursor-pointer">
+          className="w-full py-3.5 border border-border text-muted-foreground rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-all cursor-pointer">
           Cancel
         </button>
       </div>
@@ -647,10 +647,10 @@ function Field({
   return (
     <div>
       <label
-        className={`flex items-baseline justify-between font-bold uppercase tracking-wider text-[#9B9895] ${compact ? "text-[9px] mb-1" : "text-[10px] mb-1.5"}`}>
+        className={`flex items-baseline justify-between font-bold uppercase tracking-wider text-muted-foreground ${compact ? "text-[9px] mb-1" : "text-[10px] mb-1.5"}`}>
         <span>{label}</span>
         {hint && (
-          <span className="font-mono normal-case text-[#9B9895]/70">
+          <span className="font-mono normal-case text-muted-foreground/70">
             {hint}
           </span>
         )}
@@ -671,7 +671,7 @@ function Section({
 }) {
   return (
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] mb-2">
+      <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
         {title}
       </div>
       {children}
@@ -692,7 +692,7 @@ function DVBar({
   const clamped = Math.max(0, Math.min(pct, 999));
   return (
     <div className="flex items-center gap-2.5 py-1.5">
-      <span className="text-xs font-semibold text-[#1A1916] dark:text-[#f7f6f3] w-16 flex-shrink-0">
+      <span className="text-xs font-semibold text-foreground w-16 flex-shrink-0">
         {label}
       </span>
       <div className="flex-1 h-1.5 rounded-full bg-background overflow-hidden">
@@ -704,7 +704,7 @@ function DVBar({
           }}
         />
       </div>
-      <span className="text-[10px] font-mono font-bold text-[#1A1916] dark:text-[#f7f6f3] w-9 text-right">
+      <span className="text-[10px] font-mono font-bold text-foreground w-9 text-right">
         {clamped}%
       </span>
     </div>

@@ -76,12 +76,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "userId is required" }, { status: 400 });
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    return NextResponse.json({ error: "date must be YYYY-MM-DD" }, { status: 400 });
+    return NextResponse.json(
+      { error: "date must be YYYY-MM-DD" },
+      { status: 400 },
+    );
   }
 
   // Extract the Firebase ID token from the Authorization header (optional).
   const authHeader = req.headers.get("Authorization");
-  const idToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+  const idToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : undefined;
 
   const apiKey = await resolveGeminiKey(userId, idToken);
   if (!apiKey) {
@@ -124,23 +129,73 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const cleaned = raw
       .replace(/^```(?:json)?\s*/i, "")
       .replace(/\s*```\s*$/i, "")
+      // Strip common leading wrappers the model occasionally emits.
+      .replace(/^\s*JSON\s*[:\-]?\s*/i, "")
+      .replace(
+        /^\s*(Here(?:'s| is) the (?:parsed )?(?:workout|JSON)[^:]*:?\s*)/i,
+        "",
+      )
+      // Normalise smart quotes so JSON tokens stay ASCII.
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"')
       .trim();
 
-    try {
-      const parsed: WorkoutAIResponse = JSON.parse(cleaned);
+    const tryParse = (input: string): WorkoutAIResponse | null => {
+      // Attempt 1: direct parse.
+      try {
+        return JSON.parse(input) as WorkoutAIResponse;
+      } catch {
+        // noop
+      }
+
+      // Attempt 2: strip trailing commas before } or ].
+      const noTrailing = input.replace(/,(\s*[}\]])/g, "$1");
+      try {
+        return JSON.parse(noTrailing) as WorkoutAIResponse;
+      } catch {
+        // noop
+      }
+
+      // Attempt 3: replace single-quoted strings with double quotes,
+      // then strip trailing commas again. Conservative — only touches
+      // outer-string-y regions; JSON keys/values are the usual offenders.
+      const doubleQuoted = noTrailing
+        .replace(/'((?:\\.|[^'\\])*)'(?=\s*:)/g, '"$1"')
+        .replace(/:\s*'((?:\\.|[^'\\])*)'/g, ': "$1"')
+        .replace(/,(\s*[}\]])/g, "$1");
+      try {
+        return JSON.parse(doubleQuoted) as WorkoutAIResponse;
+      } catch {
+        // noop
+      }
+
+      // Attempt 4: strip JS-style // and /* */ comments (model rarely adds
+      // these but cheap to try before giving up).
+      const noComments = doubleQuoted
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/(^|[^:])\/\/.*$/gm, "$1");
+      try {
+        return JSON.parse(noComments) as WorkoutAIResponse;
+      } catch {
+        return null;
+      }
+    };
+
+    const parsed = tryParse(cleaned);
+    if (parsed) {
       return NextResponse.json(parsed);
-    } catch {
-      console.error("[ai-log-workout] JSON parse failed. Raw:", raw);
-      const fallback: WorkoutAIResponse = {
-        type: "error",
-        message:
-          "Could not parse the AI response. Please try rephrasing your workout description.",
-        workout: null,
-        askSaveTemplate: false,
-        suggestions: [],
-      };
-      return NextResponse.json(fallback);
     }
+
+    console.error("[ai-log-workout] JSON parse failed. Raw:", raw);
+    const fallback: WorkoutAIResponse = {
+      type: "error",
+      message:
+        "Could not parse the AI response. Please try rephrasing your workout description.",
+      workout: null,
+      askSaveTemplate: false,
+      suggestions: [],
+    };
+    return NextResponse.json(fallback);
   } catch (err) {
     console.error("[ai-log-workout] Gemini SDK error:", err);
     const fallback: WorkoutAIResponse = {

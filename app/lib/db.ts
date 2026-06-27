@@ -188,11 +188,6 @@ export async function getWorkouts(
   }, [] as Workout[]);
 }
 
-/**
- * Bulk-load workouts for an explicit list of date keys in parallel.
- * Same shape as getMealsInRange — used during hydration so the
- * WeekStrip / streak can render without waiting for per-day loads.
- */
 export async function getWorkoutsInRange(
   uid: string,
   dateKeys: string[],
@@ -375,12 +370,6 @@ export async function saveUserApiKey(
   }, undefined);
 }
 
-/**
- * Read the user's personal Gemini API key from Firestore.
- * Returns null when no key has been stored.
- *
- * IMPORTANT: Call only from server-side route handlers.
- */
 export async function getUserApiKey(uid: string): Promise<string | null> {
   return safe(async () => {
     const snap = await getDoc(doc(db, "users", uid, "settings", "api_keys"));

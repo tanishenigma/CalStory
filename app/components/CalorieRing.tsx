@@ -20,13 +20,13 @@ export default function CalorieRing() {
         {/* track */}
         <circle
           cx="85" cy="85" r="72"
-          fill="none" stroke="#EEEDEA" strokeWidth="10"
+          fill="none" stroke="var(--color-border)" strokeWidth="10"
         />
         {/* progress arc */}
         <circle
           cx="85" cy="85" r="72"
           fill="none"
-          stroke="#1A1916"
+          stroke="var(--color-ink)"
           strokeWidth="10"
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
@@ -35,9 +35,9 @@ export default function CalorieRing() {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="font-mono text-3xl font-bold text-[#1A1916] dark:text-[#f7f6f3] leading-none">{eaten}</div>
-        <div className="text-[10px] text-[#9B9895] uppercase font-bold tracking-wider mt-1.5">kcal eaten</div>
-        <div className="text-[11px] font-mono text-[#9B9895] mt-0.5">of {target} kcal</div>
+        <div className="font-mono text-3xl font-bold text-foreground leading-none">{eaten}</div>
+        <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-1.5">kcal eaten</div>
+        <div className="text-[11px] font-mono text-muted-foreground mt-0.5">of {target} kcal</div>
       </div>
     </div>
   );

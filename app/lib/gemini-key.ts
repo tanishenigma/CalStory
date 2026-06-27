@@ -16,40 +16,19 @@ import {
 } from "@/app/lib/server-crypto";
 import { logger } from "@/app/lib/logger";
 
-/**
- * Gemini API keys always start with "AIza" followed by exactly 35
- * characters from [0-9A-Za-z\-_]. Total length = 39 characters.
- */
 export const GEMINI_KEY_REGEX = /^AIza[0-9A-Za-z\-_]{35}$/;
 
-/** Validate that a string looks like a real Gemini API key. */
 export function validateKeyFormat(key: string): boolean {
   return GEMINI_KEY_REGEX.test(key.trim());
 }
 
-/** Build the masked preview shown in the UI (first 4 + last 4 chars). */
 export function maskKey(key: string): string {
   if (key.length < 8) return "••••••••";
   return `${key.slice(0, 4)}${"•".repeat(key.length - 8)}${key.slice(-4)}`;
 }
 
-// ── Firestore REST helpers ──────────────────────────────────────────
-// We use the Firestore REST API authenticated with the user's Firebase
-// ID token. This satisfies the existing security rules:
-//   request.auth.uid == uid
-// without needing the Firebase Admin SDK or a service account.
-
 const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/databases/(default)/documents`;
 
-/**
- * Read users/{uid}/settings/api_keys, decrypt the stored key, and return
- * the plaintext Gemini API key.
- *
- * Migration path: if the stored value is not yet encrypted (plaintext key
- * saved before encryption was deployed), we return null and let the caller
- * surface a "please re-save your key" message instead of silently using an
- * unencrypted value — this forces a clean encrypted re-save.
- */
 async function fetchApiKeyFromFirestore(
   uid: string,
   idToken: string,
@@ -66,9 +45,6 @@ async function fetchApiKeyFromFirestore(
     const stored = doc.fields?.geminiApiKey?.stringValue;
     if (!stored) return null;
 
-    // If the value is a plaintext key (saved before encryption was added),
-    // treat as "not found" so the user is prompted to re-save. This is
-    // safer than silently using the unencrypted value.
     if (!isEncrypted(stored)) {
       console.warn(
         `[gemini-key] User ${uid} has a plaintext key — prompting re-save.`,
@@ -76,7 +52,6 @@ async function fetchApiKeyFromFirestore(
       return null;
     }
 
-    // Decrypt — throws if the key material is wrong or data was tampered with
     return decryptApiKey(stored);
   } catch (err) {
     console.warn("[gemini-key] Failed to read/decrypt personal key:", err);
@@ -84,10 +59,6 @@ async function fetchApiKeyFromFirestore(
   }
 }
 
-/**
- * Encrypt the API key and write it to Firestore via REST.
- * The plaintext key is NEVER written to Firestore.
- */
 export async function saveApiKeyToFirestore(
   uid: string,
   idToken: string,
@@ -115,14 +86,6 @@ export async function saveApiKeyToFirestore(
   }
 }
 
-/**
- * Delete the geminiApiKey field from Firestore via REST.
- *
- * Firestore field-deletion via PATCH + updateMask:
- *   When a field is listed in updateMask but NOT present in the `fields`
- *   body, Firestore deletes that field from the document. This is the
- *   official field-deletion pattern for the REST API.
- */
 export async function deleteApiKeyFromFirestore(
   uid: string,
   idToken: string,

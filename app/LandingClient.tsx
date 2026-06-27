@@ -28,6 +28,7 @@ import { StructuredData } from "@/app/components/seo/StructuredData";
 import { landingJsonLd } from "@/app/components/landing/landingJsonLd";
 import CurvedLoop from "./components/ui/CurvedLoop";
 import FeatureGrid from "./components/landing/Features";
+import { BackgroundGrid } from "@/app/components/BackgroundGrid";
 
 if (typeof window !== "undefined") gsap.registerPlugin(ScrollTrigger);
 
@@ -94,7 +95,7 @@ export default function LandingPage() {
   return (
     <ReactLenis root options={{ lerp: 0.1, duration: 1.5 }}>
       <div className="pointer-events-none fixed inset-0" style={{ zIndex: 0 }}>
-        {/* Primary orange orb — top-right */}
+        {/* Primary green orb — top-right */}
         <div
           className="orb-1 absolute"
           style={{
@@ -106,11 +107,11 @@ export default function LandingPage() {
             maxHeight: "860px",
             borderRadius: "50%",
             background:
-              "radial-gradient(circle at center, rgba(249,115,22,0.30) 0%, rgba(249,115,22,0.14) 40%, transparent 70%)",
+              "radial-gradient(circle at center, rgba(48, 158, 134, 0.30) 0%, rgba(48, 158, 134, 0.14) 40%, transparent 70%)",
             filter: "blur(48px)",
           }}
         />
-        {/* Secondary orange orb — bottom-left */}
+        {/* Secondary green orb — bottom-left */}
         <div
           className="orb-2 absolute"
           style={{
@@ -122,11 +123,11 @@ export default function LandingPage() {
             maxHeight: "720px",
             borderRadius: "50%",
             background:
-              "radial-gradient(circle at center, rgba(249,115,22,0.20) 0%, rgba(251,146,60,0.10) 45%, transparent 70%)",
+              "radial-gradient(circle at center, rgba(48, 158, 134, 0.20) 0%, rgba(48, 158, 134, 0.10) 45%, transparent 70%)",
             filter: "blur(60px)",
           }}
         />
-        {/* Accent deep-orange orb — center */}
+        {/* Accent deep-green orb — center */}
         <div
           className="orb-3 absolute"
           style={{
@@ -138,7 +139,7 @@ export default function LandingPage() {
             maxHeight: "640px",
             borderRadius: "50%",
             background:
-              "radial-gradient(circle at center, rgba(234,88,12,0.14) 0%, rgba(249,115,22,0.05) 50%, transparent 70%)",
+              "radial-gradient(circle at center, rgba(48, 158, 134, 0.14) 0%, rgba(48, 158, 134, 0.05) 50%, transparent 70%)",
             filter: "blur(72px)",
           }}
         />
@@ -155,6 +156,9 @@ export default function LandingPage() {
         <StructuredData data={landingJsonLd} />
         {/* HERO - Simplified, single focus */}
         <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-30  min-h-[85vh] w-full overflow-hidden">
+          {/* Hairline grid backdrop — scoped to the hero only so it
+              doesn't bleed into the method/features/FAQ sections. */}
+          <BackgroundGrid scopedToHero />
           <BlurFade delay={0.2} className="w-full max-w-5xl mx-auto px-4">
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] mb-6 font-heading">
               Your calorie <br />
@@ -163,7 +167,7 @@ export default function LandingPage() {
           </BlurFade>
 
           <BlurFade delay={0.3} className="w-full max-w-xl mx-auto px-4">
-            <p className="text-muted-foreground-foreground text-lg md:text-xl leading-relaxed mb-10">
+            <p className="text-muted-foreground text-lg md:text-xl leading-relaxed mb-10">
               Log what you eat. Track how you train. Build the story of your
               best self.
             </p>
@@ -184,7 +188,7 @@ export default function LandingPage() {
                 </button>
                 <Link
                   href="#features"
-                  className="inline-flex h-12 items-center text-sm font-medium text-muted-foreground-foreground hover:text-foreground transition-colors whitespace-nowrap gap-2 border-2 px-12 py-2 md:p-4 rounded-2xl">
+                  className="inline-flex h-12 items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap gap-2 border-2 px-12 py-2 md:p-4 rounded-2xl">
                   Learn more <CircleQuestionMark />
                 </Link>
               </>
@@ -211,7 +215,7 @@ export default function LandingPage() {
                   Zero Friction.{" "}
                   <span className="text-primary">Maximum Results.</span>
                 </h2>
-                <p className="mt-6 text-muted-foreground-foreground text-base leading-relaxed">
+                <p className="mt-6 text-muted-foreground text-base leading-relaxed">
                   Most trackers fail because they're too slow. CalStory is
                   optimized for speed, so you spend less time logging and more
                   time training.
@@ -233,7 +237,7 @@ export default function LandingPage() {
                       <div className="font-bold text-base mb-1 tracking-tight font-heading">
                         {s.title}
                       </div>
-                      <div className="text-muted-foreground-foreground text-sm leading-relaxed">
+                      <div className="text-muted-foreground text-sm leading-relaxed">
                         {s.desc}
                       </div>
                     </div>

@@ -53,7 +53,6 @@ function formatMetricValue(field: MetricFieldSchema, raw: unknown): string {
   return String(raw);
 }
 
-/** Render the per-exercise summary line(s) for any workout type. */
 function ExerciseDetails({
   ex,
   workoutType,
@@ -162,24 +161,24 @@ export default function WorkoutsPage() {
       <WeekStrip />
       <div className="flex flex-col sm:flex-row sm:items-center  justify-between gap-4 mb-6">
         <div className="flex flex-col">
-          <div className="flex flex-start items-center gap-4">
-            <h1 className="my-4 sm:my-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <h1 className="my-4 sm:my-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
               Workouts
             </h1>{" "}
             {state.savedWorkouts?.length > 0 && (
               <button
                 onClick={() => setShowTemplates(!showTemplates)}
-                className="px-4 h-10 py-2.5 bg-primary-foreground  dark:bg-muted text-foreground dark:text-foreground border border-border rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-background transition-colors active:scale-[0.98]">
+                className="self-start sm:self-auto px-4 h-10 py-2.5 bg-primary-foreground  dark:bg-muted text-foreground dark:text-foreground border border-border rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-background transition-colors active:scale-[0.98]">
                 Saved Routines
               </button>
             )}
           </div>
         </div>
         <div className="flex flex-col sm:items-end gap-3">
-          <div className="text-xs font-semibold text-[#9B9895]">
+          <div className="text-xs font-semibold text-muted-foreground">
             {fmtDate(selDate)}
           </div>
-          <div className="flex gap-2 flex-wrap ">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {/* Log with AI — blue accent, left of primary Log Workout button */}
             {user && (
               <button
@@ -193,8 +192,8 @@ export default function WorkoutsPage() {
                     return !v;
                   });
                 }}
-                className="px-4 py-2.5 bg-card text-ink dark:text-[#f7f6f3]  rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors active:scale-[0.98] flex items-center gap-1.5">
-                <Sparkles size={14} className="text-orange-500" />
+                className="px-4 py-2.5 bg-card text-ink dark:text-foreground  rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors active:scale-[0.98] flex items-center justify-center gap-1.5">
+                <Sparkles size={14} className="text-primary" />
                 {showAIChat ? "Cancel" : "Log with AI"}
               </button>
             )}
@@ -206,21 +205,22 @@ export default function WorkoutsPage() {
                 setShowTemplates(false);
                 setShowAIChat(false);
               }}
-              className="px-4 py-2.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl text-xs md:text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
+              className="px-4 py-2.5 bg-foreground text-background rounded-xl text-xs md:text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
               Log Workout
             </button>
           </div>
         </div>
       </div>{" "}
       {showTemplates && !showForm && (
-        <div className="mb-4 p-6 bg-card dark:bg-card rounded-[24px] shadow-sm border border-[#F0EFEC] dark:border-[#2a2a2a] animate-in slide-in-from-top-4 duration-300">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-[18px] font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+        <div className="mb-4 p-4 sm:p-6 bg-card dark:bg-card rounded-[24px] shadow-sm border border-border dark:border-border animate-in slide-in-from-top-4 duration-300">
+          <div className="flex justify-between items-center mb-4 sm:mb-6 gap-3">
+            <h2 className="text-[18px] font-bold text-foreground">
               Saved Routines
             </h2>
             <button
               onClick={() => setShowTemplates(false)}
-              className="text-[#9B9895] hover:text-[#1A1916]">
+              aria-label="Close saved routines"
+              className="text-muted-foreground hover:text-foreground">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -229,28 +229,33 @@ export default function WorkoutsPage() {
               <div
                 key={t.id}
                 className="p-4 border border-border rounded-2xl flex flex-col hover:bg-subtle transition-colors min-w-0">
-                <div className="flex justify-between items-start gap-3 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 min-w-0">
                   <div className="min-w-0 flex-1">
-                    <div className="font-bold text-[15px] text-[#1A1916] dark:text-[#f7f6f3] truncate">
+                    <div className="font-bold text-[15px] text-foreground truncate">
                       {t.name}
                     </div>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className="px-2 py-0.5 rounded bg-background text-[#9B9895] text-[10px] font-bold uppercase tracking-wider">
+                      <span className="px-2 py-0.5 rounded bg-background text-muted-foreground text-[10px] font-bold uppercase tracking-wider">
                         {t.type}
                       </span>
-                      <span className="text-xs font-semibold text-[#9B9895]">
+                      <span className="text-xs font-semibold text-muted-foreground">
                         {t.exercises.length} Exercises
                       </span>
                     </div>
                   </div>
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex gap-2 shrink-0 self-end sm:self-start">
                     <button
                       onClick={() =>
                         setViewingTemplate(
                           viewingTemplate?.id === t.id ? null : t,
                         )
                       }
-                      className={`p-2 rounded-lg transition-colors ${viewingTemplate?.id === t.id ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]" : "text-[#9B9895] hover:text-[#1A1916] dark:text-[#f7f6f3] hover:bg-background dark:bg-[#0f0f0e]"}`}>
+                      aria-label={
+                        viewingTemplate?.id === t.id
+                          ? "Hide details"
+                          : "Show details"
+                      }
+                      className={`p-2 rounded-lg transition-colors ${viewingTemplate?.id === t.id ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground hover:bg-background dark:bg-foreground"}`}>
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
@@ -260,7 +265,7 @@ export default function WorkoutsPage() {
                         setShowForm(true);
                         setShowTemplates(false);
                       }}
-                      className="px-4 py-2 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-lg text-xs font-bold hover:opacity-90 transition-opacity">
+                      className="px-3 sm:px-4 py-2 bg-foreground text-background rounded-lg text-xs font-bold hover:opacity-90 transition-opacity">
                       Use
                     </button>
                     <button
@@ -269,24 +274,25 @@ export default function WorkoutsPage() {
                           deleteTemplate(t.id);
                         }
                       }}
-                      className="p-2 text-[#9B9895] hover:text-[#EF4444] hover:bg-[#FEE2E2] rounded-lg transition-colors">
+                      aria-label="Delete template"
+                      className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
                 {viewingTemplate?.id === t.id && (
-                  <div className="mt-4 pt-3 border-t border-[#F0EFEC] dark:border-[#2a2a2a] flex flex-col gap-3">
+                  <div className="mt-4 pt-3 border-t border-border dark:border-border flex flex-col gap-3">
                     {t.exercises.map((e: any, i: number) => (
                       <div key={i} className="flex flex-col gap-1 py-1">
-                        <div className="font-semibold text-[#1A1916] dark:text-[#f7f6f3] text-[13px]">
+                        <div className="font-semibold text-foreground text-[13px]">
                           {e.name}
                         </div>
                         <div className="flex flex-col pl-3 border-l-2 border-border gap-0.5">
                           <ExerciseDetails
                             ex={e}
                             workoutType={t.type}
-                            fontMonoClass="font-mono text-[#9B9895] text-[11px]"
+                            fontMonoClass="font-mono text-muted-foreground text-[11px]"
                           />
                         </div>
                       </div>
@@ -336,10 +342,8 @@ export default function WorkoutsPage() {
       {dayWorkouts.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-12 text-center gap-2">
           <div className="text-4xl mb-2">💤</div>
-          <div className="font-bold text-[15px] text-[#1A1916] dark:text-[#f7f6f3]">
-            Rest Day
-          </div>
-          <div className="text-[13px] text-[#9B9895] max-w-[200px]">
+          <div className="font-bold text-[15px] text-foreground">Rest Day</div>
+          <div className="text-[13px] text-muted-foreground max-w-[200px]">
             No workouts logged for this day. Enjoy your recovery!
           </div>
         </Card>
@@ -349,21 +353,21 @@ export default function WorkoutsPage() {
             <Card key={w.id} className="p-4">
               <div className="flex justify-between items-start mb-2 gap-2">
                 <div className="min-w-0">
-                  <div className="font-bold text-[15px] text-[#1A1916] dark:text-[#f7f6f3] truncate">
+                  <div className="font-bold text-[15px] text-foreground truncate">
                     {w.name}
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="flex items-center justify-center px-2 py-0.5 rounded bg-background text-[#9B9895] text-[10px] font-bold uppercase tracking-wider">
+                    <span className="flex items-center justify-center px-2 py-0.5 rounded bg-background text-muted-foreground text-[10px] font-bold uppercase tracking-wider">
                       {w.type}
                     </span>
-                    <span className="text-xs font-semibold text-[#9B9895]">
+                    <span className="text-xs font-semibold text-muted-foreground">
                       {w.duration} min
                     </span>
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button
-                    className="p-2.5 sm:p-1.5 text-[#9B9895] hover:text-[#1A1916] hover:bg-background rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    className="p-2.5 sm:p-1.5 text-muted-foreground hover:text-foreground hover:bg-background rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     onClick={() => {
                       setEditingWorkout(w);
                       setFormMode("edit");
@@ -372,7 +376,7 @@ export default function WorkoutsPage() {
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
-                    className="p-2.5 sm:p-1.5 text-[#9B9895] hover:text-[#1A1916] hover:bg-background rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    className="p-2.5 sm:p-1.5 text-muted-foreground hover:text-foreground hover:bg-background rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     onClick={() => {
                       setEditingWorkout(w);
                       setFormMode("duplicate");
@@ -381,7 +385,7 @@ export default function WorkoutsPage() {
                     <CopyPlus className="w-4 h-4" />
                   </button>
                   <button
-                    className="p-2.5 sm:p-1.5 text-[#9B9895] hover:text-[#EF4444] hover:bg-[#FEE2E2] rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    className="p-2.5 sm:p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     onClick={() => handleDelete(w.id)}>
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -389,17 +393,17 @@ export default function WorkoutsPage() {
               </div>
 
               {(w.exercises || []).length > 0 && (
-                <div className="mt-4 pt-2 border-t border-[#F0EFEC] dark:border-[#2a2a2a] flex flex-col gap-2">
+                <div className="mt-4 pt-2 border-t border-border dark:border-border flex flex-col gap-2">
                   {w.exercises.map((e, i) => (
                     <div key={i} className="flex flex-col gap-1 py-1">
-                      <div className="font-semibold text-[#1A1916] dark:text-[#f7f6f3] text-xs">
+                      <div className="font-semibold text-foreground text-xs">
                         {e.name}
                       </div>
-                      <div className="flex flex-col pl-3 border-l-2 border-[#F0EFEC] dark:border-[#2a2a2a] gap-0.5">
+                      <div className="flex flex-col pl-3 border-l-2 border-border dark:border-border gap-0.5">
                         <ExerciseDetails
                           ex={e}
                           workoutType={w.type}
-                          fontMonoClass="font-mono text-[#9B9895] text-[11px]"
+                          fontMonoClass="font-mono text-muted-foreground text-[11px]"
                         />
                       </div>
                     </div>
@@ -408,7 +412,7 @@ export default function WorkoutsPage() {
               )}
 
               {w.notes && (
-                <div className="mt-4 p-3 bg-background rounded-xl text-xs text-[#9B9895] leading-relaxed italic">
+                <div className="mt-4 p-3 bg-background rounded-xl text-xs text-muted-foreground leading-relaxed italic">
                   {w.notes}
                 </div>
               )}

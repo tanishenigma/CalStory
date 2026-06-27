@@ -7,22 +7,11 @@ import type { WeightLog } from "@/app/types";
 
 interface DeltaRow {
   label: string;
-  /** `null` means "not enough data to compute a delta". */
   delta: number | null;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/**
- * Find the weight log closest to a given target date. We pick the
- * nearest one (in either direction) so a missing entry on exactly
- * day -7 still resolves to the closest actual weigh-in. `null` if
- * no log exists in the lookback window at all.
- *
- * Comparison is done against `log.date` (parsed at local noon) rather
- * than `loggedAt` so backdated entries are matched by their intended
- * calendar date, not when they were physically saved.
- */
 function nearestLog(
   logs: WeightLog[],
   target: number,
@@ -98,11 +87,9 @@ export default function WeightChanges() {
     <div>
       <div className="bg-card border border-border rounded-2xl overflow-hidden ">
         <div className="p-4 border-b border-border">
-          <h3 className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
-            Weight Changes
-          </h3>
+          <h3 className="font-bold text-foreground">Weight Changes</h3>
         </div>
-        <div className="divide-y divide-[#E8E7E4] dark:divide-[#3a3a3a]">
+        <div className="divide-y divide-border divide-border">
           {rows.map((item, idx) => {
             // Color rules:
             //   - null  → muted ("no data yet")
@@ -113,10 +100,10 @@ export default function WeightChanges() {
             //     treating any movement as noteworthy beats hiding it.
             const signClass =
               item.delta === null || item.delta === 0
-                ? "text-[#9B9895]"
+                ? "text-muted-foreground"
                 : item.delta < 0
-                  ? "text-[#22C55E]"
-                  : "text-[#F97316]";
+                  ? "text-primary"
+                  : "text-primary";
             const formatted =
               item.delta === null
                 ? "—"
@@ -125,7 +112,7 @@ export default function WeightChanges() {
               <div
                 key={idx}
                 className="flex justify-between items-center p-4 m-1">
-                <span className="text-md font-medium text-[#1A1916] dark:text-[#f7f6f3]">
+                <span className="text-md font-medium text-foreground">
                   {item.label}
                 </span>
                 <div className="flex items-center gap-2">
@@ -133,7 +120,7 @@ export default function WeightChanges() {
                     className={`text-sm font-mono font-semibold ${signClass}`}>
                     {formatted}
                   </span>
-                  <ChevronRight size={16} className="text-[#9B9895]" />
+                  <ChevronRight size={16} className="text-muted-foreground" />
                 </div>
               </div>
             );

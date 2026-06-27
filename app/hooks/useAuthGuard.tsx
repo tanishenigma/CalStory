@@ -73,8 +73,8 @@ export const Spinner: React.FC = () => {
           width: "36px",
           height: "36px",
           borderRadius: "50%",
-          border: "3px solid #E8E7E4",
-          borderTopColor: "#1A1916",
+          border: "3px solid var(--color-border)",
+          borderTopColor: "var(--color-ink)",
           animation: "spin 0.7s linear infinite",
         }}
       />

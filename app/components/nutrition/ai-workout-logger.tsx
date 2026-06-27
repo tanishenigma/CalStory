@@ -12,7 +12,7 @@ interface Props {
   onClose: () => void;
   date: string;
   userId: string;
-  /** Called when user clicks Edit — parent opens WorkoutForm pre-filled */
+
   onEditWorkout?: (workout: PendingWorkout) => void;
 }
 
@@ -37,6 +37,19 @@ export default function AIWorkoutLogger({
 
   const [inputValue, setInputValue] = useState("");
   const [isLogging, setIsLogging] = useState(false);
+  // Track which routine-derived message ids the user has edited, so
+  // the confirmation card can re-show the toggle as "Save changes".
+  const [dirtyMessageIds, setDirtyMessageIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  // Auto-scroll to the newest message whenever the thread changes.
+  const messagesScrollRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = messagesScrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [messages.length, isLoading]);
 
   function handleClose() {
     reset();
@@ -68,19 +81,24 @@ export default function AIWorkoutLogger({
     <BorderGlow
       className="mb-8 animate-in slide-in-from-top-4 duration-300"
       borderRadius={16}
-      glowColor="25 95 53"
-      colors={["#f97316", "#fb923c", "#fdba74"]}
+      glowColor="76 175 80"
+      colors={[
+        "var(--color-primary)",
+        "oklch(0.7540 0.1770 145)",
+        "oklch(0.8353 0.1870 145)",
+      ]}
       glowRadius={35}
       glowIntensity={1.2}
       edgeSensitivity={25}
       animated>
       <div
         className={cn(
-          "rounded-2xl border border-orange-200 dark:border-orange-900/40",
+          "rounded-md border border-primary/20 dark:border-primary/30",
           " bg-transparent shadow-sm overflow-hidden",
         )}>
         {/* ── Message thread ──────────────────────────────────── */}
         <div
+          ref={messagesScrollRef}
           className="h-[400px] overflow-y-auto px-4 py-4 space-y-3"
           data-lenis-prevent>
           {messages.map((msg) => (
@@ -90,6 +108,15 @@ export default function AIWorkoutLogger({
               onConfirm={handleConfirm}
               onEdit={handleEdit}
               isLogging={isLogging}
+              dirty={dirtyMessageIds.has(msg.id)}
+              onMarkDirty={(id) =>
+                setDirtyMessageIds((prev) => {
+                  if (prev.has(id)) return prev;
+                  const next = new Set(prev);
+                  next.add(id);
+                  return next;
+                })
+              }
             />
           ))}
 
@@ -111,7 +138,7 @@ export default function AIWorkoutLogger({
               <button
                 key={chip}
                 onClick={() => handleSend(chip)}
-                className="flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/10 bg-primary/5 text-foreground/70 hover:border-primary/20 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-foreground transition-all duration-200 whitespace-nowrap">
+                className="flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/10 bg-primary/5 text-foreground/70 hover:border-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-all duration-200 whitespace-nowrap">
                 {chip}
               </button>
             ))}
@@ -155,7 +182,7 @@ export default function AIWorkoutLogger({
               aria-label="Send message"
               className={cn(
                 "p-2 rounded-xl font-bold transition-all",
-                "bg-gradient-to-br from-orange-500 to-amber-400 text-white",
+                "bg-gradient-to-br from-primary to-primary/70 text-white",
                 "hover:opacity-90 active:scale-95",
                 "disabled:opacity-40 disabled:cursor-not-allowed",
               )}>
@@ -176,21 +203,26 @@ function WorkoutMessageBubble({
   onConfirm,
   onEdit,
   isLogging,
+  dirty,
+  onMarkDirty,
 }: {
   message: WorkoutChatMessage;
   onConfirm: (saveAsTemplate: boolean) => void;
   onEdit: (workout: PendingWorkout) => void;
   isLogging: boolean;
+  dirty: boolean;
+  onMarkDirty: (id: string) => void;
 }) {
   const isUser = message.role === "user";
+  const isFromRoutine = !!message.fromSavedRoutine;
 
   return (
     <div className={cn("flex flex-col", isUser ? "items-end" : "items-start")}>
       <div
         className={cn(
-          "max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed",
+          "max-w-[85%] px-4 py-2.5 rounded-md text-sm leading-relaxed",
           isUser
-            ? "bg-ink text-white dark:bg-[#f7f6f3] dark:text-[#1a1916] rounded-tr-sm"
+            ? "bg-foreground text-background dark:bg-foreground dark:text-background rounded-tr-sm"
             : "bg-subtle border border-border text-ink rounded-tl-sm",
         )}>
         <span
@@ -212,10 +244,16 @@ function WorkoutMessageBubble({
             askSaveTemplate={message.askSaveTemplate ?? false}
             onConfirm={onConfirm}
             onEdit={() => {
+              // The user is taking this workout into the form for
+              // edits. Flag it dirty so the card re-shows the
+              // "Save changes" toggle when/if it comes back.
+              onMarkDirty(message.id);
               const w = message.workout;
               if (w) onEdit(w);
             }}
             isLogging={isLogging}
+            fromSavedRoutine={isFromRoutine}
+            dirty={dirty}
           />
         </div>
       )}

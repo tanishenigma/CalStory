@@ -83,7 +83,7 @@ function SettingsPageContent() {
       <BlurFade>
         <div className="pt-2">
           <h1 className="text-3xl font-bold mb-2">Settings</h1>
-          <p className="text-sm text-[#9B9895]">
+          <p className="text-sm text-muted-foreground">
             Manage your profile, goals and preferences
           </p>
         </div>

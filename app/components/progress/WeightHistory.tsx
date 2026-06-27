@@ -103,14 +103,12 @@ export function WeightHistory() {
     <Card className="p-0 overflow-hidden h-full">
       <div className="p-4 border-b border-border flex items-center justify-between bg-card">
         <div className="flex items-center gap-2">
-          <Scale size={16} className="text-[#9B9895]" />
-          <h3 className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
-            Weight History
-          </h3>
+          <Scale size={16} className="text-muted-foreground" />
+          <h3 className="font-bold text-foreground">Weight History</h3>
         </div>
         <button
           onClick={() => setAdding((v) => !v)}
-          className="inline-flex items-center gap-1 text-xs font-semibold text-[#9B9895] hover:text-foreground transition-colors px-2.5 py-1.5 rounded-lg hover:bg-muted">
+          className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1.5 rounded-lg hover:bg-muted">
           <Plus size={12} />
           {adding ? "Cancel" : "Log weight"}
         </button>
@@ -131,7 +129,7 @@ export function WeightHistory() {
                 <div>
                   <label
                     htmlFor="wh-weight"
-                    className="block text-[10px] font-bold tracking-wider uppercase text-[#9B9895] mb-1">
+                    className="block text-[10px] font-bold tracking-wider uppercase text-muted-foreground mb-1">
                     Weight
                   </label>
                   <div className="relative">
@@ -146,7 +144,7 @@ export function WeightHistory() {
                       className="w-full px-3 py-2.5 pr-12 border border-border rounded-lg text-sm bg-card focus:bg-background outline-none transition-all font-mono"
                       autoFocus
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-wider text-[#9B9895]">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                       {weightUnit}
                     </span>
                   </div>
@@ -154,7 +152,7 @@ export function WeightHistory() {
                 <div>
                   <label
                     htmlFor="wh-date"
-                    className="block text-[10px] font-bold tracking-wider uppercase text-[#9B9895] mb-1">
+                    className="block text-[10px] font-bold tracking-wider uppercase text-muted-foreground mb-1">
                     Date
                   </label>
                   <input
@@ -170,7 +168,7 @@ export function WeightHistory() {
               <div>
                 <label
                   htmlFor="wh-note"
-                  className="block text-[10px] font-bold tracking-wider uppercase text-[#9B9895] mb-1">
+                  className="block text-[10px] font-bold tracking-wider uppercase text-muted-foreground mb-1">
                   Note (optional)
                 </label>
                 <input
@@ -203,22 +201,23 @@ export function WeightHistory() {
       </AnimatePresence>
 
       {/* List of past entries — newest first (the reducer already
-          sorts by `loggedAt desc` when inserting). Cap the visible
-          list at 10 rows but show a counter for the rest so the
-          card stays compact even after years of use. */}
+          sorts by `loggedAt desc` when inserting). The list lives
+          inside a fixed-height scroll container so the card stays
+          the same height as its sibling (the consistency heatmap)
+          even with hundreds of weigh-ins. */}
       {logs.length === 0 ? (
-        <div className="p-6 text-sm text-[#9B9895] text-center">
+        <div className="p-6 text-sm text-muted-foreground text-center">
           No weigh-ins yet. Tap &quot;Log weight&quot; to start tracking.
         </div>
       ) : (
-        <div className="divide-y divide-[#E8E7E4] dark:divide-[#3a3a3a]">
-          {logs.slice(0, 10).map((log) => (
+        <div className="max-h-[280px] sm:max-h-[320px] overflow-y-auto divide-y divide-border">
+          {logs.map((log) => (
             <div key={log.id} className="flex items-center justify-between p-4">
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-[#1A1916] dark:text-[#f7f6f3] font-mono">
+                <div className="text-sm font-semibold text-foreground font-mono">
                   {displayWeight(log)}
                 </div>
-                <div className="text-[11px] text-[#9B9895] mt-0.5">
+                <div className="text-[11px] text-muted-foreground mt-0.5">
                   {formatDate(log.date)}
                   {log.note ? ` · ${log.note}` : ""}
                 </div>
@@ -226,16 +225,11 @@ export function WeightHistory() {
               <button
                 onClick={() => handleDelete(log.id)}
                 aria-label="Delete weigh-in"
-                className="w-8 h-8 rounded-full flex items-center justify-center text-[#9B9895] hover:text-[#EF4444] hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
+                className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-red-50 dark:hover:bg-red-950 transition-colors shrink-0">
                 <Trash2 size={14} />
               </button>
             </div>
           ))}
-          {logs.length > 10 && (
-            <div className="p-3 text-[11px] text-[#9B9895] text-center">
-              +{logs.length - 10} more
-            </div>
-          )}
         </div>
       )}
     </Card>

@@ -1,12 +1,16 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useInView,
+  useReducedMotion,
+  type Variants,
+} from "framer-motion";
 
 const features = [
   {
@@ -49,262 +53,174 @@ function FeatureRow({
   index: number;
 }) {
   const rowRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const descRef = useRef<HTMLParagraphElement>(null);
-  const lineRef = useRef<HTMLSpanElement>(null);
+  const shouldReduceMotion = useReducedMotion();
   const isEven = index % 2 === 0;
+  const ordinal = String(index + 1).padStart(2, "0");
 
-  useEffect(() => {
-    const row = rowRef.current;
-    const text = textRef.current;
-    const image = imageRef.current;
-    const title = titleRef.current;
-    const desc = descRef.current;
-    const line = lineRef.current;
+  const isInView = useInView(rowRef, {
+    once: true,
+    margin: "-18% 0px -40% 0px",
+  });
 
-    if (!row || !text || !image || !title || !desc || !line) return;
+  // Parallax for image
+  const { scrollYProgress: imageScroll } = useScroll({
+    target: rowRef,
+    offset: ["start end", "end start"],
+  });
+  const imageY = useTransform(imageScroll, [0, 1], ["0%", "-18%"]);
 
-    const mm = gsap.matchMedia();
+  // Ghost number drift
+  const ghostY = useTransform(imageScroll, [0, 1], ["0%", "-10%"]);
 
-    mm.add(
-      {
-        noReducedMotion: "(prefers-reduced-motion: no-preference)",
-        reducedMotion: "(prefers-reduced-motion: reduce)",
-      },
-      (context) => {
-        const { noReducedMotion } = context.conditions as {
-          noReducedMotion: boolean;
-        };
+  const textX = isEven ? -50 : 50;
+  const imageX = isEven ? 50 : -50;
 
-        if (noReducedMotion) {
-          const textX = isEven ? -60 : 60;
-          const imageX = isEven ? 60 : -60;
+  // Shared transition for reduced motion fallback
+  const reducedVariant: Variants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.4 } },
+  };
 
-          gsap.set(text, { x: textX, opacity: 0 });
-          gsap.set(image, { x: imageX, opacity: 0, scale: 0.96 });
-          gsap.set(title, { y: 24, opacity: 0 });
-          gsap.set(desc, { y: 16, opacity: 0 });
-          gsap.set(line, { scaleX: 0, transformOrigin: "left center" });
+  const textVariants: Variants = shouldReduceMotion
+    ? reducedVariant
+    : {
+        hidden: { x: textX, opacity: 0 },
+        visible: {
+          x: 0,
+          opacity: 1,
+          transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+        },
+      };
 
-          const tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: row,
-              start: "top 82%",
-              end: "top 40%",
-              toggleActions: "play none none none",
-            },
-          });
+  const imageVariants: Variants = shouldReduceMotion
+    ? reducedVariant
+    : {
+        hidden: { x: imageX, opacity: 0, scale: 0.97 },
+        visible: {
+          x: 0,
+          opacity: 1,
+          scale: 1,
+          transition: { duration: 1.05, ease: [0.16, 1, 0.3, 1], delay: 0.1 },
+        },
+      };
 
-          tl.to(text, {
-            x: 0,
-            opacity: 1,
-            duration: 0.75,
-            ease: "power3.out",
-          })
-            .to(
-              line,
-              {
-                scaleX: 1,
-                duration: 0.5,
-                ease: "power2.inOut",
-              },
-              "-=0.5",
-            )
-            .to(
-              title,
-              {
-                y: 0,
-                opacity: 1,
-                duration: 0.55,
-                ease: "power2.out",
-              },
-              "-=0.35",
-            )
-            .to(
-              desc,
-              {
-                y: 0,
-                opacity: 1,
-                duration: 0.55,
-                ease: "power2.out",
-              },
-              "-=0.3",
-            )
-            .to(
-              image,
-              {
-                x: 0,
-                opacity: 1,
-                scale: 1,
-                // expo.out gives the hero image a buttery, cinematic settle
-                // — it overshoots softly then decelerates to rest. Longer
-                // duration (1.05s) lets the parallax's later offset breathe
-                // rather than cutting off mid-motion.
-                duration: 1.05,
-                ease: "expo.out",
-              },
-              "-=0.7",
-            );
+  const ghostVariants: Variants = shouldReduceMotion
+    ? reducedVariant
+    : {
+        hidden: { opacity: 0, scale: 0.92 },
+        visible: {
+          opacity: 1,
+          scale: 1,
+          transition: { duration: 0.8, ease: [0.25, 1, 0.5, 1], delay: 0.15 },
+        },
+      };
 
-          // ── Parallax ──
-          // Drift the image up by 22% of its own height as the row scrolls
-          // past — clearly visible without feeling disjointed. `scrub: 0.6`
-          // ties the motion to scroll position with a small smoothing
-          // window: tight enough to feel responsive on a trackpad, soft
-          // enough to never judder on inertial scroll. `ease: "none"` is
-          // required when scrub is a number so GSAP doesn't apply a curve.
-          gsap.to(image, {
-            yPercent: -22,
-            ease: "none",
-            scrollTrigger: {
-              trigger: row,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 0.6,
-            },
-          });
-        } else {
-          // Reduced motion: simple fade
-          gsap.set([text, image], { opacity: 0 });
-          gsap.to([text, image], {
-            opacity: 1,
-            duration: 0.4,
-            stagger: 0.1,
-            scrollTrigger: {
-              trigger: row,
-              start: "top 85%",
-              toggleActions: "play none none none",
-            },
-          });
-        }
-      },
-    );
+  const eyebrowVariants: Variants = {
+    hidden: { y: 10, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.45, ease: "easeOut", delay: 0.15 },
+    },
+  };
 
-    // ── Magnetic hover ──
-    // gsap.quickTo creates dedicated, lightweight tweens for mouse-driven
-    // values that DON'T fight each other or the parallax (which writes
-    // yPercent). The previous gsap.to() fired on every mousemove, so
-    // dozens of in-flight tweens competed and produced visible jitter —
-    // quickTo collapses all of that into one tween-per-axis that's
-    // always aiming at the latest target.
-    const imageEl = imageRef.current;
-    if (!imageEl) return;
+  const titleVariants: Variants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.55, ease: "easeOut", delay: 0.35 },
+    },
+  };
 
-    const setX = gsap.quickTo(imageEl, "x", {
-      duration: 0.55,
-      ease: "power3.out",
-    });
-    const setY = gsap.quickTo(imageEl, "y", {
-      duration: 0.55,
-      ease: "power3.out",
-    });
-    const setScale = gsap.quickTo(imageEl, "scale", {
-      duration: 0.6,
-      ease: "power3.out",
-    });
+  const descVariants: Variants = {
+    hidden: { y: 14, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.55, ease: "easeOut", delay: 0.45 },
+    },
+  };
 
-    const onMouseMove = (e: MouseEvent) => {
-      const rect = imageEl.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      // Normalised cursor offset from image centre, in [-1, 1].
-      const dx = (e.clientX - cx) / (rect.width / 2);
-      const dy = (e.clientY - cy) / (rect.height / 2);
-
-      // Magnitudes tuned for a subtle drift — large enough to feel alive,
-      // small enough that the image never leaves its frame.
-      setX(dx * 14);
-      setY(dy * 10);
-      setScale(1.06);
-    };
-
-    const onMouseLeave = () => {
-      setX(0);
-      setY(0);
-      setScale(1);
-    };
-
-    imageEl.addEventListener("mousemove", onMouseMove);
-    imageEl.addEventListener("mouseleave", onMouseLeave);
-
-    return () => {
-      imageEl.removeEventListener("mousemove", onMouseMove);
-      imageEl.removeEventListener("mouseleave", onMouseLeave);
-      mm.revert();
-    };
-  }, [isEven]);
+  const animate = isInView ? "visible" : "hidden";
 
   return (
     <div
       ref={rowRef}
-      className={`flex flex-col md:flex-row items-center gap-12 lg:gap-20 ${
+      className={`relative flex flex-col md:flex-row items-center gap-12 lg:gap-20 ${
         isEven ? "" : "md:flex-row-reverse"
       }`}>
-      {/* Text Content */}
-      <div ref={textRef} className="flex-1 space-y-4">
-        {/* Animated accent line */}
-        <span
-          ref={lineRef}
-          className="block h-[2px] w-12 bg-primary mb-6 rounded-full"
-          aria-hidden="true"
-        />
-        <h3
-          ref={titleRef}
-          className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground tracking-tight font-heading">
-          {feature.title}
-        </h3>
-        <p
-          ref={descRef}
-          className="text-muted-foreground leading-relaxed text-lg">
-          {feature.description}
-        </p>
-      </div>
+      <motion.span
+        aria-hidden="true"
+        variants={ghostVariants}
+        initial="hidden"
+        animate={animate}
+        style={{ y: ghostY }}
+        className={`
+          hidden md:block pointer-events-none absolute select-none
+          font-heading font-black text-[clamp(7rem,18vw,14rem)]
+          leading-none text-primary/10
+          ${isEven ? "right-[38%] md:right-[46%] -bottom-8" : "left-[38%] md:left-[76%] -bottom-8"}
+        `}>
+        {ordinal}
+      </motion.span>
 
-      {/* Feature Image */}
-      <div
-        ref={imageRef}
-        // will-change-transform keeps the image wrapper on its own GPU
-        // layer so the parallax ScrollTrigger can scrub transform values
-        // every frame without triggering a repaint of surrounding layout.
-        className="flex-1 w-full relative aspect-4/3 will-change-transform">
+      {/* Text */}
+      <motion.div
+        variants={textVariants}
+        initial="hidden"
+        animate={animate}
+        className="flex-1 space-y-5 relative z-10">
+        <motion.span
+          variants={shouldReduceMotion ? reducedVariant : eyebrowVariants}
+          initial="hidden"
+          animate={animate}
+          className="flex items-center gap-3 text-xs font-mono tracking-[0.2em] uppercase text-primary/70">
+          <span>{ordinal}</span>
+          <span className="block h-px w-8 bg-primary/30" aria-hidden="true" />
+          <span className="text-muted-foreground/60">Feature</span>
+        </motion.span>
+
+        <motion.h3
+          variants={shouldReduceMotion ? reducedVariant : titleVariants}
+          initial="hidden"
+          animate={animate}
+          className="text-2xl md:text-3xl lg:text-[2.15rem] font-bold text-foreground leading-[1.15] tracking-[-0.02em] font-heading">
+          {feature.title}
+        </motion.h3>
+
+        <motion.p
+          variants={shouldReduceMotion ? reducedVariant : descVariants}
+          initial="hidden"
+          animate={animate}
+          className="text-muted-foreground leading-[1.75] text-base max-w-[44ch]">
+          {feature.description}
+        </motion.p>
+      </motion.div>
+
+      {/* Image */}
+      <motion.div
+        variants={imageVariants}
+        initial="hidden"
+        animate={animate}
+        style={shouldReduceMotion ? {} : { y: imageY }}
+        className="flex-1 w-full relative aspect-4/3 will-change-transform rounded-xl overflow-hidden z-10">
         <Image
           src={feature.image}
           alt={feature.title}
           fill
-          className="object-cover object-center rounded-xl"
+          className="object-cover object-center"
           sizes="(max-width: 768px) 100vw, 50vw"
         />
-      </div>
+      </motion.div>
     </div>
   );
 }
 
 export default function FeatureGrid() {
   const footerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const footer = footerRef.current;
-    if (!footer) return;
-
-    const mm = gsap.matchMedia();
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
-      gsap.from(footer, {
-        y: 20,
-        opacity: 0,
-        duration: 0.6,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: footer,
-          start: "top 90%",
-          toggleActions: "play none none none",
-        },
-      });
-    });
-
-    return () => mm.revert();
-  }, []);
+  const shouldReduceMotion = useReducedMotion();
+  const footerInView = useInView(footerRef, { once: true, margin: "-10% 0px" });
 
   return (
     <section
@@ -315,31 +231,38 @@ export default function FeatureGrid() {
           Why CalStory is the best calorie and macro tracker
         </h2>
 
-        <div className="space-y-24">
+        <div className="space-y-32">
           {features.map((feature, index) => (
             <FeatureRow key={index} feature={feature} index={index} />
           ))}
         </div>
 
-        <div
+        <motion.div
           ref={footerRef}
-          className="mb-6 max-w-3xl mx-auto text-center mt-24">
-          <p className="text-sm text-muted-foreground">
+          initial={{ y: 16, opacity: 0 }}
+          animate={footerInView ? { y: 0, opacity: 1 } : {}}
+          transition={
+            shouldReduceMotion
+              ? { duration: 0 }
+              : { duration: 0.6, ease: "easeOut" }
+          }
+          className="max-w-xl mx-auto text-center mt-28">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             Want a deeper walkthrough? Read our guides on{" "}
             <Link
               href="/blog/calorie-tracking-for-beginners"
-              className="text-primary hover:underline font-medium">
+              className="text-primary hover:underline font-medium underline-offset-4">
               calorie tracking for beginners
             </Link>{" "}
             and{" "}
             <Link
               href="/blog/best-macro-calculator"
-              className="text-primary hover:underline font-medium">
+              className="text-primary hover:underline font-medium underline-offset-4">
               choosing the best macro calculator for lifters
             </Link>
             .
           </p>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

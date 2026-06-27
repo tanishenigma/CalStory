@@ -42,8 +42,8 @@ export default function DatePicker({ onClose }: DatePickerProps) {
     <div
       className="fixed inset-0 backdrop-blur-sm  bg-black/20 flex items-center justify-center z-[500]"
       onClick={handleOverlayClick}>
-      <div className="bg-background rounded-[20px] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.15)] animate-[fadeUp_0.3s_ease]">
-        <div className="font-bold text-base mb-4 bg-background text-[#1A1916] dark:text-[#f7f6f3]">
+      <div className="bg-background rounded-[20px] p-6 shadow-[0_20px_60px_oklch(0_0_0/_0.15)] animate-[fadeUp_0.3s_ease]">
+        <div className="font-bold text-base mb-4 bg-background text-foreground">
           Pick a Date
         </div>
         <DayPicker
@@ -82,7 +82,7 @@ export default function DatePicker({ onClose }: DatePickerProps) {
                       shadow-none
                       focus:ring-0
                       text-[#1A1916]
-                      dark:text-[#f7f6f3]
+                      text-foreground
                     ">
                     <SelectValue />
                   </SelectTrigger>
@@ -107,7 +107,7 @@ export default function DatePicker({ onClose }: DatePickerProps) {
         />
         <button
           onClick={onClose}
-          className="w-full mt-2 py-2.5 border border-border rounded-full bg-white/50 dark:bg-[#1a1916] text-sm font-semibold text-[#9B9895] hover:bg-white dark:hover:bg-[#0f0f0e] transition-colors cursor-pointer ">
+          className="w-full mt-2 py-2.5 border border-border rounded-full bg-white/50 bg-foreground text-sm font-semibold text-muted-foreground hover:bg-white hover:bg-foreground transition-colors cursor-pointer ">
           Cancel
         </button>
       </div>

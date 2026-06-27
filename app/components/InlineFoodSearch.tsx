@@ -289,17 +289,17 @@ export default function InlineFoodSearch({
     const f = Math.round(pg.f * totalMultiplier);
 
     return (
-      <div className="bg-background text-foreground dark:bg-[#1a1916] rounded-2xl shadow-sm border border-border p-5 mb-8">
-        <h2 className="text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3] mb-1">
+      <div className="bg-background text-foreground bg-foreground rounded-2xl shadow-sm border border-border p-5 mb-8">
+        <h2 className="text-lg font-bold text-foreground mb-1">
           {selectedFoodData.food_name}
         </h2>
-        <div className="text-xs text-[#9B9895] mb-6 capitalize font-semibold">
+        <div className="text-xs text-muted-foreground mb-6 capitalize font-semibold">
           {selectedTime}
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
               Amount
             </label>
             <input
@@ -311,7 +311,7 @@ export default function InlineFoodSearch({
             />
           </div>
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
               Serving Size
             </label>
             <Select value={selectedUnit} onValueChange={setSelectedUnit}>
@@ -322,7 +322,7 @@ export default function InlineFoodSearch({
                 {selectedFoodData.optionsGroups.map(
                   (group: any, gIdx: number) => (
                     <SelectGroup key={gIdx}>
-                      <SelectLabel className="text-[10px] uppercase text-[#9B9895] font-bold tracking-wider px-2 py-1.5 bg-background">
+                      <SelectLabel className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider px-2 py-1.5 bg-background">
                         {group.group}
                       </SelectLabel>
                       {group.options.map((opt: any) => (
@@ -340,34 +340,34 @@ export default function InlineFoodSearch({
 
         <div className="flex justify-between items-center bg-subtle rounded-xl border border-border p-4 mb-6">
           <div className="text-center">
-            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
               Calories
             </div>
-            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+            <div className="font-bold text-foreground">
               {cal}
             </div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
               Protein
             </div>
-            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+            <div className="font-bold text-foreground">
               {p}g
             </div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
               Carbs
             </div>
-            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+            <div className="font-bold text-foreground">
               {c}g
             </div>
           </div>
           <div className="text-center">
-            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
               Fat
             </div>
-            <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+            <div className="font-bold text-foreground">
               {f}g
             </div>
           </div>
@@ -376,13 +376,13 @@ export default function InlineFoodSearch({
         <div className="flex justify-end gap-3">
           <button
             onClick={() => setSelectedFoodData(null)}
-            className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#9B9895] hover:bg-background transition-colors">
+            className="px-6 py-2.5 rounded-xl font-bold text-sm text-muted-foreground hover:bg-background transition-colors">
             Back
           </button>
           <button
             onClick={handleSaveFood}
             disabled={q <= 0}
-            className="px-6 py-2.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl font-bold text-sm hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm">
+            className="px-6 py-2.5 bg-foreground text-background rounded-xl font-bold text-sm hover:opacity-90 disabled:opacity-50 transition-opacity shadow-sm">
             Add to Log
           </button>
         </div>
@@ -391,8 +391,8 @@ export default function InlineFoodSearch({
   }
 
   return (
-    <div className="bg-background dark:bg-[#1a1916] rounded-2xl shadow-sm border border-border p-4 mb-8">
-      <h2 className="text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3] mb-4">
+    <div className="bg-background bg-foreground rounded-2xl shadow-sm border border-border p-4 mb-8">
+      <h2 className="text-lg font-bold text-foreground mb-4">
         Log Food via Database
       </h2>
 
@@ -403,8 +403,8 @@ export default function InlineFoodSearch({
             onClick={() => setSelectedTime(t as MealTime)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-colors ${
               selectedTime === t
-                ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                : "bg-background text-[#9B9895] hover:bg-[#E8E7E4]"
+                ? "bg-foreground text-background"
+                : "bg-background text-muted-foreground hover:bg-muted"
             }`}>
             {t}
           </button>
@@ -412,7 +412,7 @@ export default function InlineFoodSearch({
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9895]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
         <input
           type="text"
           value={query}
@@ -421,28 +421,28 @@ export default function InlineFoodSearch({
           className="w-full bg-subtle border border-border rounded-xl py-3 pl-10 pr-4 outline-none focus:border-border font-semibold text-[15px]"
         />
         {loading && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9895] animate-spin" />
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground animate-spin" />
         )}
       </div>
 
       {results.length > 0 && (
-        <div className="mt-2 divide-y divide-[#E8E7E4] border border-border rounded-xl overflow-hidden bg-foreground dark:bg-[#1a1916]">
+        <div className="mt-2 divide-y divide-border border border-border rounded-xl overflow-hidden bg-foreground bg-foreground">
           {results.map((food) => (
             <div
               key={food.food_id}
               className="p-3 hover:bg-subtle transition-colors flex items-center justify-between">
               <div>
-                <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3] text-sm">
+                <div className="font-bold text-foreground text-sm">
                   {food.food_name}
                 </div>
-                <div className="text-xs text-[#9B9895]">
+                <div className="text-xs text-muted-foreground">
                   {food.food_description}
                 </div>
               </div>
               <button
                 onClick={() => handleSelectFood(food.food_id, food.food_name)}
                 disabled={loading}
-                className="w-8 h-8 flex items-center justify-center bg-background hover:bg-[#E8E7E4] rounded-full text-[#1A1916] dark:text-[#f7f6f3]">
+                className="w-8 h-8 flex items-center justify-center bg-background hover:bg-muted rounded-full text-foreground">
                 <Plus className="w-4 h-4" />
               </button>
             </div>

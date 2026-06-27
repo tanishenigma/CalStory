@@ -34,7 +34,7 @@ function MeterRing({
           cy="24"
           r={R}
           fill="none"
-          className="stroke-[#F0EFEC] dark:stroke-[#3a3a3a]"
+          className="stroke-border dark:stroke-border"
           strokeWidth="4"
         />
         <circle
@@ -76,52 +76,52 @@ export default function MacroPills({ macros, target }: Props) {
       {/* Carbs Pill */}
       <Link
         href="/nutrition"
-        className="flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-[#F0EFEC] dark:border-[#2a2a2a] shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all active:scale-[0.98]">
+        className="flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
           <div className="w-12 h-12 rounded-full flex bg-emerald-50/50 items-center justify-center relative shrink-0">
             <MeterRing pct={cPct} colorClass="text-emerald-500">
               🥦
             </MeterRing>
           </div>
-          <span className="text-base font-bold text-[#1A1916] dark:text-[#f7f6f3] truncate">
+          <span className="text-base font-bold text-foreground truncate">
             {cLeft}g Carbs Left
           </span>
         </div>
-        <ChevronRight size={20} className="text-[#9B9895] shrink-0 ml-2" />
+        <ChevronRight size={20} className="text-muted-foreground shrink-0 ml-2" />
       </Link>
 
       {/* Protein Pill */}
       <Link
         href="/nutrition"
-        className="flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-[#F0EFEC] dark:border-[#2a2a2a] shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all active:scale-[0.98]">
+        className="flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
           <div className="w-12 h-12 rounded-full bg-red-50/50 flex items-center justify-center relative shrink-0">
             <MeterRing pct={pPct} colorClass="text-red-500">
               🥩
             </MeterRing>
           </div>
-          <span className="text-base font-bold text-[#1A1916] dark:text-[#f7f6f3] truncate">
+          <span className="text-base font-bold text-foreground truncate">
             {pLeft}g Protein Left
           </span>
         </div>
-        <ChevronRight size={20} className="text-[#9B9895] shrink-0 ml-2" />
+        <ChevronRight size={20} className="text-muted-foreground shrink-0 ml-2" />
       </Link>
 
       {/* Fat Pill */}
       <Link
         href="/nutrition"
-        className="flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-[#F0EFEC] dark:border-[#2a2a2a] shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all active:scale-[0.98]">
+        className="flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
           <div className="w-12 h-12 rounded-full bg-yellow-50/50 flex items-center justify-center relative shrink-0">
             <MeterRing pct={fPct} colorClass="text-yellow-500">
               🥑
             </MeterRing>
           </div>
-          <span className="text-base font-bold text-[#1A1916] dark:text-[#f7f6f3] truncate">
+          <span className="text-base font-bold text-foreground truncate">
             {fLeft}g Fats Left
           </span>
         </div>
-        <ChevronRight size={20} className="text-[#9B9895] shrink-0 ml-2" />
+        <ChevronRight size={20} className="text-muted-foreground shrink-0 ml-2" />
       </Link>
     </div>
   );

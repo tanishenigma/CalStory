@@ -1,95 +1,59 @@
 import type { User } from "firebase/auth";
 
-/**
- * One exercise within a workout. Each exercise has a `name` plus a
- * type-specific `metrics` block selected by the workout's `type`.
- * Legacy flat fields (`reps`, `kg`) are still accepted for older
- * records but new entries should populate `sets` / `metrics`.
- */
 export interface Exercise {
   name: string;
-  /** Legacy: Per-set reps. Length equals the number of sets. */
   reps?: number[];
-  /** Legacy: Weight for all sets. */
   kg?: number;
-  /** Set × reps × kg entries (Resistance / Powerlifting / CrossFit). */
   sets?: { reps: number; kg: number; note?: string }[];
-  /**
-   * Optional per-exercise duration in minutes. Used by cardio-style
-   * workouts when the user wants to track time per movement.
-   */
   durationMin?: number;
-  /**
-   * Type-specific metrics block. Only the block matching the parent
-   * workout's `type` is populated for new entries.
-   */
   metrics?: ExerciseMetrics;
 }
 
 // ─── Per-activity metric blocks ────────────────────────────
 export interface CardioMetrics {
-  /** Distance covered in kilometres. */
   distanceKm?: number;
-  /** Calories burned. */
   calories?: number;
-  /** Average pace in minutes per kilometre (e.g. 6 = 6:00/km). */
   paceMinPerKm?: number;
 }
 
 export interface HiitMetrics {
-  /** Number of rounds completed. */
   rounds?: number;
-  /** Work interval in seconds. */
   workSec?: number;
-  /** Rest interval in seconds. */
   restSec?: number;
 }
 
 export interface YogaMetrics {
-  /** Free-text style (e.g. "Vinyasa Flow", "Hatha"). */
   sessionType?: string;
-  /** Free-text difficulty ("Beginner", "Intermediate", "Advanced"). */
   difficulty?: string;
 }
 
 export interface PilatesMetrics {
-  /** Free-text style ("Mat", "Reformer"). */
   sessionType?: string;
   difficulty?: string;
 }
 
 export interface CrossFitMetrics {
-  /** Number of rounds completed. */
   rounds?: number;
-  /** Total reps in the WOD. */
   reps?: number;
-  /** Load used for the WOD in kg. */
   weightKg?: number;
 }
 
 export interface PowerliftingMetrics {
-  /** Estimated 1-rep max in kg for the day's top set. */
   oneRmKg?: number;
 }
 
 export interface FlexibilityMetrics {
-  /** Average hold time per stretch in seconds. */
   holdSec?: number;
-  /** Free-text list of areas worked (e.g. "Hamstrings, Hips"). */
   areasWorked?: string;
 }
 
 export interface SportsMetrics {
-  /** Game/competition score (e.g. "21–18"). */
   score?: string;
-  /** Distance covered during the session, if applicable. */
   distanceKm?: number;
-  /** Free-text stats (assists, points, time-on-ice, etc.). */
   stats?: string;
 }
 
 export interface OtherMetrics {
-  /** Free-form notes describing what was done. */
   notes?: string;
 }
 
@@ -104,10 +68,6 @@ export type ExerciseMetrics =
   | SportsMetrics
   | OtherMetrics;
 
-/**
- * Discriminator — the metric key the workout type expects.
- * Resistance-style types use `sets` directly, no `metrics` block.
- */
 export type MetricKey =
   | "cardio"
   | "hiit"
@@ -119,7 +79,6 @@ export type MetricKey =
   | "sports"
   | "other";
 
-/** The canonical workout-type list used by the manual WorkoutForm. */
 export const WORKOUT_TYPES = [
   "Resistance",
   "Cardio",
@@ -133,7 +92,6 @@ export const WORKOUT_TYPES = [
   "Other",
 ] as const;
 
-/** Which metric key (if any) each workout type populates per exercise. */
 export const WORKOUT_METRIC_KEYS: Record<
   (typeof WORKOUT_TYPES)[number],
   MetricKey | null
@@ -150,7 +108,6 @@ export const WORKOUT_METRIC_KEYS: Record<
   Other: "other",
 };
 
-/** Returns the metric key the given workout type populates. */
 export function getMetricKey(
   type: string | undefined | null,
 ): MetricKey | null {
@@ -158,19 +115,10 @@ export function getMetricKey(
   return WORKOUT_METRIC_KEYS[type as keyof typeof WORKOUT_METRIC_KEYS] ?? null;
 }
 
-/**
- * Schema describing how to render and persist one metric field.
- * The form iterates over this schema to build its inputs and the
- * saver uses it to parse values back into typed numbers.
- */
 export interface MetricFieldSchema {
-  /** Key inside the metric block (e.g. "distanceKm"). */
   key: string;
-  /** Human-readable label (e.g. "Distance (km)"). */
   label: string;
-  /** "number" or "text". */
   kind: "number" | "text";
-  /** Optional placeholder shown in the input. */
   placeholder?: string;
 }
 
@@ -270,12 +218,9 @@ export const WORKOUT_METRIC_SCHEMAS: Record<MetricKey, MetricFieldSchema[]> = {
   ],
 };
 
-/** Back-compat helper used by old call sites: true for binary cardio. */
 export function isCardioWorkout(type: string | undefined | null): boolean {
   const key = getMetricKey(type);
-  // Resistance types (Resistance, Powerlifting, CrossFit, HIIT) use sets
-  // OR use metric blocks that aren't "cardio-style". All other keys
-  // represent time/skill activities.
+
   return key === "cardio";
 }
 
@@ -341,43 +286,27 @@ export interface Meal {
   f: number;
   nutrients?: DetailedNutrients;
   foodId?: string; // FatSecret food ID
-  /**
-   * Local YYYY-MM-DD of the calendar day when `addMeal` was called.
-   * Used by the streak / heatmap to verify the meal was actually
-   * logged on the day it is attributed to (not backdated via date
-   * picker). Optional for backwards-compat with existing meals.
-   */
   savedDate?: string;
 }
 
-/**
- * Detailed nutrient breakdown for a recipe (per single serving).
- * Values are grams unless otherwise noted.
- */
 export interface RecipeNutrition {
-  // Macros (also duplicated on Recipe for fast access, but kept here
-  // for completeness with micronutrients)
   protein: number;
   carbs: number;
   fat: number;
 
-  // Fats breakdown
   saturatedFat?: number;
   transFat?: number;
   polyFat?: number;
   monoFat?: number;
 
-  // Cholesterol / sodium
   cholesterol?: number; // mg
   sodium?: number; // mg
 
-  // Carbs breakdown
   fiber?: number;
   sugar?: number;
   addedSugar?: number;
   sugarAlcohols?: number;
 
-  // Vitamins & minerals (% daily value, 0–100)
   vitaminD?: number;
   calcium?: number;
   iron?: number;
@@ -386,11 +315,6 @@ export interface RecipeNutrition {
   vitaminC?: number;
 }
 
-/**
- * A reusable recipe the user can log in one or more servings. When
- * logging we expand this into one or more `Meal` entries on the
- * selected date(s).
- */
 export interface Recipe {
   id: string;
   name: string;
@@ -462,7 +386,7 @@ export interface Profile {
    * and any save that includes `dob` will recompute it.
    */
   dob?: string;
-  /** Unix-ms timestamp set the first time the user finished onboarding. */
+
   onboardedAt?: number;
 }
 
@@ -475,15 +399,15 @@ export interface Profile {
  */
 export interface WeightLog {
   id: string;
-  /** Always stored in kg. Convert at the UI layer using weightUnit. */
+
   weight: number;
-  /** The unit the user was viewing/typing in at log time. */
+
   weightUnit: WeightUnit;
-  /** YYYY-MM-DD — the calendar day of the weigh-in. */
+
   date: string;
-  /** Unix-ms timestamp the entry was written. */
+
   loggedAt: number;
-  /** Optional free-form note (e.g. "morning, after workout"). */
+
   note?: string;
 }
 
@@ -494,7 +418,7 @@ export interface AppState {
   workouts: Record<string, Workout[]>;
   savedWorkouts: SavedWorkout[];
   recents: RecentMeal[];
-  /** All weight log entries, newest first. Empty until hydrated. */
+
   weightLogs: WeightLog[];
   selDate: string;
 }
@@ -505,25 +429,19 @@ export interface AppContextValue {
   setProfile: (profile: Profile) => Promise<void>;
   setDate: (date: string) => void;
   addMeal: (meal: Meal) => Promise<void>;
-  /** Log a meal across the next N days starting at `state.selDate`. */
   addMealForRange?: (meal: Meal, days: number) => Promise<void>;
   deleteMeal: (id: string, day: string) => Promise<void>;
   addWorkout: (workout: Workout) => Promise<void>;
   deleteWorkout: (id: string, day: string) => Promise<void>;
   saveTemplate: (template: SavedWorkout) => Promise<void>;
   deleteTemplate: (id: string) => Promise<void>;
-  /**
-   * Record a new weigh-in. `weightKg` is canonical (kg). Returns
-   * the created `WeightLog` on success, or `null` if the write
-   * failed (in which case the optimistic local state is rolled
-   * back so the UI never lies).
-   */
+
   logWeight: (
     weightKg: number,
     weightUnit: WeightUnit,
     options?: { date?: string; note?: string },
   ) => Promise<WeightLog | null>;
-  /** Remove a weigh-in from the history. */
+
   deleteWeightLog: (id: string) => Promise<void>;
 }
 
@@ -606,20 +524,18 @@ export interface PendingMeal {
   aiComment?: string;
 }
 
-/** A single turn in the AI chat conversation. */
 export interface ChatMessage {
   id: string;
   role: "user" | "model";
-  /** Display text for the bubble. */
+
   content: string;
-  /** Set on model messages that carry a meal confirmation. */
+
   meal?: PendingMeal | null;
-  /** Quick-add chips shown after a confirmation. */
+
   suggestions?: string[];
   timestamp: number;
 }
 
-/** Shape returned by the /api/ai-log-food route. */
 export interface AIResponse {
   type: "greeting" | "confirmation" | "clarification" | "logged" | "error";
   message: string;
@@ -628,11 +544,11 @@ export interface AIResponse {
 }
 
 // ─── AI Workout Chat ────────────────────────────────────────
-/** A single exercise parsed by the AI (before the user confirms). */
+
 export interface PendingExercise {
   name: string;
   sets: { reps: number; kg: number; note?: string }[];
-  /** Optional per-exercise duration in minutes. */
+
   durationMin?: number;
   /**
    * Optional type-specific metrics block, mirroring `Exercise.metrics`.
@@ -647,25 +563,23 @@ export interface PendingExercise {
  */
 export interface PendingWorkout {
   name: string;
-  /** Matches WORKOUT_TYPES in WorkoutForm.tsx */
+
   type: string;
-  /** Estimated duration in minutes. Defaults to 60 when not mentioned. */
+
   duration: number;
   exercises: PendingExercise[];
   notes: string;
 }
 
-/** Shape returned by the /api/ai-log-workout route. */
 export interface WorkoutAIResponse {
   type: "confirmation" | "clarification" | "error";
   message: string;
   workout: PendingWorkout | null;
-  /** True when the AI detects a structured routine worth saving as a template. */
+
   askSaveTemplate: boolean;
   suggestions: string[];
 }
 
-/** A single turn in the AI workout chat conversation. */
 export interface WorkoutChatMessage {
   id: string;
   role: "user" | "model";
@@ -674,4 +588,11 @@ export interface WorkoutChatMessage {
   askSaveTemplate?: boolean;
   suggestions?: string[];
   timestamp: number;
+  /**
+   * When true, the workout in this message was loaded from one of the
+   * user's saved routines (not freshly parsed by the AI). The UI uses
+   * this to hide the "Save as reusable template" toggle until the
+   * user edits anything.
+   */
+  fromSavedRoutine?: boolean;
 }

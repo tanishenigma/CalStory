@@ -56,7 +56,7 @@ export default function FAB() {
 
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] shadow-[0_8px_24px_rgba(26,25,22,0.28)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1916]/40 focus-visible:ring-offset-2">
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-foreground text-background shadow-[0_8px_24px_oklch(0.2272_0.0049_173.9454/_0.28)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2">
         <div className="relative w-6 h-6">
           <>
             <Utensils

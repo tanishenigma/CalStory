@@ -41,14 +41,14 @@ const CATEGORIES: Category[] = [
     min: 18.5,
     max: 25,
     label: "Healthy",
-    color: "#22C55E",
+    color: "var(--color-primary)",
     textColor: "#15803D",
   },
   {
     min: 25,
     max: 30,
     label: "Overweight",
-    color: "#F97316",
+    color: "var(--color-primary)",
     textColor: "#9A3412",
   },
   {
@@ -136,10 +136,10 @@ export function YourBMI() {
         {/* Headline row: big BMI value + status pill. */}
         <div className="flex justify-between items-end mb-5">
           <div>
-            <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
               Body Mass Index
             </div>
-            <div className="text-4xl font-mono font-bold text-[#1A1916] dark:text-[#f7f6f3] leading-none">
+            <div className="text-4xl font-mono font-bold text-foreground leading-none">
               {hasData ? bmiValue.toFixed(1) : "—"}
             </div>
           </div>
@@ -193,7 +193,7 @@ export function YourBMI() {
 
         {/* Boundary labels — only show values at category edges so
             the row below the bar isn't cluttered with 15 numbers. */}
-        <div className="relative w-full h-4 mt-1.5 text-[9px] font-mono font-semibold text-[#9B9895]">
+        <div className="relative w-full h-4 mt-1.5 text-[9px] font-mono font-semibold text-muted-foreground">
           {[16.5, 18.5, 25, 30, 35].map((cut) => {
             const tickPct = ((cut - minBmi) / (maxBmi - minBmi)) * 100;
             return (
@@ -213,8 +213,8 @@ export function YourBMI() {
           nextCategory &&
           distanceToNext > 0 && (
             <div className="mt-4 flex items-start gap-2 rounded-lg bg-background/50 border border-border/60 px-3 py-2.5">
-              <Info size={14} className="text-[#9B9895] mt-0.5 shrink-0" />
-              <p className="text-[11px] text-[#1A1916] dark:text-[#f7f6f3] leading-relaxed">
+              <Info size={14} className="text-muted-foreground mt-0.5 shrink-0" />
+              <p className="text-[11px] text-foreground leading-relaxed">
                 <span className="font-semibold">
                   {distanceToNext.toFixed(1)} BMI points
                 </span>{" "}
@@ -246,7 +246,7 @@ export function YourBMI() {
                   className={`truncate ${
                     isCurrent
                       ? "font-bold text-foreground"
-                      : "text-[#9B9895] font-medium"
+                      : "text-muted-foreground font-medium"
                   }`}>
                   {c.label}
                 </span>

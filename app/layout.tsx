@@ -137,7 +137,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-instrument antialiased selection:bg-primary/30 selection:text-orange-950 bg-background text-foreground">
+      <body className="font-instrument antialiased selection:bg-primary/30 selection:text-primary-foreground bg-background text-foreground">
         <DynamicBackground />
         <AppProvider>
           <ToastContainer>

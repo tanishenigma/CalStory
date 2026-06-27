@@ -9,25 +9,25 @@ const FAQS = [
     q: "How does AI meal logging work?",
     a: "Tap 'Log with AI', describe what you ate in plain language and CalStory will extract the calories and macros. You can review and adjust the numbers before saving — nothing gets logged without your confirmation.",
     icon: Brain,
-    color: "#f97316",
+    color: "var(--color-primary)",
   },
   {
     q: "How is my TDEE calculated?",
     a: "CalStory uses the Mifflin-St Jeor formula with your height, weight, age, and weekly workout count to estimate your maintenance calories. As you log weight over time, the trend line adapts so your targets stay accurate.",
     icon: TrendingUp,
-    color: "#f97316",
+    color: "var(--color-primary)",
   },
   {
     q: "What does the streak counter track?",
     a: "Your streak counts consecutive days where you've logged at least one meal. The consistency heatmap on the Progress page shows the full 16-week picture so you can spot patterns in your habits.",
     icon: Zap,
-    color: "#f97316",
+    color: "var(--color-primary)",
   },
   {
     q: "Is my data stored securely?",
     a: "CalStory is open source — you deploy it to your own environment using your own database and API keys. Your data never touches our servers because there are no 'our servers'. Check the repo, read the code, and run it however you trust.",
     icon: Shield,
-    color: "#f97316",
+    color: "var(--color-primary)",
   },
 ];
 
@@ -136,11 +136,11 @@ function FAQItem({
         animate={
           isOpen
             ? {
-                borderColor: "rgba(249,115,22,0.4)",
+                borderColor: "oklch(0.7227 0.1920 149.5793 / 0.4)",
               }
             : {
                 borderColor: "var(--color-border)",
-                boxShadow: "0 0 0 0px rgba(249,115,22,0)",
+                boxShadow: "0 0 0 0px rgba(34, 197, 94, 0)",
               }
         }
         transition={{ duration: 0.3 }}
@@ -155,7 +155,7 @@ function FAQItem({
           <motion.div
             animate={
               isOpen
-                ? { backgroundColor: "#f97316", color: "#fff", scale: 1.08 }
+                ? { backgroundColor: "var(--color-primary)", color: "#fff", scale: 1.08 }
                 : {
                     backgroundColor: "var(--color-subtle, #fafaf8)",
                     color: "var(--color-foreground)",
@@ -176,7 +176,7 @@ function FAQItem({
           <motion.div
             animate={{
               rotate: isOpen ? 45 : 0,
-              backgroundColor: isOpen ? "#f97316" : "transparent",
+              backgroundColor: isOpen ? "var(--color-primary)" : "transparent",
             }}
             transition={{ duration: 0.25, ease: [0.21, 0.47, 0.32, 0.98] }}
             className="shrink-0 w-7 h-7 rounded-full border border-border flex items-center justify-center">

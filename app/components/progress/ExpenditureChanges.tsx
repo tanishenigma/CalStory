@@ -96,24 +96,24 @@ export function ExpenditureChanges() {
     <div>
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <div className="p-4 border-b border-border">
-          <h3 className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+          <h3 className="font-bold text-foreground">
             Expenditure Changes
           </h3>
         </div>
-        <div className="divide-y divide-[#E8E7E4] dark:divide-[#3a3a3a]">
+        <div className="divide-y divide-border divide-border">
           {expenditureChanges.map((item, idx) => (
             <div
               key={idx}
               className="flex justify-between items-center p-4 m-1">
-              <span className="text-md font-medium text-[#1A1916] dark:text-[#f7f6f3]">
+              <span className="text-md font-medium text-foreground">
                 {item.label}
               </span>
               <div className="flex items-center gap-2">
                 <span
-                  className={`text-sm font-mono font-semibold ${item.isPositive ? "text-[#9B9895]" : "text-[#EF4444]"}`}>
+                  className={`text-sm font-mono font-semibold ${item.isPositive ? "text-muted-foreground" : "text-destructive"}`}>
                   {item.value}
                 </span>
-                <ChevronRight size={16} className="text-[#9B9895]" />
+                <ChevronRight size={16} className="text-muted-foreground" />
               </div>
             </div>
           ))}

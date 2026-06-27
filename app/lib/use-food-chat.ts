@@ -45,10 +45,7 @@ export function useFoodChat({
   const [error, setError] = useState<string | null>(null);
 
   // ── Derived state ───────────────────────────────────────────────
-  /**
-   * The most recent model message that has a confirmed meal candidate.
-   * Drives the `<MealConfirmationCard>` render.
-   */
+
   const pendingMeal = useMemo<PendingMeal | null>(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       const m = messages[i];
@@ -57,10 +54,6 @@ export function useFoodChat({
     return null;
   }, [messages]);
 
-  /**
-   * Suggestion chips from the same message as `pendingMeal`, or from
-   * the last model message that has suggestions.
-   */
   const pendingSuggestions = useMemo<string[]>(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       const m = messages[i];
@@ -70,7 +63,7 @@ export function useFoodChat({
   }, [messages]);
 
   // ── Actions ─────────────────────────────────────────────────────
-  /** Send a user message to the AI and append the model's reply. */
+
   const sendMessage = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
@@ -146,10 +139,6 @@ export function useFoodChat({
     [messages, userId, date],
   );
 
-  /**
-   * Confirm the pending meal — persist it via AppContext, show a toast,
-   * and append a final "logged" model message.
-   */
   const confirmLog = useCallback(async () => {
     if (!pendingMeal) return;
 
@@ -177,7 +166,6 @@ export function useFoodChat({
     setMessages((prev) => [...prev, doneMsg]);
   }, [pendingMeal, addMeal]);
 
-  /** Reset the chat to the initial greeting. */
   const reset = useCallback(() => {
     setMessages([makeGreeting()]);
     setError(null);

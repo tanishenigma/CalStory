@@ -40,10 +40,10 @@ export default function CalorieHero({ eaten, target }: Props) {
     <Card className="flex items-center justify-between px-4 sm:px-6 py-5 h-full min-w-0 overflow-hidden">
       {/* ── Left: stat ── */}
       <div className="min-w-0 flex-1 overflow-hidden">
-        <div className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-[44px] font-extrabold leading-none tracking-tight text-[#1A1916] dark:text-foreground tabular-nums truncate pr-2  ">
+        <div className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-[44px] font-extrabold leading-none tracking-tight text-foreground dark:text-foreground tabular-nums truncate pr-2  ">
           {left.toLocaleString()}
         </div>
-        <div className="text-[13px] font-semibold text-[#9B9895] mt-1 mb-3 truncate">
+        <div className="text-[13px] font-semibold text-muted-foreground mt-1 mb-3 truncate">
           Calories Left
         </div>
         <div
@@ -53,7 +53,7 @@ export default function CalorieHero({ eaten, target }: Props) {
               ? "bg-red-50 text-red-600"
               : hasTarget
                 ? "bg-emerald-50 text-emerald-600"
-                : "bg-foreground/5 text-muted-foreground-foreground",
+                : "bg-foreground/5 text-muted-foreground",
           ].join(" ")}>
           <span
             className={[
@@ -84,7 +84,7 @@ export default function CalorieHero({ eaten, target }: Props) {
               cy="90"
               r={R}
               fill="none"
-              className="stroke-[#F0EFEC] dark:stroke-[#3a3a3a]"
+              className="stroke-border dark:stroke-border"
               strokeWidth="12"
             />
             {/* Progress — same full circle, but shortened by offset */}
@@ -93,12 +93,12 @@ export default function CalorieHero({ eaten, target }: Props) {
               cy="90"
               r={R}
               fill="none"
-              stroke={over ? "#EF4444" : "currentColor"}
+              stroke={over ? "var(--color-red)" : "currentColor"}
               strokeWidth="12"
               strokeLinecap="round"
               strokeDasharray={C}
               strokeDashoffset={offset}
-              className={`ring-arc transition-all duration-1000 ease-out ${over ? "" : "text-[#1A1916] dark:text-[#f7f6f3]"}`}
+              className={`ring-arc transition-all duration-1000 ease-out ${over ? "" : "text-foreground"}`}
             />
           </g>
         </svg>

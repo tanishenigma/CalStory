@@ -35,17 +35,16 @@ interface ExSetState {
   kg: string;
 }
 
-/** String-typed mirror of the `ExerciseMetrics` block for form state. */
 type MetricFieldValues = Record<string, string>;
 
 interface ExState {
   id: string;
   name: string;
-  /** Resistance / Powerlifting / CrossFit / HIIT (set-based). */
+
   sets: ExSetState[];
-  /** Per-exercise duration in minutes (cardio-style). */
+
   durationMin: string;
-  /** Type-specific metrics block as strings (parsed on save). */
+
   metrics: MetricFieldValues;
 }
 
@@ -117,6 +116,14 @@ export default function WorkoutForm({
    * log without tracking details.
    */
   const [quickLog, setQuickLog] = useState(false);
+  /**
+   * In `duplicate` mode, no edits have been made yet, so the
+   * "Save as reusable template" toggle stays hidden. The first
+   * edit flips this to `true` and reveals the toggle (with a
+   * "Save changes to routine" label).
+   */
+  const [dirty, setDirty] = useState(false);
+  const markDirty = () => setDirty(true);
 
   function addEx() {
     setExercises([
@@ -129,6 +136,7 @@ export default function WorkoutForm({
         metrics: {},
       },
     ]);
+    markDirty();
   }
 
   function updateMetricField(exId: string, key: string, val: string) {
@@ -137,22 +145,26 @@ export default function WorkoutForm({
         e.id === exId ? { ...e, metrics: { ...e.metrics, [key]: val } } : e,
       ),
     );
+    markDirty();
   }
 
   function updateExDuration(exId: string, val: string) {
     setExercises((prev) =>
       prev.map((e) => (e.id === exId ? { ...e, durationMin: val } : e)),
     );
+    markDirty();
   }
 
   function updateExName(exId: string, val: string) {
     setExercises((prev) =>
       prev.map((e) => (e.id === exId ? { ...e, name: val } : e)),
     );
+    markDirty();
   }
 
   function deleteEx(exId: string) {
     setExercises(exercises.filter((e) => e.id !== exId));
+    markDirty();
   }
 
   function addSet(exId: string) {
@@ -170,6 +182,7 @@ export default function WorkoutForm({
         };
       }),
     );
+    markDirty();
   }
 
   function updateSet(
@@ -189,6 +202,7 @@ export default function WorkoutForm({
         };
       }),
     );
+    markDirty();
   }
 
   function deleteSet(exId: string, setId: string) {
@@ -339,8 +353,8 @@ export default function WorkoutForm({
       ((parseInt(duration) || 0) > 0 && exercises.some(exerciseHasContent)));
 
   return (
-    <div className="w-full bg-card rounded-[24px] p-6 shadow-sm border border-[#F0EFEC] dark:border-[#2a2a2a] animate-in slide-in-from-top-4 duration-300">
-      <h2 className="text-[18px] font-bold mb-6 text-[#1A1916] dark:text-[#f7f6f3]">
+    <div className="w-full bg-card rounded-[24px] p-4 sm:p-6 shadow-sm border border-border dark:border-foreground animate-in slide-in-from-top-4 duration-300">
+      <h2 className="text-[18px] font-bold mb-6 text-foreground">
         {mode === "edit"
           ? "Edit Workout"
           : mode === "duplicate"
@@ -350,24 +364,32 @@ export default function WorkoutForm({
 
       <div className="space-y-4">
         <div>
-          <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+          <label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
             Name
           </label>
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              markDirty();
+            }}
             className="w-full border-b border-border py-1.5 outline-none font-semibold text-[15px] focus:border-border"
             placeholder="e.g. Upper Body"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
               Type
             </label>
-            <Select value={type} onValueChange={setType}>
+            <Select
+              value={type}
+              onValueChange={(v) => {
+                setType(v);
+                markDirty();
+              }}>
               <SelectTrigger className="w-full border-b border-t-0 border-x-0 border-border py-1.5 px-0 rounded-none shadow-none focus:ring-0 focus:border-border font-semibold text-[15px] h-auto">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
@@ -381,13 +403,16 @@ export default function WorkoutForm({
             </Select>
           </div>
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
               Duration (min)
             </label>
             <input
               type="number"
               value={duration}
-              onChange={(e) => setDuration(e.target.value)}
+              onChange={(e) => {
+                setDuration(e.target.value);
+                markDirty();
+              }}
               className="w-full border-b border-border py-1.5 outline-none font-semibold text-[15px] focus:border-border"
               placeholder="0"
             />
@@ -396,10 +421,10 @@ export default function WorkoutForm({
 
         <div className="pt-4">
           <div className="flex items-center justify-between mb-3 gap-3">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895]">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
               Exercises
             </label>
-            <span className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895]">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
               {type} mode
             </span>
           </div>
@@ -425,7 +450,7 @@ export default function WorkoutForm({
                     <button
                       type="button"
                       onClick={() => deleteEx(ex.id)}
-                      className="p-2.5 sm:p-1.5 text-[#9B9895] hover:text-[#EF4444] hover:bg-[#FEE2E2] rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
+                      className="p-2.5 sm:p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -435,7 +460,7 @@ export default function WorkoutForm({
                 {usesSets && (
                   <div className="overflow-x-auto">
                     <div className="flex flex-col gap-2 min-w-[280px]">
-                      <div className="flex items-center gap-2 px-2 text-[10px] font-bold uppercase tracking-wider text-[#9B9895]">
+                      <div className="flex items-center gap-2 px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                         <div className="w-12">Set</div>
                         <div className="flex-1">Reps</div>
                         <div className="flex-1">Kg</div>
@@ -446,7 +471,7 @@ export default function WorkoutForm({
                         <div
                           key={set.id}
                           className="flex items-center gap-2 group">
-                          <div className="w-12 text-xs font-semibold text-[#9B9895] text-center bg-card border border-border py-1.5 rounded-lg">
+                          <div className="w-12 text-xs font-semibold text-muted-foreground text-center bg-card border border-border py-1.5 rounded-lg">
                             {idx + 1}
                           </div>
                           <input
@@ -470,7 +495,7 @@ export default function WorkoutForm({
                           <button
                             type="button"
                             onClick={() => deleteSet(ex.id, set.id)}
-                            className="w-9 h-9 sm:w-6 sm:h-6 flex items-center justify-center text-[#9B9895] hover:text-[#EF4444] hover:bg-white dark:hover:bg-[#1a1916] rounded-md transition-all opacity-0 group-hover:opacity-100">
+                            className="w-9 h-9 sm:w-6 sm:h-6 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-background dark:hover:bg-foreground rounded-md transition-all opacity-0 group-hover:opacity-100">
                             <X className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -480,7 +505,7 @@ export default function WorkoutForm({
                     <button
                       type="button"
                       onClick={() => addSet(ex.id)}
-                      className="flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#9B9895] mt-1 hover:text-[#1A1916] transition-colors py-2 bg-[#E8E7E4]/50 hover:bg-[#E8E7E4] rounded-lg">
+                      className="flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-1 hover:text-foreground transition-colors py-2 bg-muted/50 hover:bg-muted rounded-lg">
                       <Plus className="w-3 h-3" /> Add Set
                     </button>
                   </div>
@@ -489,7 +514,7 @@ export default function WorkoutForm({
                 {/* Per-exercise duration (used by all cardio-style types). */}
                 {metricKey && (
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 px-2 text-[10px] font-bold uppercase tracking-wider text-[#9B9895]">
+                    <div className="flex items-center gap-2 px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                       <div className="flex-1">Duration (min)</div>
                       <div className="flex-1">
                         {WORKOUT_METRIC_SCHEMAS[metricKey].length > 0
@@ -530,7 +555,7 @@ export default function WorkoutForm({
                               className="w-full bg-card border border-border py-1.5 px-3 rounded-lg outline-none text-sm font-mono focus:border-border transition-colors"
                               title={field.label}
                             />
-                            <span className="text-[9px] font-semibold uppercase tracking-wider text-[#9B9895] truncate">
+                            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
                               {field.label}
                             </span>
                           </div>
@@ -546,19 +571,22 @@ export default function WorkoutForm({
           <button
             type="button"
             onClick={addEx}
-            className="w-full mt-4 py-3 border border-dashed border-border text-[#9B9895] rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-subtle hover:text-[#1A1916] hover:border-[#1A1916] dark:hover:border-[#f7f6f3] dark:border-[#f7f6f3]/30 transition-all">
+            className="w-full mt-4 py-3 border border-dashed border-border text-muted-foreground rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-subtle hover:text-foreground hover:border-foreground dark:hover:border-foreground dark:border-foreground/30 transition-all">
             + Add Exercise
           </button>
         </div>
 
         <div className="pt-4 space-y-4">
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
               Notes
             </label>
             <textarea
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e) => {
+                setNotes(e.target.value);
+                markDirty();
+              }}
               className="w-full border border-border rounded-xl p-3 outline-none text-[13px] focus:border-border bg-subtle resize-none"
               rows={2}
               placeholder="How did it feel?"
@@ -569,25 +597,35 @@ export default function WorkoutForm({
             <Checkbox
               checked={quickLog}
               onCheckedChange={(checked) => setQuickLog(checked as boolean)}
-              className="w-4 h-4 rounded border-border data-[state=checked]:bg-[#1A1916] data-[state=checked]:text-white"
+              className="w-4 h-4 rounded border-border data-[state=checked]:bg-foreground data-[state=checked]:text-background"
             />
-            <span className="text-xs font-semibold text-[#1A1916] dark:text-[#f7f6f3]">
+            <span className="text-xs font-semibold text-foreground">
               Quick log (name only — duration and exercises optional)
             </span>
           </label>
 
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <Checkbox
-              checked={saveAsTemplate}
-              onCheckedChange={(checked) =>
-                setSaveAsTemplate(checked as boolean)
-              }
-              className="w-4 h-4 rounded border-border data-[state=checked]:bg-[#1A1916] data-[state=checked]:text-white"
-            />
-            <span className="text-xs font-semibold text-[#1A1916] dark:text-[#f7f6f3]">
-              Save as reusable template
-            </span>
-          </label>
+          {/*
+            In duplicate mode, hide the save-as-template toggle until the
+            user has edited something. The first edit flips `dirty` so
+            this becomes visible (with a "Save changes to routine" label).
+          */}
+          {(mode !== "duplicate" || dirty) && (
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <Checkbox
+                checked={saveAsTemplate}
+                onCheckedChange={(checked) => {
+                  setSaveAsTemplate(checked as boolean);
+                  markDirty();
+                }}
+                className="w-4 h-4 rounded border-border data-[state=checked]:bg-foreground data-[state=checked]:text-background"
+              />
+              <span className="text-xs font-semibold text-foreground">
+                {mode === "duplicate" && dirty
+                  ? "Save changes to routine"
+                  : "Save as reusable template"}
+              </span>
+            </label>
+          )}
         </div>
 
         <div className="pt-2 flex flex-col gap-2">
@@ -595,17 +633,13 @@ export default function WorkoutForm({
             onClick={handleSave}
             disabled={!isValid}
             type="button"
-            className="w-full py-3 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100">
-            {mode === "edit"
-              ? "Save Changes"
-              : mode === "duplicate"
-                ? "Save Duplicate"
-                : "Save Workout"}
+            className="w-full py-3 bg-foreground text-background rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100">
+            {mode === "edit" ? "Save Changes" : "Save"}
           </button>
           <button
             onClick={onClose}
             type="button"
-            className="w-full py-3 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-transform">
+            className="w-full py-3 border border-border text-muted-foreground rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-transform">
             Cancel
           </button>
         </div>

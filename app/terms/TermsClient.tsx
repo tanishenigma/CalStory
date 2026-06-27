@@ -27,7 +27,7 @@ export function TermsClient() {
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-8 font-heading">
               Terms of <span className="text-primary">Service</span>
             </h1>
-            <p className="text-muted-foreground-foreground mb-12">
+            <p className="text-muted-foreground mb-12">
               Last updated:{" "}
               {new Date().toLocaleDateString("en-US", {
                 month: "long",
@@ -40,7 +40,7 @@ export function TermsClient() {
           <BlurFade
             delay={0.2}
             className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-heading prose-headings:tracking-tight prose-a:text-primary hover:prose-a:text-primary/80">
-            <div className="space-y-8 text-muted-foreground-foreground leading-relaxed">
+            <div className="space-y-8 text-muted-foreground leading-relaxed">
               <section>
                 <h2 className="text-2xl font-bold text-foreground mb-4">
                   1. Acceptance of Terms

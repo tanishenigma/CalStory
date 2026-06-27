@@ -98,7 +98,7 @@ function TiltCard({
   const spotlightBg = useTransform(
     [glowX, glowY],
     ([x, y]) =>
-      `radial-gradient(320px circle at ${x}% ${y}%, rgba(249,115,22,0.12) 0%, transparent 70%)`,
+      `radial-gradient(320px circle at ${x}% ${y}%, oklch(0.7227 0.1920 149.5793 / 0.12) 0%, transparent 70%)`,
   );
 
   return (
@@ -121,7 +121,7 @@ function TiltCard({
         style={{ rotateX, rotateY, scale, transformStyle: "preserve-3d" }}
         className="relative h-full bg-card border border-border rounded-2xl overflow-hidden
                    cursor-default transition-[border-color,box-shadow] duration-300
-                   hover:border-primary/25 hover:shadow-[0_16px_48px_rgba(249,115,22,0.10)]">
+                   hover:border-primary/25 hover:shadow-[0_16px_48px_oklch(0.7227 0.1920 149.5793 / 0.10)]">
         {/* Cursor spotlight */}
         <motion.div
           className="pointer-events-none absolute inset-0 rounded-2xl z-0"
@@ -283,8 +283,8 @@ function Card2({ index }: { index: number }) {
               />
               <defs>
                 <linearGradient id="tdeeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#f97316" />
-                  <stop offset="100%" stopColor="#fb923c" />
+                  <stop offset="0%" stopColor="var(--color-primary)" />
+                  <stop offset="100%" stopColor="oklch(0.7540 0.1770 70.5000)" />
                 </linearGradient>
               </defs>
             </svg>
@@ -402,8 +402,8 @@ function Card3({ index }: { index: number }) {
                 style={{
                   backgroundColor:
                     alpha > 0
-                      ? `rgba(249,115,22,${alpha})`
-                      : "rgba(0,0,0,0.05)",
+                      ? `oklch(0.7227 0.1920 149.5793 / ${alpha})`
+                      : "oklch(0 0 0 / 0.05)",
                 }}
               />
             );
@@ -434,9 +434,15 @@ function Card4({ index }: { index: number }) {
   const inView = useInView(innerRef, { once: true, amount: 0.3 });
 
   const macros = [
-    { label: "Protein", val: 142, goal: 160, unit: "g", color: "#f97316" },
-    { label: "Carbs", val: 180, goal: 250, unit: "g", color: "#fb923c" },
-    { label: "Fat", val: 55, goal: 70, unit: "g", color: "#fdba74" },
+    {
+      label: "Protein",
+      val: 142,
+      goal: 160,
+      unit: "g",
+      color: "var(--color-primary)",
+    },
+    { label: "Carbs", val: 180, goal: 250, unit: "g", color: "oklch(0.7540 0.1770 70.5000)" },
+    { label: "Fat", val: 55, goal: 70, unit: "g", color: "oklch(0.8353 0.1870 69.9000)" },
   ];
 
   return (
@@ -574,8 +580,16 @@ function Card5({ index }: { index: number }) {
             style={{ height: 64 }}>
             <defs>
               <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f97316" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+                <stop
+                  offset="0%"
+                  stopColor="var(--color-primary)"
+                  stopOpacity="0.25"
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--color-primary)"
+                  stopOpacity="0"
+                />
               </linearGradient>
             </defs>
             <motion.path
@@ -588,7 +602,7 @@ function Card5({ index }: { index: number }) {
             <motion.polyline
               points={polyline}
               fill="none"
-              stroke="#f97316"
+              stroke="var(--color-primary)"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -606,7 +620,7 @@ function Card5({ index }: { index: number }) {
                 cx={x}
                 cy={ys[i]}
                 r="3"
-                fill="#f97316"
+                fill="var(--color-primary)"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={inView ? { scale: 1, opacity: 1 } : {}}
                 transition={{ delay: 0.5 + i * 0.08, duration: 0.25 }}

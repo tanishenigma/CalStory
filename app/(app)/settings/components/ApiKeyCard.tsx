@@ -141,10 +141,10 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
     <Card className="p-4 sm:p-4 flex flex-col  gap-6 mb-6 h-full justify-evenly">
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <Key size={16} className="text-[#9B9895]" />
+          <Key size={16} className="text-muted-foreground" />
           <div className="text-sm font-bold">Your Gemini API Key</div>
         </div>
-        <p className="text-xs text-[#9B9895] leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           Use your own key for AI food and workout logging instead of the shared
           key. Your key is stored securely and{" "}
           <strong>never returned to this browser</strong> after saving.
@@ -152,16 +152,16 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
       </div>
 
       {apiKeyNeedsReEncrypt && (
-        <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3">
+        <div className="flex items-start gap-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
           <AlertCircle
             size={14}
-            className="text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
+            className="text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0"
           />
           <div>
-            <div className="text-xs font-bold text-amber-700 dark:text-amber-400 mb-0.5">
+            <div className="text-xs font-bold text-red-700 dark:text-red-400 mb-0.5">
               Security upgrade required
             </div>
-            <p className="text-xs text-amber-600/90 dark:text-amber-400/80 leading-relaxed">
+            <p className="text-xs text-red-600/90 dark:text-red-400/80 leading-relaxed">
               Your key was saved before encryption was enabled. Please re-enter
               it below to encrypt it at rest.
             </p>
@@ -174,7 +174,7 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
           {" "}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-background rounded-xl px-4 py-3">
             <div className="w-full sm:w-auto break-all">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] mb-0.5">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
                 Stored key{" "}
                 {!apiKeyNeedsReEncrypt && (
                   <span className="normal-case font-normal text-emerald-600 dark:text-emerald-400 ml-1">
@@ -191,7 +191,7 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
             id="settings-ai-remove-key"
             onClick={removeApiKey}
             disabled={apiKeyDeleting}
-            className="flex items-center py-3.5 justify-center w-full sm:w-auto gap-1.5 text-xs w-full py-3.5 rounded-xl border border-[#EF4444] text-[#EF4444] text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
+            className="flex items-center py-3.5 justify-center w-full sm:w-auto gap-1.5 text-xs w-full py-3.5 rounded-xl border border-destructive text-destructive text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
             <Trash2 size={13} />
             {apiKeyDeleting ? "Removing…" : "Remove"}
           </button>
@@ -206,7 +206,7 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
         <div>
           <label
             htmlFor="settings-ai-key-input"
-            className="text-xs font-bold text-[#9B9895] uppercase tracking-wider mb-2 block">
+            className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
             {apiKeyHasKey ? "Replace key" : "Enter key"}
           </label>
           <div className="relative">
@@ -233,13 +233,13 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
               type="button"
               onClick={() => setShowKey((v) => !v)}
               aria-label={showKey ? "Hide key" : "Show key"}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9B9895] hover:text-foreground transition-colors p-2">
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-2">
               {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
 
           {apiKeyError && (
-            <div className="flex items-start gap-2 mt-2.5 text-xs text-[#EF4444]">
+            <div className="flex items-start gap-2 mt-2.5 text-xs text-destructive">
               <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
               {apiKeyError}
             </div>
@@ -256,12 +256,12 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
           id="settings-ai-save-key"
           type="submit"
           disabled={apiKeySaving || !apiKeyInput.trim()}
-          className="w-full py-3.5 rounded-xl bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-40 mt-6">
+          className="w-full py-3.5 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-85 transition-opacity disabled:text-muted-foreground disabled:bg-muted/60 disabled:hover:opacity-100 mt-6">
           {apiKeySaving ? "Saving…" : apiKeyHasKey ? "Replace Key" : "Save Key"}
         </button>
       </form>
 
-      <p className="text-[11px] text-[#9B9895] leading-relaxed">
+      <p className="text-[11px] text-muted-foreground leading-relaxed">
         Your key is <strong>never exposed to the browser</strong> after saving.
         To revoke access, remove it here or rotate it in{" "}
         <a

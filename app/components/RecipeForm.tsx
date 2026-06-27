@@ -86,14 +86,14 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
   const isValid = name.trim().length > 0 && (parseInt(cal) || 0) > 0;
 
   return (
-    <div className="w-full max-w-sm mx-auto bg-card rounded-[24px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-[#F0EFEC] dark:border-[#2a2a2a] origin-bottom-right animate-in zoom-in-95 duration-200">
-      <h2 className="text-[18px] font-bold mb-6 text-[#1A1916] dark:text-[#f7f6f3]">
+    <div className="w-full max-w-sm mx-auto bg-card rounded-[24px] p-6 shadow-[0_8px_32px_oklch(0_0_0/_0.12)] border border-border dark:border-border origin-bottom-right animate-in zoom-in-95 duration-200">
+      <h2 className="text-[18px] font-bold mb-6 text-foreground">
         Log Food
       </h2>
 
       <div className="space-y-4">
         <div>
-          <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+          <label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
             Name
           </label>
           <input
@@ -107,7 +107,7 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1 ">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1 ">
               Category
             </label>
             <Select
@@ -125,7 +125,7 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
             </Select>
           </div>
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
               Calories
             </label>
             <input
@@ -145,7 +145,7 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
 
         <div className="grid grid-cols-3 gap-4 pt-2">
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
               Carbs (g)
             </label>
             <input
@@ -162,7 +162,7 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
             />
           </div>
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
               Protein (g)
             </label>
             <input
@@ -179,7 +179,7 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
             />
           </div>
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1">
+            <label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
               Fat (g)
             </label>
             <input
@@ -202,13 +202,13 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
             type="button"
             onClick={handleSave}
             disabled={!isValid}
-            className="w-full py-3 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100">
+            className="w-full py-3 bg-foreground text-white dark:text-foreground rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100">
             Save Meal
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 border border-border text-[#9B9895] rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-transform">
+            className="w-full py-3 border border-border text-muted-foreground rounded-xl text-sm font-semibold hover:bg-background active:scale-[0.99] transition-transform">
             Cancel
           </button>
         </div>

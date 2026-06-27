@@ -9,7 +9,6 @@ import { useApp } from "@/app/context/AppContext";
    HELPERS
    ───────────────────────────────────────────── */
 
-/** Return a local YYYY-MM-DD string for a Date (avoids UTC offset issues) */
 function toDateKey(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -43,23 +42,14 @@ function dayTotals(
    ───────────────────────────────────────────── */
 
 type Stat = {
-  /** Tile label */
   label: string;
-  /** Big number (e.g. "22") */
   value: number;
-  /** Denominator shown under the number (e.g. "of 30 days") */
   caption: string;
-  /** 0..1 ratio used for the mini bar / fill */
   ratio: number;
-  /** Hex color used for the fill and accent */
   color: string;
-  /** Tailwind classes for the icon chip background + border */
   chipClass: string;
-  /** Tailwind class for the value text color */
   textClass: string;
-  /** Lucide icon component */
   Icon: React.ComponentType<{ size?: number; className?: string }>;
-  /** "X% hit" / "X-day run" copy shown under the value */
   sublabel: string;
 };
 
@@ -177,9 +167,9 @@ export function NutritionQuality() {
       value: stats.calorieHitCount,
       caption: `of ${stats.window} days`,
       ratio: stats.calorieRatio,
-      color: "#F97316",
+      color: "var(--color-primary)",
       chipClass: "bg-primary/10 border-primary/20",
-      textClass: "text-[#F97316]",
+      textClass: "text-primary",
       Icon: Target,
       sublabel: `${(stats.calorieRatio * 100).toFixed(0)}% of days`,
     },
@@ -188,9 +178,9 @@ export function NutritionQuality() {
       value: stats.bestStreak,
       caption: "day run",
       ratio: Math.min(stats.bestStreak / stats.window, 1),
-      color: "#22C55E",
-      chipClass: "bg-[#22C55E]/10 border-[#22C55E]/20",
-      textClass: "text-[#22C55E]",
+      color: "var(--color-primary)",
+      chipClass: "bg-primary/10 border-primary/20",
+      textClass: "text-primary",
       Icon: Flame,
       sublabel: "consecutive days",
     },
@@ -227,8 +217,8 @@ export function NutritionQuality() {
                 headline number without scanning all three tiles. */}
             <div className="flex items-center gap-2 flex-wrap ml-9 sm:ml-0">
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-                <Target size={12} className="text-[#F97316]" />
-                <span className="text-xs font-bold text-[#F97316]">
+                <Target size={12} className="text-primary" />
+                <span className="text-xs font-bold text-primary">
                   {stats.calorieHitCount}/{stats.window} calories
                 </span>
               </div>
@@ -251,7 +241,7 @@ export function NutritionQuality() {
                 {/* Faint background bar at all times so the tile
                     has a "track" feel even when ratio is 0. */}
                 <div
-                  className="absolute inset-x-0 bottom-0 h-1 bg-[#E8E7E4] dark:bg-[#3a3a3a]"
+                  className="absolute inset-x-0 bottom-0 h-1 bg-muted dark:bg-[#3a3a3a]"
                   aria-hidden
                 />
                 <div
@@ -268,7 +258,7 @@ export function NutritionQuality() {
                     className={`w-7 h-7 rounded-lg border flex items-center justify-center ${t.chipClass}`}>
                     <t.Icon size={14} className={t.textClass} />
                   </div>
-                  <span className="text-[10px] font-bold tracking-wider uppercase text-[#9B9895]">
+                  <span className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
                     {t.label}
                   </span>
                 </div>
@@ -278,12 +268,12 @@ export function NutritionQuality() {
                     className={`text-4xl font-mono font-bold ${t.textClass}`}>
                     {t.value}
                   </span>
-                  <span className="text-sm font-medium text-[#9B9895]">
+                  <span className="text-sm font-medium text-muted-foreground">
                     {t.caption}
                   </span>
                 </div>
 
-                <div className="mt-2  text-[11px] text-[#9B9895]">
+                <div className="mt-2  text-[11px] text-muted-foreground">
                   <span className="font-semibold text-foreground">
                     {(t.ratio * 100).toFixed(0)}%
                   </span>{" "}

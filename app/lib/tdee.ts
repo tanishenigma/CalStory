@@ -14,11 +14,6 @@ const FAT_PER_KG: Record<string, number> = {
   maintain: 0.9,
 };
 
-/**
- * Derive a TDEE activity multiplier from steps-per-day and
- * workouts-per-week — substantially more accurate than a
- * subjective dropdown because it reflects total daily energy.
- */
 export function getActivityMultiplier(
   steps: number,
   workoutsPerWeek: number,
@@ -97,7 +92,6 @@ export function calcTDEE(profile: TDEEInput): TDEEResult {
  * Weekly recalibration: compare actual vs expected weight change and
  * nudge calTarget by ±100 kcal to correct drift.
  *
- * Call this after at least 2 weeks of logged weights.
  *
  * @param currentCalTarget  The user's current calTarget
  * @param expectedWeeklyChange  Expected weekly weight change in kg (+ = bulk, − = cut)

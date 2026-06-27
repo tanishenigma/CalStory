@@ -81,12 +81,12 @@ export default function DashboardPage() {
           <BlurFade delay={0.2}>
             <section>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[17px] font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+                <span className="text-[17px] font-bold text-foreground">
                   Today's Workout
                 </span>
                 <Link
                   href="/workouts"
-                  className="text-[13px] font-semibold text-[#9B9895] hover:text-[#1A1916] transition-colors dark:hover:text-foreground">
+                  className="text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-colors dark:hover:text-foreground">
                   See all →
                 </Link>
               </div>
@@ -95,10 +95,10 @@ export default function DashboardPage() {
                 <Link href="/workouts" className="block">
                   <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px] hover:bg-gray-50 transition-colors cursor-pointer ">
                     <div className="text-3xl mb-1">🏋️</div>
-                    <div className="font-bold text-[14px] text-[#1A1916] dark:text-[#f7f6f3]">
+                    <div className="font-bold text-[14px] text-foreground">
                       No workout yet
                     </div>
-                    <div className="text-[12px] text-[#9B9895]">
+                    <div className="text-[12px] text-muted-foreground">
                       Tap to go to Workouts page to log a session
                     </div>
                   </Card>
@@ -108,16 +108,16 @@ export default function DashboardPage() {
                   {recentWorkouts.map((w) => (
                     <CardContent
                       key={w.id}
-                      className="flex flex-col divide-y divide-[#F0EFEC] p-2  ">
+                      className="flex flex-col divide-y divide-border p-2  ">
                       <div className="flex items-center gap-4 p-4 hover:bg-subtle transition-colors rounded-xl">
                         <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
                           💪
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-bold text-[15px] text-[#1A1916] dark:text-[#f7f6f3] truncate">
+                          <div className="font-bold text-[15px] text-foreground truncate">
                             {w.name}
                           </div>
-                          <div className="text-xs text-[#9B9895] capitalize">
+                          <div className="text-xs text-muted-foreground capitalize">
                             {w.duration} min • {w.type}
                           </div>
                         </div>
@@ -132,12 +132,12 @@ export default function DashboardPage() {
           <BlurFade delay={0.25}>
             <section>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[17px] font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+                <span className="text-[17px] font-bold text-foreground">
                   Recently uploaded
                 </span>
                 <Link
                   href="/nutrition"
-                  className="text-[13px] font-semibold text-[#9B9895] hover:text-[#1A1916] transition-colors dark:hover:text-foreground">
+                  className="text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-colors dark:hover:text-foreground">
                   See all →
                 </Link>
               </div>
@@ -145,10 +145,10 @@ export default function DashboardPage() {
               {todayMeals.length === 0 ? (
                 <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px]">
                   <div className="text-3xl mb-1">🍽️</div>
-                  <div className="font-bold text-[14px] text-[#1A1916] dark:text-[#f7f6f3]">
+                  <div className="font-bold text-[14px] text-foreground">
                     No meals logged
                   </div>
-                  <div className="text-[12px] text-[#9B9895]">
+                  <div className="text-[12px] text-muted-foreground">
                     Tap + below to add a meal
                   </div>
                 </Card>
@@ -163,22 +163,22 @@ export default function DashboardPage() {
                         <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
                           <Icon
                             size={20}
-                            className="text-[#1A1916] dark:text-[#f7f6f3]"
+                            className="text-foreground"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-bold text-[15px] text-[#1A1916] dark:text-[#f7f6f3] truncate">
+                          <div className="font-bold text-[15px] text-foreground truncate">
                             {m.name}
                           </div>
-                          <div className="text-xs text-[#9B9895] capitalize">
+                          <div className="text-xs text-muted-foreground capitalize">
                             {m.time}
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <div className="font-bold text-lg text-[#1A1916] dark:text-[#f7f6f3] tabular-nums">
+                          <div className="font-bold text-lg text-foreground tabular-nums">
                             {m.cal}
                           </div>
-                          <div className="text-[9px] text-[#9B9895] font-bold uppercase tracking-widest">
+                          <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">
                             kcal
                           </div>
                         </div>

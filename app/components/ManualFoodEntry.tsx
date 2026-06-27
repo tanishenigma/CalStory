@@ -38,7 +38,7 @@ interface FoodData {
 
 interface Props {
   onClose: () => void;
-  /** Optional pre-fill data from the AI chat flow. */
+
   initialMeal?: PendingMeal;
 }
 
@@ -401,12 +401,10 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
     return (
       <div className="bg-card rounded-2xl shadow-sm border border-border p-5 mb-8">
         <div className="flex justify-between items-center mb-5">
-          <h2 className="text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3]">
-            Log Food
-          </h2>
+          <h2 className="text-lg font-bold text-foreground">Log Food</h2>
           <button
             onClick={switchToManual}
-            className="text-xs font-semibold text-[#9B9895] hover:text-foreground transition-colors underline underline-offset-2">
+            className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
             Enter manually
           </button>
         </div>
@@ -418,10 +416,11 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
               <button
                 key={t}
                 onClick={() => setTime(t)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-colors ${time === t
-                  ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916]"
-                  : "bg-subtle text-[#9B9895] hover:bg-[#E8E7E4] dark:hover:bg-[#2a2926]"
-                  }`}>
+                className={`px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-colors ${
+                  time === t
+                    ? "bg-foreground text-background"
+                    : "bg-subtle text-muted-foreground hover:bg-muted dark:hover:bg-foreground"
+                }`}>
                 {t}
               </button>
             ),
@@ -430,38 +429,38 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
 
         {/* Search bar */}
         <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9895]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for food (e.g. apple, tofu, roti)"
-            className="w-full bg-subtle border border-border rounded-xl py-3 pl-10 pr-4 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-semibold text-[15px]"
+            className="w-full bg-subtle border border-border rounded-xl py-3 pl-10 pr-4 outline-none focus:border-foreground dark:focus:border-foreground font-semibold text-[15px]"
           />
           {loading && (
-            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9895] animate-spin" />
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground animate-spin" />
           )}
         </div>
 
         {/* API Results list */}
         {results.length > 0 && !selectedFoodData && (
-          <div className="mb-3 divide-y divide-[#E8E7E4] dark:divide-[#2a2926] border border-border rounded-xl overflow-hidden bg-foreground dark:bg-[#1a1916]">
+          <div className="mb-3 divide-y divide-border dark:divide-foreground border border-border rounded-xl overflow-hidden bg-foreground dark:bg-foreground">
             {results.map((food) => (
               <div
                 key={food.food_id}
                 className="p-3 hover:bg-subtle transition-colors flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3] text-sm">
+                  <div className="font-bold text-foreground text-sm">
                     {food.food_name}
                   </div>
-                  <div className="text-xs text-[#9B9895]">
+                  <div className="text-xs text-muted-foreground">
                     {food.food_description}
                   </div>
                 </div>
                 <button
                   onClick={() => handleSelectFood(food.food_id, food.food_name)}
                   disabled={loading}
-                  className="w-8 h-8 flex items-center justify-center bg-subtle hover:bg-[#E8E7E4] dark:bg-[#2a2926] dark:hover:bg-[#3a3936] rounded-full text-[#1A1916] dark:text-[#f7f6f3] shrink-0">
+                  className="w-8 h-8 flex items-center justify-center bg-subtle hover:bg-muted dark:bg-foreground dark:hover:bg-muted rounded-full text-foreground shrink-0">
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
@@ -475,16 +474,16 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
             {/* Back button */}
             <button
               onClick={() => setSelectedFoodData(null)}
-              className="text-xs font-semibold text-[#9B9895] hover:text-foreground transition-colors underline underline-offset-2">
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
               ← Back to results
             </button>
 
             {/* Food name + time */}
             <div>
-              <h3 className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
+              <h3 className="font-bold text-foreground">
                 {selectedFoodData.food_name}
               </h3>
-              <div className="text-xs text-[#9B9895] capitalize font-semibold">
+              <div className="text-xs text-muted-foreground capitalize font-semibold">
                 {time}
               </div>
             </div>
@@ -492,7 +491,7 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
             {/* Quantity + unit */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
                   Amount
                 </label>
                 <input
@@ -500,21 +499,21 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
                   inputMode="decimal"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  className="w-full bg-subtle border border-border rounded-xl py-2.5 px-3 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-semibold text-[14px]"
+                  className="w-full bg-subtle border border-border rounded-xl py-2.5 px-3 outline-none focus:border-foreground dark:focus:border-foreground font-semibold text-[14px]"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
                   Serving Size
                 </label>
                 <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-                  <SelectTrigger className="w-full bg-subtle border border-border rounded-xl py-2.5 px-3 outline-none focus:ring-0 focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-semibold text-[14px] h-auto">
+                  <SelectTrigger className="w-full bg-subtle border border-border rounded-xl py-2.5 px-3 outline-none focus:ring-0 focus:border-foreground dark:focus:border-foreground font-semibold text-[14px] h-auto">
                     <SelectValue placeholder="Select serving size" />
                   </SelectTrigger>
                   <SelectContent>
                     {selectedFoodData.optionsGroups.map((group, gIdx) => (
                       <SelectGroup key={gIdx}>
-                        <SelectLabel className="text-[10px] uppercase text-[#9B9895] font-bold tracking-wider px-2 py-1.5 bg-background">
+                        <SelectLabel className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider px-2 py-1.5 bg-background">
                           {group.group}
                         </SelectLabel>
                         {group.options.map((opt) => (
@@ -532,36 +531,28 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
             {/* Live macro preview */}
             <div className="flex justify-between items-center bg-subtle rounded-xl border border-border p-4">
               <div className="text-center">
-                <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
                   Calories
                 </div>
-                <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
-                  {previewCal}
-                </div>
+                <div className="font-bold text-foreground">{previewCal}</div>
               </div>
               <div className="text-center">
-                <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
                   Protein
                 </div>
-                <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
-                  {previewP}g
-                </div>
+                <div className="font-bold text-foreground">{previewP}g</div>
               </div>
               <div className="text-center">
-                <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
                   Carbs
                 </div>
-                <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
-                  {previewC}g
-                </div>
+                <div className="font-bold text-foreground">{previewC}g</div>
               </div>
               <div className="text-center">
-                <div className="text-[10px] font-bold text-[#9B9895] uppercase tracking-wider mb-1">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
                   Fat
                 </div>
-                <div className="font-bold text-[#1A1916] dark:text-[#f7f6f3]">
-                  {previewF}g
-                </div>
+                <div className="font-bold text-foreground">{previewF}g</div>
               </div>
             </div>
 
@@ -570,12 +561,12 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
               <button
                 onClick={handleSaveApiFood}
                 disabled={parseFloat(quantity) <= 0}
-                className="px-6 py-2.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl font-bold text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity shadow-sm">
+                className="px-6 py-2.5 bg-foreground text-background rounded-xl font-bold text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity shadow-sm">
                 Add to Log
               </button>{" "}
               <button
                 onClick={onClose}
-                className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#9B9895] hover:bg-background transition-colors">
+                className="px-6 py-2.5 rounded-xl font-bold text-sm text-muted-foreground hover:bg-background transition-colors">
                 Cancel
               </button>
             </div>
@@ -584,7 +575,7 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
 
         {/* Empty state — no query yet */}
         {query.length === 0 && !selectedFoodData && (
-          <p className="text-sm text-[#9B9895] text-center py-4">
+          <p className="text-sm text-muted-foreground text-center py-4">
             Start typing to search for a food, or{" "}
             <button
               onClick={switchToManual}
@@ -600,7 +591,7 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
           results.length === 0 &&
           !loading &&
           !selectedFoodData && (
-            <p className="text-sm text-[#9B9895] text-center py-4">
+            <p className="text-sm text-muted-foreground text-center py-4">
               No results for "{query}".{" "}
               <button
                 onClick={switchToManual}
@@ -620,12 +611,10 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
   return (
     <div className="bg-card rounded-2xl shadow-sm border border-border p-5 mb-8">
       <div className="flex justify-between items-center mb-5">
-        <h2 className="text-lg font-bold text-[#1A1916] dark:text-[#f7f6f3]">
-          Manual Food Entry
-        </h2>
+        <h2 className="text-lg font-bold text-foreground">Manual Food Entry</h2>
         <button
           onClick={switchToSearch}
-          className="text-xs font-semibold text-[#9B9895] hover:text-foreground transition-colors underline underline-offset-2">
+          className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
           Search foods
         </button>
       </div>
@@ -633,7 +622,7 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
               Food Name
             </label>
             <input
@@ -641,11 +630,11 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Homemade Greek Salad"
-              className="w-full bg-subtle border border-border rounded-xl py-2.5 px-3 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-semibold text-[14px]"
+              className="w-full bg-subtle border border-border rounded-xl py-2.5 px-3 outline-none focus:border-foreground dark:focus:border-foreground font-semibold text-[14px]"
             />
           </div>
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
               Category
             </label>
             <div className="flex gap-2">
@@ -654,10 +643,11 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
                   <button
                     key={t}
                     onClick={() => setTime(t)}
-                    className={`flex-1 py-2.5 rounded-xl  text-sm font-bold capitalize transition-colors border ${time === t
-                      ? "bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] border-[#1A1916] dark:border-[#f7f6f3]"
-                      : "bg-card text-[#9B9895] border-border hover:border-[#9B9895]"
-                      }`}>
+                    className={`flex-1 py-2.5 rounded-xl  text-sm font-bold capitalize transition-colors border ${
+                      time === t
+                        ? "bg-foreground text-background border-foreground dark:border-foreground"
+                        : "bg-card text-muted-foreground border-border hover:border-muted-foreground"
+                    }`}>
                     {t}
                   </button>
                 ),
@@ -668,7 +658,7 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-subtle border border-border rounded-xl">
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
               Calories
             </label>
             <div className="relative">
@@ -678,15 +668,15 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
                 value={cal}
                 onChange={(e) => setCal(e.target.value)}
                 placeholder="0"
-                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-8 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-mono text-[15px]"
+                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-8 outline-none focus:border-foreground dark:focus:border-foreground font-mono text-[15px]"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#9B9895]">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground">
                 kcal
               </span>
             </div>
           </div>
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
               Protein
             </label>
             <div className="relative">
@@ -696,15 +686,15 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
                 value={p}
                 onChange={(e) => setP(e.target.value)}
                 placeholder="0"
-                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-6 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-mono text-[15px]"
+                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-6 outline-none focus:border-foreground dark:focus:border-foreground font-mono text-[15px]"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#9B9895]">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground">
                 g
               </span>
             </div>
           </div>
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
               Carbs
             </label>
             <div className="relative">
@@ -714,15 +704,15 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
                 value={c}
                 onChange={(e) => setC(e.target.value)}
                 placeholder="0"
-                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-6 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-mono text-[15px]"
+                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-6 outline-none focus:border-foreground dark:focus:border-foreground font-mono text-[15px]"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#9B9895]">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground">
                 g
               </span>
             </div>
           </div>
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9B9895] block mb-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
               Fat
             </label>
             <div className="relative">
@@ -732,9 +722,9 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
                 value={f}
                 onChange={(e) => setF(e.target.value)}
                 placeholder="0"
-                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-6 outline-none focus:border-[#1A1916] dark:focus:border-[#f7f6f3] font-mono text-[15px]"
+                className="w-full bg-card border border-border rounded-lg py-2 pl-3 pr-6 outline-none focus:border-foreground dark:focus:border-foreground font-mono text-[15px]"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#9B9895]">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground">
                 g
               </span>
             </div>
@@ -745,12 +735,12 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
           <button
             onClick={handleSaveManual}
             disabled={!isManualValid}
-            className="w-full sm:w-auto px-6 py-2.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl font-bold text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity shadow-sm">
+            className="w-full sm:w-auto px-6 py-2.5 bg-foreground text-background rounded-xl font-bold text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity shadow-sm">
             Save Meal
           </button>
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-sm text-[#9B9895] hover:bg-background transition-colors">
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-sm text-muted-foreground hover:bg-background transition-colors">
             Cancel
           </button>
         </div>

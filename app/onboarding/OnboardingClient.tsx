@@ -68,7 +68,6 @@ function getIntensityLabel(
 
 interface FormState {
   name: string;
-  /** YYYY-MM-DD — the date of birth. `age` is derived from this. */
   dob: string;
   gender: Gender;
   weight: string;
@@ -237,7 +236,7 @@ export default function OnboardingPage() {
           borderRadius: "24px",
           width: "100%",
           maxWidth: "480px",
-          boxShadow: "0 12px 48px rgba(0,0,0,0.15)",
+          boxShadow: "0 12px 48px oklch(0 0 0 / 0.15)",
         }}>
         {/* Progress bars */}
         <div className="flex gap-1.5 mb-9">
@@ -245,7 +244,7 @@ export default function OnboardingPage() {
             <div
               key={i}
               className={`flex-1 h-[3px] rounded transition-colors duration-300 ${
-                i <= step ? "bg-[#1A1916] dark:bg-[#f7f6f3]" : "bg-[#E8E7E4]"
+                i <= step ? "bg-foreground" : "bg-border"
               }`}
             />
           ))}
@@ -257,12 +256,12 @@ export default function OnboardingPage() {
             <div className="text-[26px] font-bold mb-1.5 text-foreground">
               Hey there 👋
             </div>
-            <div className="text-sm text-[#9B9895] mb-7 leading-relaxed">
+            <div className="text-sm text-muted-foreground mb-7 leading-relaxed">
               Let's personalise your experience. What should we call you?
             </div>
             <div className="mb-6">
               <label
-                className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5"
+                className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground mb-1.5"
                 htmlFor="ob-name">
                 Your Name
               </label>
@@ -290,14 +289,14 @@ export default function OnboardingPage() {
             <div className="text-[26px] font-bold mb-1.5 text-foreground">
               Body Stats
             </div>
-            <div className="text-sm text-[#9B9895] mb-7 leading-relaxed">
+            <div className="text-sm text-muted-foreground mb-7 leading-relaxed">
               Used to calculate your TDEE using the Mifflin–St Jeor formula.
             </div>
 
             {/* Unit Preference Toggles */}
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
-                <label className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5">
+                <label className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground mb-1.5">
                   Weight Unit
                 </label>
                 <div className="flex border border-border rounded-lg overflow-hidden">
@@ -336,7 +335,7 @@ export default function OnboardingPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5">
+                <label className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground mb-1.5">
                   Height Unit
                 </label>
                 <div className="flex border border-border rounded-lg overflow-hidden">
@@ -377,7 +376,7 @@ export default function OnboardingPage() {
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
                 <label
-                  className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5"
+                  className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground mb-1.5"
                   htmlFor="ob-dob">
                   Date of Birth
                 </label>
@@ -392,14 +391,14 @@ export default function OnboardingPage() {
                   autoFocus
                 />
                 {dob && dobToAge(dob) != null && (
-                  <div className="text-[11px] text-[#9B9895] mt-1.5 font-medium">
+                  <div className="text-[11px] text-muted-foreground mt-1.5 font-medium">
                     Age: {dobToAge(dob)} yrs
                   </div>
                 )}
               </div>
               <div>
                 <label
-                  className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5"
+                  className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground mb-1.5"
                   htmlFor="ob-gender">
                   Gender
                 </label>
@@ -412,7 +411,7 @@ export default function OnboardingPage() {
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                   </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#9B9895]">
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
                     <svg
                       className="fill-current h-4 w-4"
                       xmlns="http://www.w3.org/2000/svg"
@@ -426,7 +425,7 @@ export default function OnboardingPage() {
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div>
                 <label
-                  className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5"
+                  className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground mb-1.5"
                   htmlFor="ob-wt">
                   Weight ({weightUnit})
                 </label>
@@ -445,7 +444,7 @@ export default function OnboardingPage() {
                 {heightUnit === "metric" ? (
                   <>
                     <label
-                      className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5"
+                      className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground mb-1.5"
                       htmlFor="ob-ht">
                       Height (cm)
                     </label>
@@ -462,7 +461,7 @@ export default function OnboardingPage() {
                   </>
                 ) : (
                   <>
-                    <label className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5">
+                    <label className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground mb-1.5">
                       Height (ft/in)
                     </label>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -507,17 +506,17 @@ export default function OnboardingPage() {
         {/* Step 3 — Steps + Workouts */}
         {step === 3 && (
           <BlurFade>
-            <div className="text-[26px] font-bold mb-1.5 text-[#1A1916] dark:text-[#f7f6f3]">
+            <div className="text-[26px] font-bold mb-1.5 text-foreground">
               Activity
             </div>
-            <div className="text-sm text-[#9B9895] mb-7 leading-relaxed">
+            <div className="text-sm text-muted-foreground mb-7 leading-relaxed">
               Steps and workouts give a more accurate TDEE than a simple
               activity dropdown.
             </div>
 
             <div className="mb-5">
               <label
-                className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-1.5"
+                className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground mb-1.5"
                 htmlFor="ob-steps">
                 Average Daily Steps
               </label>
@@ -535,7 +534,7 @@ export default function OnboardingPage() {
             </div>
 
             <div className="mb-6">
-              <label className="block text-[11px] font-bold tracking-wider uppercase text-[#9B9895] mb-3">
+              <label className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground mb-3">
                 Workouts per Week
               </label>
               <div className="grid grid-cols-5 gap-2">
@@ -573,7 +572,7 @@ export default function OnboardingPage() {
             <div className="text-[26px] font-bold mb-1.5 text-foreground">
               Your Goal
             </div>
-            <div className="text-sm text-[#9B9895] mb-6 leading-relaxed">
+            <div className="text-sm text-muted-foreground mb-6 leading-relaxed">
               We'll adjust your calorie target accordingly.
             </div>
             <div className="grid grid-cols-3 gap-2.5 mb-6">
@@ -629,7 +628,7 @@ export default function OnboardingPage() {
                   ? "🔥 Cut Intensity"
                   : "💪 Bulk Intensity"}
             </div>
-            <div className="text-sm text-[#9B9895] mb-6 leading-relaxed">
+            <div className="text-sm text-muted-foreground mb-6 leading-relaxed">
               {goal === "maintain"
                 ? "You're maintaining — your calorie target matches your TDEE exactly."
                 : "How fast do you want to progress? Pick your intensity."}
@@ -683,7 +682,7 @@ export default function OnboardingPage() {
                 ).map(([l, v]) => (
                   <div key={l} className="text-center">
                     <div className="font-mono text-xl font-medium">{v}</div>
-                    <div className="text-[11px] text-[#9B9895] mt-0.5 font-semibold uppercase tracking-wider">
+                    <div className="text-[11px] text-muted-foreground mt-0.5 font-semibold uppercase tracking-wider">
                       {l}
                     </div>
                   </div>

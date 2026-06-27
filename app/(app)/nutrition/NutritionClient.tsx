@@ -118,8 +118,8 @@ export default function NutritionPage() {
                   return !v;
                 });
               }}
-              className="px-4 py-2.5 bg-card text-ink dark:text-[#f7f6f3]  hover:bg-orange-50 dark:hover:bg-orange-900/20  rounded-xl text-xs md:text-sm font-bold shadow-sm transition-colors active:scale-[0.98] flex items-center gap-1.5">
-              <Sparkles size={14} className="text-orange-500" />
+              className="px-4 py-2.5 bg-card text-ink dark:text-foreground  hover:bg-primary/10 dark:hover:bg-primary/20  rounded-xl text-xs md:text-sm font-bold shadow-sm transition-colors active:scale-[0.98] flex items-center gap-1.5">
+              <Sparkles size={14} className="text-primary" />
               {showAIChat ? "Cancel" : "Log with AI"}
             </button>
             <button
@@ -127,7 +127,7 @@ export default function NutritionPage() {
                 setShowRecipeForm(!showRecipeForm);
                 setShowSearch(false);
               }}
-              className="px-4 py-2.5 bg-[#1A1916] dark:bg-[#f7f6f3] text-white dark:text-[#1a1916] rounded-xl text-xs md:text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
+              className="px-4 py-2.5 bg-foreground text-background rounded-xl text-xs md:text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
               {showRecipeForm ? "Cancel" : "Log Food"}
             </button>
           </div>
@@ -162,46 +162,35 @@ export default function NutritionPage() {
         <Card className="p-6">
           <h2 className="text-sm font-bold text-ink mb-6 flex items-center gap-2">
             Energy Summary
-            <span className="text-[10px] uppercase text-muted-foreground-foreground opacity-60 tracking-wider ml-auto">
+            <span className="text-[10px] uppercase text-muted-foreground opacity-60 tracking-wider ml-auto">
               Target ➔
             </span>
           </h2>
           <div className="flex justify-between items-center gap-2 overflow-x-hidden pb-2 px-2 sm:px-4 md:px-0 md:gap-0">
-            <div className="flex flex-col items-center shrink-0">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[6px] sm:border-[8px] border-primary flex flex-col items-center justify-center">
-                <span className="font-bold text-base sm:text-xl">
-                  {agg.cal}
-                </span>
-                <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold">
-                  kcal
-                </span>
-              </div>
-              <span className="text-xs font-bold text-ink mt-3">Consumed</span>
-            </div>
-            <div className="flex flex-col items-center shrink-0">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[6px] sm:border-[8px] border-blue-500 flex flex-col items-center justify-center">
-                <span className="font-bold text-base sm:text-xl">
-                  {profile.tdee || calTarget}
-                </span>
-                <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold">
-                  kcal
-                </span>
-              </div>
-              <span className="text-xs font-bold text-ink mt-3">
-                Expenditure
-              </span>
-            </div>
-            <div className="flex flex-col items-center shrink-0">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[6px] sm:border-[8px] border-border flex flex-col items-center justify-center">
-                <span className="font-bold text-base sm:text-xl">
-                  {Math.max(0, calTarget - agg.cal)}
-                </span>
-                <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold">
-                  kcal
-                </span>
-              </div>
-              <span className="text-xs font-bold text-ink mt-3">Remaining</span>
-            </div>
+            <EnergyRing
+              label="Consumed"
+              value={agg.cal}
+              max={calTarget}
+              ringColor="var(--color-primary)"
+              trackColor="oklch(0.7227 0.1920 149.5793 / 0.18)"
+            />
+            <EnergyRing
+              label="Expenditure"
+              value={profile.tdee || calTarget}
+              max={calTarget}
+              ringColor="#3b82f6"
+              trackColor="rgba(59, 130, 246, 0.18)"
+            />
+            <EnergyRing
+              label="Remaining"
+              value={Math.max(0, calTarget - agg.cal)}
+              max={calTarget}
+              ringColor="var(--color-border)"
+              trackColor="oklch(0.5517 0.0138 285.9385 / 0.12)"
+              // Remaining shrinks visually as you eat — invert the fill so
+              // the ring shrinks from full to empty.
+              invert
+            />
           </div>
         </Card>
 
@@ -209,7 +198,7 @@ export default function NutritionPage() {
         <Card className="p-6">
           <h2 className="text-sm font-bold text-ink mb-6 flex items-center gap-2">
             Targets
-            <span className="text-[10px] uppercase text-muted-foreground-foreground opacity-60 tracking-wider ml-auto">
+            <span className="text-[10px] uppercase text-muted-foreground opacity-60 tracking-wider ml-auto">
               Consumed ➔
             </span>
           </h2>
@@ -255,7 +244,7 @@ export default function NutritionPage() {
             <div className="font-bold text-[14px] text-foreground">
               No meals logged
             </div>
-            <div className="text-[12px] text-muted-foreground-foreground mt-0.5">
+            <div className="text-[12px] text-muted-foreground mt-0.5">
               Log Food to add your first meal of the day
             </div>
           </CardContent>
@@ -276,10 +265,10 @@ export default function NutritionPage() {
                   <div className="font-bold text-sm text-foreground">
                     {m.name}
                   </div>
-                  <div className="text-xs text-muted-foreground-foreground capitalize mt-0.5">
+                  <div className="text-xs text-muted-foreground capitalize mt-0.5">
                     {m.time}
                   </div>
-                  <div className="text-[11px] text-muted-foreground-foreground font-medium mt-1">
+                  <div className="text-[11px] text-muted-foreground font-medium mt-1">
                     P {m.p}g · C {m.c}g · F {m.f}g
                   </div>
                 </div>
@@ -287,12 +276,12 @@ export default function NutritionPage() {
                   <div className="font-mono font-bold text-[15px] text-foreground">
                     {m.cal}
                   </div>
-                  <div className="text-[10px] text-muted-foreground-foreground font-semibold uppercase tracking-wider">
+                  <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
                     kcal
                   </div>
                 </div>
                 <button
-                  className="p-1.5 rounded-lg border border-border hover:bg-background text-muted-foreground-foreground hover:text-destructive transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg border border-border hover:bg-background text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                   onClick={() => handleDelete(m.id)}
                   aria-label="Delete meal">
                   <svg
@@ -574,7 +563,7 @@ function TargetRow({
       <div className="w-16 sm:w-20 text-xs font-bold text-foreground">
         {label}
       </div>
-      <div className="flex-1 h-3 bg-[#F0EFEC] dark:bg-[#2a2a2a] rounded-full overflow-hidden relative">
+      <div className="flex-1 h-3 bg-muted dark:bg-muted rounded-full overflow-hidden relative">
         <div
           className={`absolute top-0 left-0 h-full ${fill || color} rounded-full`}
           style={{ width: `${pct}%` }}
@@ -584,9 +573,7 @@ function TargetRow({
         <span className="font-bold text-foreground">
           {Math.round(current)} / {max} {unit}
         </span>
-        <span className="ml-2 font-bold text-muted-foreground-foreground">
-          {pct}%
-        </span>
+        <span className="ml-2 font-bold text-muted-foreground">{pct}%</span>
       </div>
     </div>
   );
@@ -622,16 +609,88 @@ function NutrientRow({
                 style={{ width: `${pct}%` }}
               />
             </div>
-            <div className="w-8 text-right text-[10px] font-bold text-muted-foreground-foreground">
+            <div className="w-8 text-right text-[10px] font-bold text-muted-foreground">
               {pct}%
             </div>
           </>
         ) : (
-          <div className="w-[104px] text-right text-[10px] font-bold text-muted-foreground-foreground">
+          <div className="w-[104px] text-right text-[10px] font-bold text-muted-foreground">
             -
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------
+ * EnergyRing — circular progress indicator.
+ * The fill animates whenever `value` changes (e.g. when a meal is
+ * logged). `invert` swaps the direction so the "Remaining" ring
+ * shrinks from full to empty as calories are consumed.
+ * ------------------------------------------------------------------ */
+function EnergyRing({
+  label,
+  value,
+  max,
+  ringColor,
+  trackColor,
+  invert = false,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  ringColor: string;
+  trackColor: string;
+  invert?: boolean;
+}) {
+  const pct = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
+  const displayPct = invert ? 100 - pct : pct;
+
+  // SVG circle math: circumference = 2 * PI * r. We use a dasharray of
+  // that length and animate dashoffset to draw the stroke.
+  const radius = 40;
+  const circumference = 2 * Math.PI * radius;
+  const dashOffset = circumference * (1 - displayPct / 100);
+
+  return (
+    <div className="flex flex-col items-center shrink-0">
+      <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+        <svg
+          className="absolute inset-0 -rotate-90"
+          viewBox="0 0 100 100"
+          aria-hidden="true">
+          <circle
+            cx="50"
+            cy="50"
+            r={radius}
+            fill="none"
+            stroke={trackColor}
+            strokeWidth="8"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r={radius}
+            fill="none"
+            stroke={ringColor}
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={dashOffset}
+            style={{ transition: "stroke-dashoffset 600ms ease-out" }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="font-bold text-base sm:text-xl text-foreground leading-none">
+            {Math.round(value)}
+          </span>
+          <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold mt-0.5">
+            kcal
+          </span>
+        </div>
+      </div>
+      <span className="text-xs font-bold text-ink mt-3">{label}</span>
     </div>
   );
 }

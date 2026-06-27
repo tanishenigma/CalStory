@@ -10,14 +10,8 @@ import BorderGlow from "@/app/components/BorderGlow";
 
 interface Props {
   onClose: () => void;
-  /** The currently selected nutrition date (YYYY-MM-DD). */
   date: string;
-  /** Firebase user ID — forwarded to the API route. */
   userId: string;
-  /**
-   * Called when the user clicks "Edit" on a confirmation card.
-   * The parent page can open ManualFoodEntry pre-filled with this data.
-   */
   onEditMeal?: (meal: PendingMeal) => void;
 }
 
@@ -73,15 +67,19 @@ export default function AIChatLogger({
     <BorderGlow
       className="mb-8 animate-in slide-in-from-top-4 duration-300 "
       borderRadius={16}
-      glowColor="25 95 53"
-      colors={["#f97316", "#fb923c", "#fdba74"]}
+      glowColor="76 175 80"
+      colors={[
+        "var(--color-primary)",
+        "oklch(0.7540 0.1770 145)",
+        "oklch(0.8353 0.1870 145)",
+      ]}
       glowRadius={35}
       glowIntensity={1.2}
       edgeSensitivity={25}
       animated>
       <div
         className={cn(
-          "rounded-2xl border border-orange-200 dark:border-orange-900/40",
+          "rounded-md border border-primary/20 dark:border-primary/30",
           "bg-card overflow-hidden",
         )}>
         {/* ── Message thread ──────────────────────────────────── */}
@@ -116,7 +114,7 @@ export default function AIChatLogger({
               <button
                 key={chip}
                 onClick={() => handleSend(chip)}
-                className="flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/10 bg-primary/5 text-foreground/70 hover:border-primary/20 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-foreground transition-all duration-200 whitespace-nowrap">
+                className="flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/10 bg-primary/5 text-foreground/70 hover:border-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-all duration-200 whitespace-nowrap">
                 {chip}
               </button>
             ))}
@@ -158,7 +156,7 @@ export default function AIChatLogger({
             aria-label="Send message"
             className={cn(
               "p-2.5 rounded-xl font-bold transition-all",
-              "bg-gradient-to-br from-orange-500 to-amber-400 text-white",
+              "bg-gradient-to-br from-primary to-primary/70 text-white",
               "hover:opacity-90 active:scale-95",
               "disabled:opacity-40 disabled:cursor-not-allowed",
             )}>
@@ -192,7 +190,7 @@ function MessageBubble({
         className={cn(
           "max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed",
           isUser
-            ? "bg-ink text-white dark:bg-[#f7f6f3] dark:text-[#1a1916] rounded-tr-sm"
+            ? "bg-ink text-white bg-foreground text-foreground rounded-tr-sm"
             : "bg-subtle border border-border text-ink rounded-tl-sm",
         )}>
         <span

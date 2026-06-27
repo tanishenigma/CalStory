@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Flame } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Spinner } from "@/app/hooks/useAuthGuard";
 import { useAuthStore } from "@/app/store/authStore";
 import { useApp } from "@/app/context/AppContext";
@@ -11,40 +12,12 @@ import { signInWithGoogle } from "@/app/lib/auth";
 import { setAuthHint } from "@/app/lib/storage";
 import { toast } from "sonner";
 
-/**
- * /auth — single sign-in / sign-up surface.
- *
- * Firebase Auth treats Google sign-in as both sign-up and sign-in: the first
- * sign-in for a Google account auto-creates the user, subsequent sign-ins
- * log them back in. We don't need separate "Sign up" / "Sign in" affordances
- * — one button covers both, so the UI stays minimal.
- *
- * Routing rules:
- *   - `loading` (Firebase hasn't resolved yet) → render <Spinner />
- *   - Already signed in  → redirect to /dashboard (useAuthGuard will then
- *     route a brand-new user with no profile onward to /onboarding)
- *   - Popup closed by user → silent no-op
- *   - Any other auth error → sonner toast.error
- *   - Success → router.push("/dashboard")
- */
 export default function AuthPage() {
   const router = useRouter();
   const { user, loading } = useAuthStore();
   const { state } = useApp();
   const [submitting, setSubmitting] = useState(false);
 
-  // If the visitor lands here while already authenticated, skip the form.
-  // We only kick to /dashboard once Firebase has resolved AND the in-memory
-  // profile hydration has had a chance to run — otherwise a returning user
-  // whose profile is still `undefined` could get bounced to /onboarding by
-  // useAuthGuard and then looped back here.
-  //
-  // Fast path: if the auth store has a user AND AppContext has already
-  // synchronously seeded the cached profile from localStorage
-  // (profile !== undefined), there's nothing to wait on — redirect now.
-  // This is the case after a refresh where everything was hydrated from
-  // the cache; the Firestore round-trip still re-validates in the
-  // background but we don't gate the redirect on it.
   useEffect(() => {
     if (loading && !user) return;
     if (user && state.profile !== undefined) {
@@ -52,8 +25,6 @@ export default function AuthPage() {
     }
   }, [user, loading, state.profile, router]);
 
-  // Show a spinner only when truly nothing is known yet — i.e. neither
-  // Firebase nor the cache has produced a user.
   if (loading && !user) {
     return <Spinner />;
   }
@@ -63,10 +34,6 @@ export default function AuthPage() {
     setSubmitting(true);
     try {
       const cred = await signInWithGoogle();
-      // Persist the auth hint immediately so the next refresh renders
-      // the dashboard synchronously, without waiting for Firebase to
-      // re-validate the session. The auth store's onAuthChange listener
-      // will overwrite this with authoritative values a beat later.
       setAuthHint({
         uid: cred.user.uid,
         email: cred.user.email,
@@ -75,16 +42,12 @@ export default function AuthPage() {
         onboarded: false,
         cachedAt: Date.now(),
       });
-      // After Firebase resolves, useAuthStore.user flips; the landing page
-      // uses the same redirect target. useAuthGuard on /dashboard handles
-      // the new-user case (no profile) by sending them to /onboarding.
       router.push("/dashboard");
     } catch (err) {
       const code =
         err && typeof err === "object" && "code" in err
           ? String((err as { code: unknown }).code)
           : "";
-      // User dismissed the popup — don't surface a scary error.
       if (code === "auth/popup-closed-by-user") return;
       toast.error("Could not sign in with Google. Please try again.");
       console.error("[auth] signInWithGoogle failed", err);
@@ -93,113 +56,145 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-background text-foreground">
-      {/* Ambient gradient orbs — mirrors the landing page so the auth surface
-          feels like part of the same product. Pointer-events disabled so they
-          never intercept clicks on the form. */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div
-          className="absolute -top-24 -right-16 h-[60vw] w-[60vw] max-h-[760px] max-w-[760px] rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle at center, rgba(249,115,22,0.28) 0%, rgba(249,115,22,0.12) 40%, transparent 70%)",
-            filter: "blur(48px)",
-          }}
-        />
-        <div
-          className="absolute -bottom-32 -left-20 h-[55vw] w-[55vw] max-h-[680px] max-w-[680px] rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle at center, rgba(249,115,22,0.18) 0%, rgba(251,146,60,0.08) 45%, transparent 70%)",
-            filter: "blur(60px)",
-          }}
-        />
-      </div>
-
-      {/* Top bar — brand mark + back link */}
-      <header className="relative z-10 flex items-center justify-between px-6 pt-6 sm:px-10">
+    <div className="grid min-h-svh lg:grid-cols-2">
+      {/* ── Left column: form ── */}
+      <div className="flex flex-col p-6 md:p-10">
+        {/* Brand */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm font-bold tracking-tight font-heading">
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-foreground text-background">
-            <Flame size={18} className="fill-current" />
+          className="inline-flex items-center gap-2 text-sm font-bold tracking-tight font-heading self-start">
+          <span className="grid h-9 w-9 place-items-center rounded-full overflow-hidden bg-foreground">
+            <img
+              src="/light.png"
+              alt="CalStory"
+              width={28}
+              height={28}
+              className="w-7 h-7 object-contain block dark:hidden"
+            />
+            <img
+              src="/dark.png"
+              alt="CalStory"
+              width={28}
+              height={28}
+              className="w-7 h-7 object-contain hidden dark:block"
+            />
           </span>
           <span>CalStory</span>
         </Link>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft size={14} />
-          Back to home
-        </Link>
-      </header>
 
-      {/* Centered auth card */}
-      <section className="relative z-10 flex min-h-[calc(100vh-96px)] items-center justify-center px-6 py-10">
-        <div className="w-full max-w-md">
-          <div className="rounded-3xl border border-border/60 bg-card/80 p-8 shadow-xl shadow-black/5 backdrop-blur-xl sm:p-10">
-            <div className="flex flex-col items-center text-center">
-              <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-foreground text-background">
-                <Flame size={22} className="fill-current" />
-              </span>
+        {/* Centred form area */}
+        <div className="flex flex-1 flex-col items-center justify-center">
+          <div className="w-full max-w-sm space-y-8">
+            {/* Heading */}
+            <div className="space-y-2 text-center">
               <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
-                Welcome to CalStory
+                Hey There,
               </h1>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Sign in or create an account with Google to start tracking your
-                calories, workouts and progress.
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Sign in with Google to track your calories, workouts, and
+                progress.
               </p>
             </div>
 
-            <div className="mt-8 flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                disabled={submitting}
-                aria-label="Sign in with Google"
-                className="group relative inline-flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-foreground px-6 text-sm font-bold uppercase tracking-widest text-background shadow-lg shadow-black/10 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100">
-                {submitting ? (
-                  <>
-                    <span
-                      className="h-4 w-4 rounded-full border-2 border-background/30 border-t-background"
-                      style={{ animation: "spin 0.7s linear infinite" }}
-                      aria-hidden="true"
-                    />
-                    <span>Connecting…</span>
-                  </>
-                ) : (
-                  <>
-                    <GoogleGlyph />
-                    <span>Continue with Google</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+            {/* Google button */}
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={submitting}
+              aria-label="Sign in with Google"
+              className="group relative inline-flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-foreground px-6 text-sm font-bold uppercase tracking-widest text-background shadow-lg shadow-black/10 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100">
+              {submitting ? (
+                <>
+                  <span
+                    className="h-4 w-4 rounded-full border-2 border-background/30 border-t-background"
+                    style={{ animation: "spin 0.7s linear infinite" }}
+                    aria-hidden="true"
+                  />
+                  <span>Connecting…</span>
+                </>
+              ) : (
+                <>
+                  <GoogleGlyph />
+                  <span>Continue with Google</span>
+                </>
+              )}
+            </button>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            By continuing you agree to our{" "}
-            <Link
-              href="/terms"
-              className="underline-offset-2 hover:text-foreground hover:underline">
-              Terms
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="underline-offset-2 hover:text-foreground hover:underline">
-              Privacy Policy
-            </Link>
-            .
+            {/* Legal */}
+            <p className="text-center text-xs text-muted-foreground">
+              By continuing you agree to our{" "}
+              <Link
+                href="/terms"
+                className="underline-offset-2 hover:text-foreground hover:underline">
+                Terms
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy"
+                className="underline-offset-2 hover:text-foreground hover:underline">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+
+        {/* Back link at bottom */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 self-start text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft size={14} />
+          Back to home
+        </Link>
+      </div>
+
+      {/* ── Right column: cover image, desktop only ── */}
+      <div className="relative hidden lg:block m-4 rounded-2xl overflow-hidden">
+        {/* Ambient overlay so image doesn't compete with dark UI */}
+        <div
+          className="absolute inset-0 z-10 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.45) 100%)",
+          }}
+        />
+
+        {/* Light mode image */}
+        <Image
+          src="/screenshots/dashboard_light.png"
+          alt="CalStory — track your progress"
+          fill
+          quality={100}
+          priority
+          className="object-cover object-center dark:hidden "
+        />
+
+        {/* Dark mode image — dimmed */}
+        <Image
+          src="/screenshots/dashboard_dark.png"
+          alt="CalStory — track your progress"
+          fill
+          quality={100}
+          priority
+          className="hidden dark:block object-cover object-center brightness-[0.55]"
+        />
+
+        {/* Optional tagline over the image */}
+        <div className="absolute bottom-8 left-8 right-8 z-20">
+          <p className="font-heading text-xl font-bold text-white leading-snug drop-shadow-md">
+            Every meal logged.
+            <br />
+            Every rep counted.
+          </p>
+          <p className="mt-1 text-sm text-white/70">
+            Your story, by the numbers.
           </p>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
 
-/** Official Google "G" multi-color mark — embedded inline so we don't ship
- *  another asset or pull a font. Sourced from Google's brand guidelines. */
 function GoogleGlyph() {
   return (
     <svg
