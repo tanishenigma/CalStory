@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Home,
   UtensilsCrossed,
@@ -64,14 +65,21 @@ export default function BottomNav() {
             </div>
 
             <span
-              className={`text-[11px] font-semibold transition-colors duration-200 ${
-                active ? "text-foreground" : "text-muted-foreground"
+              className={`text-[11px] font-semibold transition-all duration-200 ${
+                active ? "text-foreground " : "text-muted-foreground"
               }`}>
               {label}
             </span>
 
             {active && (
-              <div className=" absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-full bg-foreground " />
+              <motion.div
+                layoutId="active-bottom-tab"
+                // Spring matches PillNav.tsx (stiffness 320, damping 28)
+                // so the indicator feels like the same component on
+                // mobile and desktop.
+                transition={{ type: "spring", stiffness: 320, damping: 28 }}
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-full bg-foreground"
+              />
             )}
           </Link>
         );
