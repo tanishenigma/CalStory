@@ -37,6 +37,9 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  verification: {
+    google: "googleb18fe1957a712708",
+  },
   keywords: [
     "calorie tracker",
     "macro tracker",
