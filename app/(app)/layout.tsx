@@ -1,10 +1,69 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import PillNav from "@/app/components/PillNav";
 import BottomNav from "@/app/components/BottomNav";
 import FAB from "@/app/components/FAB";
 import { usePrefsStore } from "@/app/store/prefsStore";
 import { usePathname } from "next/navigation";
+
+/**
+ * Mobile-only page slide animation. Mirrors the "swipe between tabs"
+ * feel of native iOS/Android shells.
+ *
+ * - Only runs when the BottomNav is visible (viewport < Tailwind's
+ *   `lg` breakpoint = 1024px). On desktop the wrapper renders a
+ *   plain <div>, no motion, so the page never animates.
+ * - Honours `prefers-reduced-motion: reduce` — falls back to no
+ *   animation in that case.
+ * - `mode="wait"` so the outgoing page finishes its exit before the
+ *   new one enters; this avoids overlapping content during a fast
+ *   tap between tabs and keeps the BottomNav indicator above both.
+ * - `initial={false}` so we don't animate on first paint (would
+ *   flash the page in from the right on hard refresh).
+ */
+function MobilePageShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const [isMobile, setIsMobile] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia("(max-width: 1023px)");
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => {
+      setIsMobile(mobileQuery.matches);
+      setReducedMotion(motionQuery.matches);
+    };
+    update();
+    mobileQuery.addEventListener("change", update);
+    motionQuery.addEventListener("change", update);
+    return () => {
+      mobileQuery.removeEventListener("change", update);
+      motionQuery.removeEventListener("change", update);
+    };
+  }, []);
+
+  // Desktop, or user prefers reduced motion → render plainly.
+  if (!isMobile || reducedMotion) {
+    return <div className="w-full">{children}</div>;
+  }
+
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={pathname}
+        initial={{ x: 24, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: -16, opacity: 0 }}
+        // Sub-300ms so a fast tap between tabs doesn't feel laggy.
+        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+        className="w-full will-change-transform">
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 export default function AppGroupLayout({
   children,
@@ -24,7 +83,7 @@ export default function AppGroupLayout({
           style={{ paddingBottom: "96px" }}
           className={`${padLeft} pb-0 min-h-screen transition-[padding] duration-300`}>
           <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
-            {children}
+            <MobilePageShell>{children}</MobilePageShell>
           </div>
         </main>
       </div>

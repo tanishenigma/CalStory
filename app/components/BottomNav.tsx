@@ -74,9 +74,6 @@ export default function BottomNav() {
             {active && (
               <motion.div
                 layoutId="active-bottom-tab"
-                // Spring matches PillNav.tsx (stiffness 320, damping 28)
-                // so the indicator feels like the same component on
-                // mobile and desktop.
                 transition={{ type: "spring", stiffness: 320, damping: 28 }}
                 className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-full bg-foreground"
               />

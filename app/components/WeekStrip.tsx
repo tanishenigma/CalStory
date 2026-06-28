@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useApp, todayLocalKey } from "@/app/context/AppContext";
 import { DAY_LABELS } from "@/app/lib/constants";
 import DatePicker from "@/app/components/DatePicker";
@@ -96,10 +97,32 @@ export default function WeekStrip() {
           <div className="flex items-center justify-center gap-1.5 px-2.5 h-14 w-14 rounded-full border border-border bg-card shadow-md mb-2">
             <Flame
               size={20}
-              className={hasLoggedToday ? "text-primary" : "text-muted-foreground"}
-              fill={hasLoggedToday ? "var(--color-primary)" : "var(--color-border)"}
+              className={
+                hasLoggedToday ? "text-primary" : "text-muted-foreground"
+              }
+              fill={
+                hasLoggedToday ? "var(--color-primary)" : "var(--color-border)"
+              }
             />
-            <span className="text-xl font-bold text-foreground">{streak}</span>
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.span
+                // Re-key on `streak` so a fresh log triggers a
+                // quick "pop" (scale up + fade out the old number,
+                // scale up the new one). `popLayout` avoids layout
+                // shift while the swap happens.
+                key={streak}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 1.4, opacity: 0 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 380,
+                  damping: 18,
+                }}
+                className="text-xl font-bold text-foreground tabular-nums">
+                {streak}
+              </motion.span>
+            </AnimatePresence>
           </div>
         </div>
 
@@ -140,20 +163,37 @@ export default function WeekStrip() {
                   (state.workouts[key] || []).length > 0;
 
                 return (
-                  <button
+                  <motion.button
                     key={key}
                     onClick={() => setDate(key)}
                     disabled={isFuture}
                     aria-pressed={key === state.selDate}
+                    // Stagger entrance: each day button fades + slides
+                    // up by 6px on mount. `delay` scales with index so
+                    // the strip "types in" from left to right. We
+                    // re-key on `weekOffset` so the stagger re-plays
+                    // when the user navigates between weeks.
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.25,
+                      delay: 0.04 * i,
+                      ease: [0.21, 0.47, 0.32, 0.98],
+                    }}
+                    whileHover={
+                      isFuture
+                        ? undefined
+                        : { scale: 1.06, transition: { duration: 0.12 } }
+                    }
+                    whileTap={isFuture ? undefined : { scale: 0.94 }}
                     className={[
                       // Base: flex-col centered, transition
-                      "flex flex-col items-center justify-center gap-1 transition-all duration-150 border-2 shrink-0 rounded-full p-2",
+                      "flex flex-col items-center justify-center gap-1 border-2 shrink-0 rounded-full p-2",
                       "size-12 lg:size-14",
                       isFuture
                         ? "opacity-20 cursor-not-allowed"
                         : "cursor-pointer",
-                      isToday &&
-                        "bg-foreground border-transparent",
+                      isToday && "bg-foreground border-transparent",
                       isSel &&
                         !isToday &&
                         "border-black border-dotted bg-foreground/5",
@@ -168,28 +208,35 @@ export default function WeekStrip() {
                     <span
                       className={[
                         "text-[10px] font-bold tracking-wider uppercase leading-none",
-                        isToday
-                          ? "text-background"
-                          : "text-muted-foreground",
+                        isToday ? "text-background" : "text-muted-foreground",
                       ].join(" ")}>
                       {DAY_LABELS[i]}
                     </span>
                     <span
                       className={[
                         "font-mono text-base font-semibold leading-none",
-                        isToday
-                          ? "text-background"
-                          : "text-foreground",
+                        isToday ? "text-background" : "text-foreground",
                       ].join(" ")}>
                       {d.getDate()}
                     </span>
-                    <span
-                      className={[
-                        "w-1.5 h-1.5 rounded-full bg-primary transition-opacity duration-200",
-                        hasData ? "opacity-100" : "opacity-0",
-                      ].join(" ")}
+                    <motion.span
+                      className={["w-1.5 h-1.5 rounded-full bg-primary"].join(
+                        " ",
+                      )}
+                      // Dot fades in when there's data — small
+                      // spring so it feels alive.
+                      initial={false}
+                      animate={{
+                        scale: hasData ? 1 : 0,
+                        opacity: hasData ? 1 : 0,
+                      }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 320,
+                        damping: 22,
+                      }}
                     />
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -222,12 +269,30 @@ export default function WeekStrip() {
             <div className="flex items-center justify-center gap-1.5 px-2.5 h-14 w-14 rounded-full border border-border bg-card shadow-md">
               <Flame
                 size={20}
-                className={hasLoggedToday ? "text-primary" : "text-muted-foreground"}
-                fill={hasLoggedToday ? "var(--color-primary)" : "var(--color-border)"}
+                className={
+                  hasLoggedToday ? "text-primary" : "text-muted-foreground"
+                }
+                fill={
+                  hasLoggedToday
+                    ? "var(--color-primary)"
+                    : "var(--color-border)"
+                }
               />
-              <span className="font-mono text-lg font-bold text-foreground">
-                {streak}
-              </span>
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={streak}
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 1.4, opacity: 0 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 380,
+                    damping: 18,
+                  }}
+                  className="font-mono text-lg font-bold text-foreground tabular-nums">
+                  {streak}
+                </motion.span>
+              </AnimatePresence>
             </div>
           </div>
         </div>

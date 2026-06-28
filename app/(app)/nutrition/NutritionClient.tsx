@@ -9,6 +9,7 @@ import WeekStrip from "@/app/components/WeekStrip";
 import InlineFoodSearch from "@/app/components/InlineFoodSearch";
 import ManualFoodEntry from "@/app/components/ManualFoodEntry";
 import AIChatLogger from "@/app/components/nutrition/ai-chat-logger";
+import BlurFade from "@/app/components/animations/BlurFade";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { MEAL_ICONS } from "@/app/lib/constants";
 import { Flame, Utensils, Sliders, Sparkles } from "lucide-react";
@@ -159,385 +160,397 @@ export default function NutritionPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Energy Summary */}
-        <Card className="p-6">
-          <h2 className="text-sm font-bold text-ink mb-6 flex items-center gap-2">
-            Energy Summary
-            <span className="text-[10px] uppercase text-muted-foreground opacity-60 tracking-wider ml-auto">
-              Target ➔
-            </span>
-          </h2>
-          <div className="flex justify-between items-center gap-2 overflow-x-hidden pb-2 px-2 sm:px-4 md:px-0 md:gap-0">
-            <EnergyRing
-              label="Consumed"
-              value={agg.cal}
-              max={calTarget}
-              ringColor="var(--color-primary)"
-              trackColor="oklch(0.7227 0.1920 149.5793 / 0.18)"
-            />
-            <EnergyRing
-              label="Expenditure"
-              value={profile.tdee || calTarget}
-              max={profile.tdee || calTarget}
-              ringColor="#3b82f6"
-              trackColor="rgba(59, 130, 246, 0.18)"
-            />
-            <EnergyRing
-              label="Remaining"
-              value={Math.max(0, calTarget - agg.cal)}
-              max={calTarget}
-              ringColor="var(--color-border)"
-              trackColor="oklch(0.5517 0.0138 285.9385 / 0.12)"
-              // Remaining shrinks visually as you eat — invert the fill so
-              // the ring shrinks from full to empty.
-              invert
-            />
-          </div>
-        </Card>
+        <BlurFade delay={0.05} className="h-full">
+          <Card className="p-6">
+            <h2 className="text-sm font-bold text-ink mb-6 flex items-center gap-2">
+              Energy Summary
+              <span className="text-[10px] uppercase text-muted-foreground opacity-60 tracking-wider ml-auto">
+                Target ➔
+              </span>
+            </h2>
+            <div className="flex justify-between items-center gap-2 overflow-x-hidden pb-2 px-2 sm:px-4 md:px-0 md:gap-0">
+              <EnergyRing
+                label="Consumed"
+                value={agg.cal}
+                max={calTarget}
+                ringColor="var(--color-primary)"
+                trackColor="oklch(0.7227 0.1920 149.5793 / 0.18)"
+              />
+              <EnergyRing
+                label="Expenditure"
+                value={profile.tdee || calTarget}
+                max={profile.tdee || calTarget}
+                ringColor="#3b82f6"
+                trackColor="rgba(59, 130, 246, 0.18)"
+              />
+              <EnergyRing
+                label="Remaining"
+                value={Math.max(0, calTarget - agg.cal)}
+                max={calTarget}
+                ringColor="var(--color-border)"
+                trackColor="oklch(0.5517 0.0138 285.9385 / 0.12)"
+                // Remaining shrinks visually as you eat — invert the fill so
+                // the ring shrinks from full to empty.
+                invert
+              />
+            </div>
+          </Card>
+        </BlurFade>
 
         {/* Targets */}
-        <Card className="p-6">
-          <h2 className="text-sm font-bold text-ink mb-6 flex items-center gap-2">
-            Targets
-            <span className="text-[10px] uppercase text-muted-foreground opacity-60 tracking-wider ml-auto">
-              Consumed ➔
-            </span>
-          </h2>
-          <div className="space-y-4">
-            <TargetRow
-              label="Energy"
-              current={agg.cal}
-              max={calTarget}
-              unit="kcal"
-              color="bg-blue-500"
-            />
-            <TargetRow
-              label="Protein"
-              current={agg.p}
-              max={pTarget}
-              unit="g"
-              color="bg-red-500"
-            />
-            <TargetRow
-              label="Carbs"
-              current={agg.c}
-              max={cTarget}
-              unit="g"
-              color="bg-green-500"
-            />
-            <TargetRow
-              label="Fat"
-              current={agg.f}
-              max={fTarget}
-              unit="g"
-              color="bg-yellow-500"
-            />
-          </div>
-        </Card>
+        <BlurFade delay={0.1} className="h-full">
+          <Card className="p-6">
+            <h2 className="text-sm font-bold text-ink mb-6 flex items-center gap-2">
+              Targets
+              <span className="text-[10px] uppercase text-muted-foreground opacity-60 tracking-wider ml-auto">
+                Consumed ➔
+              </span>
+            </h2>
+            <div className="space-y-4">
+              <TargetRow
+                label="Energy"
+                current={agg.cal}
+                max={calTarget}
+                unit="kcal"
+                color="bg-blue-500"
+              />
+              <TargetRow
+                label="Protein"
+                current={agg.p}
+                max={pTarget}
+                unit="g"
+                color="bg-red-500"
+              />
+              <TargetRow
+                label="Carbs"
+                current={agg.c}
+                max={cTarget}
+                unit="g"
+                color="bg-green-500"
+              />
+              <TargetRow
+                label="Fat"
+                current={agg.f}
+                max={fTarget}
+                unit="g"
+                color="bg-yellow-500"
+              />
+            </div>
+          </Card>
+        </BlurFade>
       </div>
 
       {/* Meal list */}
-      <h3 className="text-lg font-bold text-foreground mb-4">Logged Meals</h3>
+      <BlurFade delay={0.15}>
+        <h3 className="text-lg font-bold text-foreground mb-4">Logged Meals</h3>
+      </BlurFade>
       {dayMeals.length === 0 ? (
-        <Card className="p-6 mb-6">
-          <CardContent className="p-0 text-center">
-            <div className="text-3xl mb-2">🥗</div>
-            <div className="font-bold text-[14px] text-foreground">
-              No meals logged
-            </div>
-            <div className="text-[12px] text-muted-foreground mt-0.5">
-              Log Food to add your first meal of the day
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="p-6 mb-6 flex flex-col">
-          <CardContent className="p-0 flex flex-col">
-            {dayMeals.map((m) => (
-              <div
-                key={m.id}
-                className="flex items-center gap-4 py-3.5 border-b border-border last:border-b-0">
-                <div className="w-9 h-9 rounded-xl bg-background flex items-center justify-center text-foreground">
-                  {React.createElement(MEAL_ICONS[m.time] || Utensils, {
-                    size: 16,
-                  })}
-                </div>
-                <div className="flex-1">
-                  <div className="font-bold text-sm text-foreground">
-                    {m.name}
-                  </div>
-                  <div className="text-xs text-muted-foreground capitalize mt-0.5">
-                    {m.time}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground font-medium mt-1">
-                    P {m.p}g · C {m.c}g · F {m.f}g
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-mono font-bold text-[15px] text-foreground">
-                    {m.cal}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                    kcal
-                  </div>
-                </div>
-                <button
-                  className="p-1.5 rounded-lg border border-border hover:bg-background text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
-                  onClick={() => handleDelete(m.id)}
-                  aria-label="Delete meal">
-                  <svg
-                    viewBox="0 0 24 24"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    width="16"
-                    height="16"
-                    stroke="currentColor"
-                    fill="none"
-                    strokeWidth="2">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6l-1 14H6L5 6" />
-                    <path d="M10 11v6M14 11v6M9 6V4h6v2" />
-                  </svg>
-                </button>
+        <BlurFade delay={0.2}>
+          <Card className="p-6 mb-6">
+            <CardContent className="p-0 text-center">
+              <div className="text-3xl mb-2">🥗</div>
+              <div className="font-bold text-[14px] text-foreground">
+                No meals logged
               </div>
-            ))}
-          </CardContent>
-        </Card>
+              <div className="text-[12px] text-muted-foreground mt-0.5">
+                Log Food to add your first meal of the day
+              </div>
+            </CardContent>
+          </Card>
+        </BlurFade>
+      ) : (
+        <BlurFade delay={0.2}>
+          <Card className="p-6 mb-6 flex flex-col">
+            <CardContent className="p-0 flex flex-col">
+              {dayMeals.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex items-center gap-4 py-3.5 border-b border-border last:border-b-0">
+                  <div className="w-9 h-9 rounded-xl bg-background flex items-center justify-center text-foreground">
+                    {React.createElement(MEAL_ICONS[m.time] || Utensils, {
+                      size: 16,
+                    })}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-sm text-foreground">
+                      {m.name}
+                    </div>
+                    <div className="text-xs text-muted-foreground capitalize mt-0.5">
+                      {m.time}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground font-medium mt-1">
+                      P {m.p}g · C {m.c}g · F {m.f}g
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono font-bold text-[15px] text-foreground">
+                      {m.cal}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                      kcal
+                    </div>
+                  </div>
+                  <button
+                    className="p-1.5 rounded-lg border border-border hover:bg-background text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                    onClick={() => handleDelete(m.id)}
+                    aria-label="Delete meal">
+                    <svg
+                      viewBox="0 0 24 24"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      width="16"
+                      height="16"
+                      stroke="currentColor"
+                      fill="none"
+                      strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v6M14 11v6M9 6V4h6v2" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </BlurFade>
       )}
 
-      <div className="mt-8 mb-12">
-        <button
-          onClick={() => setShowDetailedBreakdown(!showDetailedBreakdown)}
-          className="w-full px-4 py-3 bg-card text-foreground border border-border rounded-xl text-sm font-bold shadow-sm transition-colors flex items-center justify-center gap-2">
-          <Sliders className="w-4 h-4" />
-          {showDetailedBreakdown
-            ? "Hide Detailed Breakdown"
-            : "Show Detailed Breakdown"}
-        </button>
+      <BlurFade delay={0.25}>
+        <div className="mt-8 mb-12">
+          <button
+            onClick={() => setShowDetailedBreakdown(!showDetailedBreakdown)}
+            className="w-full px-4 py-3 bg-card text-foreground border border-border rounded-xl text-sm font-bold shadow-sm transition-colors flex items-center justify-center gap-2">
+            <Sliders className="w-4 h-4" />
+            {showDetailedBreakdown
+              ? "Hide Detailed Breakdown"
+              : "Show Detailed Breakdown"}
+          </button>
+        </div>
+      </BlurFade>
 
-        {showDetailedBreakdown && (
-          <div className="mt-6">
-            <h3 className="text-lg font-bold text-foreground mb-4">
-              Detailed Breakdown
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Carbohydrates */}
-              <div className="bg-subtle rounded-2xl border border-border overflow-hidden">
-                <div className="bg-border/50 px-4 py-2 text-xs font-bold text-foreground">
-                  Carbohydrates
-                </div>
-                <div className="p-2 space-y-1">
-                  <NutrientRow
-                    label="Carbs"
-                    value={agg.c}
-                    target={cTarget}
-                    unit="g"
-                  />
-                  <NutrientRow
-                    label="Fiber"
-                    value={agg.nutrients.fiber || 0}
-                    target={rda.fiber}
-                    unit="g"
-                  />
-                  <NutrientRow
-                    label="Sugars"
-                    value={agg.nutrients.sugar || 0}
-                    target={rda.sugar}
-                    unit="g"
-                  />
-                  <NutrientRow
-                    label="Added Sugars"
-                    value={agg.nutrients.addedSugar || 0}
-                    target={0}
-                    unit="g"
-                    hideBar
-                  />
-                </div>
+      {showDetailedBreakdown && (
+        <div className="mt-6">
+          <h3 className="text-lg font-bold text-foreground mb-4">
+            Detailed Breakdown
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Carbohydrates */}
+            <div className="bg-subtle rounded-2xl border border-border overflow-hidden">
+              <div className="bg-border/50 px-4 py-2 text-xs font-bold text-foreground">
+                Carbohydrates
               </div>
-
-              {/* Lipids */}
-              <div className="bg-subtle rounded-2xl border border-border overflow-hidden">
-                <div className="bg-border/50 px-4 py-2 text-xs font-bold text-foreground">
-                  Lipids
-                </div>
-                <div className="p-2 space-y-1">
-                  <NutrientRow
-                    label="Fat"
-                    value={agg.f}
-                    target={fTarget}
-                    unit="g"
-                  />
-                  <NutrientRow
-                    label="Saturated"
-                    value={agg.nutrients.saturatedFat || 0}
-                    target={rda.saturatedFat}
-                    unit="g"
-                  />
-                  <NutrientRow
-                    label="Monounsaturated"
-                    value={agg.nutrients.monoFat || 0}
-                    target={0}
-                    unit="g"
-                    hideBar
-                  />
-                  <NutrientRow
-                    label="Polyunsaturated"
-                    value={agg.nutrients.polyFat || 0}
-                    target={0}
-                    unit="g"
-                    hideBar
-                  />
-                  <NutrientRow
-                    label="Trans Fat"
-                    value={agg.nutrients.transFat || 0}
-                    target={0}
-                    unit="g"
-                    hideBar
-                  />
-                  <NutrientRow
-                    label="Cholesterol"
-                    value={agg.nutrients.cholesterol || 0}
-                    target={rda.cholesterol}
-                    unit="mg"
-                  />
-                </div>
+              <div className="p-2 space-y-1">
+                <NutrientRow
+                  label="Carbs"
+                  value={agg.c}
+                  target={cTarget}
+                  unit="g"
+                />
+                <NutrientRow
+                  label="Fiber"
+                  value={agg.nutrients.fiber || 0}
+                  target={rda.fiber}
+                  unit="g"
+                />
+                <NutrientRow
+                  label="Sugars"
+                  value={agg.nutrients.sugar || 0}
+                  target={rda.sugar}
+                  unit="g"
+                />
+                <NutrientRow
+                  label="Added Sugars"
+                  value={agg.nutrients.addedSugar || 0}
+                  target={0}
+                  unit="g"
+                  hideBar
+                />
               </div>
+            </div>
 
-              {/* Vitamins */}
-              <div className="bg-subtle rounded-2xl border border-border overflow-hidden">
-                <div className="bg-border/50 px-4 py-2 text-xs font-bold text-foreground">
-                  Vitamins
-                </div>
-                <div className="p-2 space-y-1">
-                  <NutrientRow
-                    label="Vitamin A"
-                    value={agg.nutrients.vitaminA || 0}
-                    target={rda.vitaminA}
-                    unit="mcg"
-                  />
-                  <NutrientRow
-                    label="B Complex"
-                    value={agg.nutrients.vitaminBComplex || 0}
-                    target={0}
-                    unit="mg"
-                    hideBar
-                  />
-                  <NutrientRow
-                    label="Vitamin C"
-                    value={agg.nutrients.vitaminC || 0}
-                    target={rda.vitaminC}
-                    unit="mg"
-                  />
-                  <NutrientRow
-                    label="Vitamin D"
-                    value={agg.nutrients.vitaminD || 0}
-                    target={rda.vitaminD}
-                    unit="mcg"
-                  />
-                  <NutrientRow
-                    label="Vitamin E"
-                    value={agg.nutrients.vitaminE || 0}
-                    target={rda.vitaminE}
-                    unit="mg"
-                  />
-                  <NutrientRow
-                    label="Vitamin K"
-                    value={agg.nutrients.vitaminK || 0}
-                    target={rda.vitaminK}
-                    unit="mcg"
-                  />
-                </div>
+            {/* Lipids */}
+            <div className="bg-subtle rounded-2xl border border-border overflow-hidden">
+              <div className="bg-border/50 px-4 py-2 text-xs font-bold text-foreground">
+                Lipids
               </div>
-
-              {/* Minerals */}
-              <div className="bg-subtle rounded-2xl border border-border overflow-hidden">
-                <div className="bg-border/50 px-4 py-2 text-xs font-bold text-foreground">
-                  Minerals
-                </div>
-                <div className="p-2 space-y-1">
-                  <NutrientRow
-                    label="Calcium"
-                    value={agg.nutrients.calcium || 0}
-                    target={rda.calcium}
-                    unit="mg"
-                  />
-                  <NutrientRow
-                    label="Iron"
-                    value={agg.nutrients.iron || 0}
-                    target={rda.iron}
-                    unit="mg"
-                  />
-                  <NutrientRow
-                    label="Sodium"
-                    value={agg.nutrients.sodium || 0}
-                    target={rda.sodium}
-                    unit="mg"
-                  />
-                  <NutrientRow
-                    label="Potassium"
-                    value={agg.nutrients.potassium || 0}
-                    target={rda.potassium}
-                    unit="mg"
-                  />
-                  <NutrientRow
-                    label="Magnesium"
-                    value={agg.nutrients.magnesium || 0}
-                    target={rda.magnesium}
-                    unit="mg"
-                  />
-                  <NutrientRow
-                    label="Zinc"
-                    value={agg.nutrients.zinc || 0}
-                    target={rda.zinc}
-                    unit="mg"
-                  />
-                  <NutrientRow
-                    label="Selenium"
-                    value={agg.nutrients.selenium || 0}
-                    target={rda.selenium}
-                    unit="mcg"
-                  />
-                </div>
+              <div className="p-2 space-y-1">
+                <NutrientRow
+                  label="Fat"
+                  value={agg.f}
+                  target={fTarget}
+                  unit="g"
+                />
+                <NutrientRow
+                  label="Saturated"
+                  value={agg.nutrients.saturatedFat || 0}
+                  target={rda.saturatedFat}
+                  unit="g"
+                />
+                <NutrientRow
+                  label="Monounsaturated"
+                  value={agg.nutrients.monoFat || 0}
+                  target={0}
+                  unit="g"
+                  hideBar
+                />
+                <NutrientRow
+                  label="Polyunsaturated"
+                  value={agg.nutrients.polyFat || 0}
+                  target={0}
+                  unit="g"
+                  hideBar
+                />
+                <NutrientRow
+                  label="Trans Fat"
+                  value={agg.nutrients.transFat || 0}
+                  target={0}
+                  unit="g"
+                  hideBar
+                />
+                <NutrientRow
+                  label="Cholesterol"
+                  value={agg.nutrients.cholesterol || 0}
+                  target={rda.cholesterol}
+                  unit="mg"
+                />
               </div>
+            </div>
 
-              {/* Protein Quality */}
-              <div className="bg-subtle rounded-2xl border border-border overflow-hidden md:col-span-2">
-                <div className="bg-border/50 px-4 py-2 text-xs font-bold text-foreground">
-                  Protein Quality
-                </div>
-                <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <NutrientRow
-                    label="Protein"
-                    value={agg.p}
-                    target={pTarget}
-                    unit="g"
-                  />
-                  <NutrientRow
-                    label="Leucine"
-                    value={agg.nutrients.leucine || 0}
-                    target={0}
-                    unit="g"
-                    hideBar
-                  />
-                  <NutrientRow
-                    label="BCAAs"
-                    value={agg.nutrients.bcaas || 0}
-                    target={0}
-                    unit="g"
-                    hideBar
-                  />
-                  <NutrientRow
-                    label="Amino Acid Profile"
-                    value={agg.nutrients.aminoAcidProfile || 0}
-                    target={0}
-                    unit="%"
-                    hideBar
-                  />
-                </div>
+            {/* Vitamins */}
+            <div className="bg-subtle rounded-2xl border border-border overflow-hidden">
+              <div className="bg-border/50 px-4 py-2 text-xs font-bold text-foreground">
+                Vitamins
+              </div>
+              <div className="p-2 space-y-1">
+                <NutrientRow
+                  label="Vitamin A"
+                  value={agg.nutrients.vitaminA || 0}
+                  target={rda.vitaminA}
+                  unit="mcg"
+                />
+                <NutrientRow
+                  label="B Complex"
+                  value={agg.nutrients.vitaminBComplex || 0}
+                  target={0}
+                  unit="mg"
+                  hideBar
+                />
+                <NutrientRow
+                  label="Vitamin C"
+                  value={agg.nutrients.vitaminC || 0}
+                  target={rda.vitaminC}
+                  unit="mg"
+                />
+                <NutrientRow
+                  label="Vitamin D"
+                  value={agg.nutrients.vitaminD || 0}
+                  target={rda.vitaminD}
+                  unit="mcg"
+                />
+                <NutrientRow
+                  label="Vitamin E"
+                  value={agg.nutrients.vitaminE || 0}
+                  target={rda.vitaminE}
+                  unit="mg"
+                />
+                <NutrientRow
+                  label="Vitamin K"
+                  value={agg.nutrients.vitaminK || 0}
+                  target={rda.vitaminK}
+                  unit="mcg"
+                />
+              </div>
+            </div>
+
+            {/* Minerals */}
+            <div className="bg-subtle rounded-2xl border border-border overflow-hidden">
+              <div className="bg-border/50 px-4 py-2 text-xs font-bold text-foreground">
+                Minerals
+              </div>
+              <div className="p-2 space-y-1">
+                <NutrientRow
+                  label="Calcium"
+                  value={agg.nutrients.calcium || 0}
+                  target={rda.calcium}
+                  unit="mg"
+                />
+                <NutrientRow
+                  label="Iron"
+                  value={agg.nutrients.iron || 0}
+                  target={rda.iron}
+                  unit="mg"
+                />
+                <NutrientRow
+                  label="Sodium"
+                  value={agg.nutrients.sodium || 0}
+                  target={rda.sodium}
+                  unit="mg"
+                />
+                <NutrientRow
+                  label="Potassium"
+                  value={agg.nutrients.potassium || 0}
+                  target={rda.potassium}
+                  unit="mg"
+                />
+                <NutrientRow
+                  label="Magnesium"
+                  value={agg.nutrients.magnesium || 0}
+                  target={rda.magnesium}
+                  unit="mg"
+                />
+                <NutrientRow
+                  label="Zinc"
+                  value={agg.nutrients.zinc || 0}
+                  target={rda.zinc}
+                  unit="mg"
+                />
+                <NutrientRow
+                  label="Selenium"
+                  value={agg.nutrients.selenium || 0}
+                  target={rda.selenium}
+                  unit="mcg"
+                />
+              </div>
+            </div>
+
+            {/* Protein Quality */}
+            <div className="bg-subtle rounded-2xl border border-border overflow-hidden md:col-span-2">
+              <div className="bg-border/50 px-4 py-2 text-xs font-bold text-foreground">
+                Protein Quality
+              </div>
+              <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-2">
+                <NutrientRow
+                  label="Protein"
+                  value={agg.p}
+                  target={pTarget}
+                  unit="g"
+                />
+                <NutrientRow
+                  label="Leucine"
+                  value={agg.nutrients.leucine || 0}
+                  target={0}
+                  unit="g"
+                  hideBar
+                />
+                <NutrientRow
+                  label="BCAAs"
+                  value={agg.nutrients.bcaas || 0}
+                  target={0}
+                  unit="g"
+                  hideBar
+                />
+                <NutrientRow
+                  label="Amino Acid Profile"
+                  value={agg.nutrients.aminoAcidProfile || 0}
+                  target={0}
+                  unit="%"
+                  hideBar
+                />
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 }
