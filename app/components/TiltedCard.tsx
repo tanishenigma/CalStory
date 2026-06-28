@@ -1,6 +1,7 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { toast } from 'sonner';
 import './TiltedCard.css';
 
 const springValues = {
@@ -56,6 +57,23 @@ export default function TiltedCard({
 
   const [lastY, setLastY] = useState(0);
 
+  // Mobile-warning toast — fires once on mount when `showMobileWarning` is
+  // true. Replaces the previous inline `<div className="tilted-card-mobile-
+  // alert">` banner, which was hidden/shown via a CSS media query inside
+  // TiltedCard.css. We use sonner's `toast` (wired globally in
+  // app/layout.tsx via <Toaster />) rather than useToast() so this
+  // component works regardless of whether its caller wraps it in a
+  // <ToastContainer>.
+  useEffect(() => {
+    if (!showMobileWarning) return;
+    toast.warning("This effect is not optimized for mobile. Check on desktop.", {
+      description: "Tilt animations work best on a pointer-precise device.",
+      duration: 5000,
+    });
+    // Only on mount — subsequent prop changes shouldn't re-fire.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function handleMouse(e: React.MouseEvent<HTMLElement>) {
     if (!ref.current) return;
 
@@ -102,9 +120,9 @@ export default function TiltedCard({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {showMobileWarning && (
-        <div className="tilted-card-mobile-alert">This effect is not optimized for mobile. Check on desktop.</div>
-      )}
+      {/* Mobile warning is now surfaced via toast.warning() above; the
+          previous inline `.tilted-card-mobile-alert` div has been removed
+          (and its CSS rules can be cleaned up in a follow-up). */}
 
       <motion.div
         className="tilted-card-inner"

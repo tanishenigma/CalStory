@@ -9,18 +9,12 @@
   justify-content: center;
 }
 
-.tilted-card-mobile-alert {
-  position: absolute;
-  top: 1rem;
-  text-align: center;
-  font-size: 0.875rem;
-  display: none;
-}
-
+/* The previous `.tilted-card-mobile-alert` rule and its media query
+   companion were removed when the inline mobile-warning <div> was
+   replaced with a `toast.warning()` call in TiltedCard.tsx. The mobile
+   tooltip-caption hiding logic stays — toasts surface the warning now,
+   not the caption. */
 @media (max-width: 640px) {
-  .tilted-card-mobile-alert {
-    display: block;
-  }
   .tilted-card-caption {
     display: none;
   }
