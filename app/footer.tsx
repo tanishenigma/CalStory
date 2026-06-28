@@ -1,6 +1,5 @@
 import React from "react";
 import Link from "next/link";
-import { Flame } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 
 const Footer = () => {
@@ -14,8 +13,21 @@ const Footer = () => {
             <Link
               href="/"
               className="flex items-center cursor-pointer relative z-10 shrink-0 gap-2.5 group">
-              <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center transition-transform group-hover:scale-110">
-                <Flame size={18} className="text-background fill-background" />
+              <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center transition-transform group-hover:scale-110 overflow-hidden">
+                <img
+                  src="/light.png"
+                  alt="CalStory"
+                  width={28}
+                  height={28}
+                  className="w-7 h-7 object-contain block dark:hidden"
+                />
+                <img
+                  src="/dark.png"
+                  alt="CalStory"
+                  width={28}
+                  height={28}
+                  className="w-7 h-7 object-contain hidden dark:block"
+                />
               </div>
               <h1 className="font-bold text-xl tracking-tight font-heading">
                 CalStory
@@ -69,8 +81,21 @@ const Footer = () => {
           <div className="flex flex-2 md:hidden items-center gap-8 text-center">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 -mb-2">
-              <div className="w-9 h-9 bg-foreground rounded-full flex items-center justify-center">
-                <Flame size={20} className="text-background fill-background" />
+              <div className="w-9 h-9 bg-foreground rounded-full flex items-center justify-center overflow-hidden">
+                <img
+                  src="/light.png"
+                  alt="CalStory"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 object-contain block dark:hidden"
+                />
+                <img
+                  src="/dark.png"
+                  alt="CalStory"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 object-contain hidden dark:block"
+                />
               </div>
               <span className="font-bold text-2xl tracking-tight font-heading">
                 CalStory

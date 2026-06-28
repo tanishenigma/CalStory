@@ -10,7 +10,6 @@ import {
   Dumbbell,
   TrendingUp,
   Settings,
-  Flame,
   X,
   Menu,
 } from "lucide-react";
@@ -151,8 +150,21 @@ function PillNavInner({ pathname }: { pathname: string }) {
     <>
       {/* Desktop sidebar — hidden below lg */}
       <nav className="fixed left-3 lg:left-4 top-1/2 -translate-y-1/2 w-16 bg-background border border-border rounded-[30px] shadow-[0_4px_24px_oklch(0_0_0/_0.07)] dark:shadow-none hidden lg:flex flex-col items-center gap-[2px] py-[10px] px-2 z-[200]">
-        <div className="w-[38px] h-[38px] bg-foreground rounded-full flex items-center justify-center mb-[10px]">
-          <Flame size={18} className="text-background fill-background" />
+        <div className="w-[38px] h-[38px] bg-foreground rounded-full flex items-center justify-center mb-[10px] overflow-hidden">
+          <img
+            src="/light.png"
+            alt="CalStory"
+            width={28}
+            height={28}
+            className="w-7 h-7 object-contain block dark:hidden"
+          />
+          <img
+            src="/dark.png"
+            alt="CalStory"
+            width={28}
+            height={28}
+            className="w-7 h-7 object-contain hidden dark:block"
+          />
         </div>
 
         {NAV.map(({ href, label, Icon }) => {
@@ -201,8 +213,21 @@ function FloatingSidebar({ pathname }: { pathname: string }) {
           <Link
             href="/"
             className="flex items-center cursor-pointer relative z-10 shrink-0 gap-2.5 group ">
-            <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center">
-              <Flame size={18} className="text-background fill-background" />
+            <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center overflow-hidden">
+              <img
+                src="/light.png"
+                alt="CalStory"
+                width={28}
+                height={28}
+                className="w-7 h-7 object-contain block dark:hidden"
+              />
+              <img
+                src="/dark.png"
+                alt="CalStory"
+                width={28}
+                height={28}
+                className="w-7 h-7 object-contain hidden dark:block"
+              />
             </div>
             <h1 className="font-bold text-base tracking-tight text-foreground">
               CalStory

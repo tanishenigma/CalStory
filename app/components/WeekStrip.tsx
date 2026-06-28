@@ -73,10 +73,20 @@ export default function WeekStrip() {
         {/* Mobile-only header: logo + streak above the week strip */}
         <div className="lg:hidden flex items-center justify-between px-1 pb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center">
-              <Flame
-                size={18}
-                className="text-background fill-background"
+            <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center overflow-hidden">
+              <img
+                src="/light.png"
+                alt="CalStory"
+                width={28}
+                height={28}
+                className="w-7 h-7 object-contain block dark:hidden"
+              />
+              <img
+                src="/dark.png"
+                alt="CalStory"
+                width={28}
+                height={28}
+                className="w-7 h-7 object-contain hidden dark:block"
               />
             </div>
             <span className="font-heading font-bold text-base text-foreground tracking-tight">
