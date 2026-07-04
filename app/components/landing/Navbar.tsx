@@ -11,9 +11,26 @@ import {
 } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import type { RefObject } from "react";
 import { Menu, X } from "lucide-react";
+import { useAuthStore } from "@/app/store/authStore";
+import { useProfileStore } from "@/app/store/profileStore";
 
-const NAV_LINKS = [
+/**
+ * Map of `href` target key → element ref attached to the section in
+ * `LandingClient`. Resolving the target via ref is more reliable than
+ * `document.getElementById` (which fails for sections that mount
+ * after the navbar, e.g. below-the-fold reveals, or whose `id` is on
+ * an ancestor the navbar cannot see). Passing the ref down keeps
+ * the navbar dumb: it scrolls to whatever the parent owns.
+ */
+export type NavbarTargets = Partial<{
+  features: RefObject<HTMLElement | null>;
+  "how-it-works": RefObject<HTMLElement | null>;
+  faq: RefObject<HTMLElement | null>;
+}>;
+
+const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Features", href: "/#features" },
   { label: "Method", href: "/#how-it-works" },
   { label: "FAQ", href: "/#faq" },
@@ -81,12 +98,37 @@ function useNavbarTokens() {
 
 export function Navbar({
   onSignIn,
-  user,
+  targets,
 }: {
   onSignIn: () => void | Promise<void>;
-  user: unknown;
+  targets?: NavbarTargets;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Auto-detect sign-in. The Firebase auth listener is null while
+  // warming up and resolves in the same tick on a hard refresh
+  // (IndexedDB persistence). `hasProfile` comes from the global
+  // profile store so returning users with a cached "true" see the
+  // right CTA copy on the very first paint.
+  const user = useAuthStore((s) => s.user);
+  const authLoading = useAuthStore((s) => s.loading);
+  const hasProfile = useProfileStore((s) => s.hasProfile);
+  // Treat the auth-warming window as "signed out" for the nav so a
+  // signed-in user on a hard refresh doesn't briefly see a "Get
+  // Started" button before the listener resolves. The flip is
+  // sub-frame because Firebase's IndexedDB persistence resolves the
+  // listener synchronously.
+  const isSignedIn = !!user && !authLoading;
+  // Keep `user` referenced so the selector subscription isn't
+  // tree-shaken; the value itself is consumed via `isSignedIn`.
+  void user;
+
+  // Where the signed-in CTA goes. Cached `hasProfile` (from
+  // localStorage) is good enough to route here; if we guessed wrong
+  // and the profile is actually missing, the auth guard will bounce
+  // them to /onboarding instead. Routing first paints the right
+  // shape and we don't block the navbar on Firestore.
+  const signedInHref = hasProfile ? "/dashboard" : "/onboarding";
 
   const tokens = useNavbarTokens();
 
@@ -94,8 +136,25 @@ export function Navbar({
     const href = event.currentTarget.getAttribute("href");
     if (!href) return;
 
+    // Accept both `#features` and `/#features` as hash links. For
+    // `/#foo` we resolve the in-page section via the parent-provided
+    // ref map (preferred — works regardless of mount order or
+    // virtualisation) and fall back to `document.getElementById` if
+    // the parent didn't supply a ref for that target.
     if (href.startsWith("/#")) {
+      const targetId = href.slice(2);
+      const refTarget = targets?.[targetId as keyof NavbarTargets]?.current;
+      const domTarget =
+        typeof document !== "undefined"
+          ? document.getElementById(targetId)
+          : null;
+      const target = refTarget ?? domTarget;
+      if (!target) return;
+
+      event.preventDefault();
       setMobileOpen(false);
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.history.replaceState(null, "", href);
       return;
     }
 
@@ -276,21 +335,12 @@ export function Navbar({
         <Link
           href="/"
           className="flex items-center relative z-10 shrink-0 gap-2.5 cursor-pointer">
-          {/* Light-mode mark */}
-          <img
-            src="/light.png"
-            alt="CalStory"
-            width={32}
-            height={32}
-            className="w-10 h-10 object-contain block dark:hidden"
-          />
-          {/* Dark-mode mark */}
           <img
             src="/dark.png"
             alt="CalStory"
             width={32}
             height={32}
-            className="w-10 h-10 object-contain hidden dark:block"
+            className="w-10 h-10 object-contain block"
           />
           <motion.span
             style={{ color: textColor }}
@@ -327,7 +377,13 @@ export function Navbar({
           })}
         </div>
 
-        {user == null && (
+        {isSignedIn ? (
+          <Link
+            href={signedInHref}
+            className="hidden md:inline-flex cursor-pointer relative z-10 shrink-0 h-9 px-5 rounded-full bg-foreground text-background text-xs font-bold text-center items-center uppercase tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-all shadow-lg shadow-foreground/10 whitespace-nowrap">
+            {hasProfile ? "Dashboard" : "Finish setup"}
+          </Link>
+        ) : (
           <button
             onClick={() => {
               void onSignIn();
@@ -338,7 +394,13 @@ export function Navbar({
         )}
 
         <div className="flex md:hidden items-center gap-3 relative z-10 shrink-0">
-          {user === null && (
+          {isSignedIn ? (
+            <Link
+              href={signedInHref}
+              className="h-8 px-4 rounded-full bg-foreground text-background text-xs font-bold uppercase cursor-pointer inline-flex items-center">
+              {hasProfile ? "Dashboard" : "Finish setup"}
+            </Link>
+          ) : (
             <button
               onClick={() => {
                 void onSignIn();
@@ -370,6 +432,14 @@ export function Navbar({
             className="absolute w-[calc(100%-2rem)] max-w-[44rem]">
             <div className="mt-16 rounded-2xl border border-border backdrop-blur-3xl shadow-2xl overflow-hidden bg-background/95">
               <div className="flex flex-col py-2">
+                {isSignedIn && (
+                  <Link
+                    href={signedInHref}
+                    onClick={() => setMobileOpen(false)}
+                    className="px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted/40 transition-colors">
+                    {hasProfile ? "Dashboard" : "Finish setup"}
+                  </Link>
+                )}
                 {NAV_LINKS.map((link) => {
                   const isHash =
                     link.href.startsWith("#") || link.href.startsWith("/#");

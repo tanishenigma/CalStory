@@ -18,6 +18,10 @@ import type {
   SavedWorkout,
   RecentMeal,
   WeightLog,
+  FitnessLog,
+  FastingSession,
+  HydrationLog,
+  HydrationEntry,
 } from "@/app/types";
 
 /* ────────────────────────────────────────────────────────────
@@ -385,4 +389,118 @@ export async function deleteUserApiKey(uid: string): Promise<void> {
     await deleteDoc(doc(db, "users", uid, "settings", "api_keys"));
     logger.debug(`[API Response] deleteUserApiKey success`);
   }, undefined);
+}
+
+// ── Fitness Logs ────────────────────────────────────────────────
+// Path: users/{uid}/fitness_logs/{date}
+export async function saveFitnessLog(
+  uid: string,
+  log: FitnessLog,
+): Promise<void> {
+  logger.debug(`[API Request] saveFitnessLog (uid: ${uid}, date: ${log.date})`);
+  await safe(async () => {
+    const ref = doc(db, "users", uid, "fitness_logs", log.date);
+    await setDoc(ref, { ...log, savedAt: serverTimestamp() });
+    logger.debug(`[API Response] saveFitnessLog success`);
+  }, undefined);
+}
+
+export async function getFitnessLogs(
+  uid: string,
+  dateKeys: string[],
+): Promise<Record<string, FitnessLog>> {
+  logger.debug(
+    `[API Request] getFitnessLogs (uid: ${uid}, dates: ${dateKeys.length})`,
+  );
+  return safe(
+    async () => {
+      const fetches = await Promise.all(
+        dateKeys.map(async (date) => {
+          const snap = await getDoc(
+            doc(db, "users", uid, "fitness_logs", date),
+          );
+          return snap.exists() ? (snap.data() as FitnessLog) : null;
+        }),
+      );
+      const out: Record<string, FitnessLog> = {};
+      dateKeys.forEach((date, i) => {
+        const log = fetches[i];
+        if (log) out[date] = log;
+      });
+      logger.debug(`[API Response] getFitnessLogs success`);
+      return out;
+    },
+    {} as Record<string, FitnessLog>,
+  );
+}
+
+// ── Fasting Session ────────────────────────────────────────────
+// Path: users/{uid}/fasting/active
+// Single document — only one active fast at a time.
+export async function saveFastingSession(
+  uid: string,
+  session: FastingSession,
+): Promise<void> {
+  logger.debug(`[API Request] saveFastingSession (uid: ${uid})`);
+  await safe(async () => {
+    const ref = doc(db, "users", uid, "fasting", "active");
+    const data = Object.fromEntries(
+      Object.entries({ ...session, savedAt: serverTimestamp() }).filter(
+        ([, v]) => v !== undefined,
+      ),
+    );
+    await setDoc(ref, data);
+    logger.debug(`[API Response] saveFastingSession success`);
+  }, undefined);
+}
+
+export async function getFastingSession(
+  uid: string,
+): Promise<FastingSession | null> {
+  logger.debug(`[API Request] getFastingSession (uid: ${uid})`);
+  return safe(async () => {
+    const snap = await getDoc(doc(db, "users", uid, "fasting", "active"));
+    if (!snap.exists()) return null;
+    logger.debug(`[API Response] getFastingSession success`);
+    return snap.data() as FastingSession;
+  }, null);
+}
+
+export async function clearFastingSessionDB(uid: string): Promise<void> {
+  logger.debug(`[API Request] clearFastingSessionDB (uid: ${uid})`);
+  await safe(async () => {
+    await deleteDoc(doc(db, "users", uid, "fasting", "active"));
+    logger.debug(`[API Response] clearFastingSessionDB success`);
+  }, undefined);
+}
+
+// ── Hydration Logs ──────────────────────────────────────────────
+// Path: users/{uid}/hydration/{date}
+// One document per local day. Entire document is rewritten on every
+// add/remove because entries are an embedded array (small in practice).
+export async function saveHydrationLog(
+  uid: string,
+  log: HydrationLog,
+): Promise<void> {
+  logger.debug(
+    `[API Request] saveHydrationLog (uid: ${uid}, date: ${log.date})`,
+  );
+  await safe(async () => {
+    const ref = doc(db, "users", uid, "hydration", log.date);
+    await setDoc(ref, { ...log, savedAt: serverTimestamp() });
+    logger.debug(`[API Response] saveHydrationLog success`);
+  }, undefined);
+}
+
+export async function getHydrationLog(
+  uid: string,
+  date: string,
+): Promise<HydrationLog | null> {
+  logger.debug(`[API Request] getHydrationLog (uid: ${uid}, date: ${date})`);
+  return safe(async () => {
+    const snap = await getDoc(doc(db, "users", uid, "hydration", date));
+    if (!snap.exists()) return null;
+    logger.debug(`[API Response] getHydrationLog success`);
+    return snap.data() as HydrationLog;
+  }, null);
 }

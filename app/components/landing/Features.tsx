@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { forwardRef, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
   motion,
-  useScroll,
-  useTransform,
   useInView,
   useReducedMotion,
   type Variants,
@@ -45,6 +43,23 @@ const features = [
   },
 ];
 
+// One easing, one duration scale, used everywhere. Consistency > novelty.
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+const rowVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: EASE },
+  },
+};
+
+const reducedVariant: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.3 } },
+};
+
 function FeatureRow({
   feature,
   index,
@@ -59,152 +74,39 @@ function FeatureRow({
 
   const isInView = useInView(rowRef, {
     once: true,
-    margin: "-18% 0px -40% 0px",
+    margin: "-15% 0px -15% 0px",
   });
 
-  // Parallax for image
-  const { scrollYProgress: imageScroll } = useScroll({
-    target: rowRef,
-    offset: ["start end", "end start"],
-  });
-  const imageY = useTransform(imageScroll, [0, 1], ["0%", "-18%"]);
-
-  // Ghost number drift
-  const ghostY = useTransform(imageScroll, [0, 1], ["0%", "-10%"]);
-
-  const textX = isEven ? -50 : 50;
-  const imageX = isEven ? 50 : -50;
-
-  // Shared transition for reduced motion fallback
-  const reducedVariant: Variants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.4 } },
-  };
-
-  const textVariants: Variants = shouldReduceMotion
-    ? reducedVariant
-    : {
-        hidden: { x: textX, opacity: 0 },
-        visible: {
-          x: 0,
-          opacity: 1,
-          transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
-        },
-      };
-
-  const imageVariants: Variants = shouldReduceMotion
-    ? reducedVariant
-    : {
-        hidden: { x: imageX, opacity: 0, scale: 0.97 },
-        visible: {
-          x: 0,
-          opacity: 1,
-          scale: 1,
-          transition: { duration: 1.05, ease: [0.16, 1, 0.3, 1], delay: 0.1 },
-        },
-      };
-
-  const ghostVariants: Variants = shouldReduceMotion
-    ? reducedVariant
-    : {
-        hidden: { opacity: 0, scale: 0.92 },
-        visible: {
-          opacity: 1,
-          scale: 1,
-          transition: { duration: 0.8, ease: [0.25, 1, 0.5, 1], delay: 0.15 },
-        },
-      };
-
-  const eyebrowVariants: Variants = {
-    hidden: { y: 10, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.45, ease: "easeOut", delay: 0.15 },
-    },
-  };
-
-  const titleVariants: Variants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.55, ease: "easeOut", delay: 0.35 },
-    },
-  };
-
-  const descVariants: Variants = {
-    hidden: { y: 14, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.55, ease: "easeOut", delay: 0.45 },
-    },
-  };
-
-  const animate = isInView ? "visible" : "hidden";
+  const variants = shouldReduceMotion ? reducedVariant : rowVariants;
 
   return (
-    <div
+    <motion.div
       ref={rowRef}
-      className={`relative flex flex-col md:flex-row items-center gap-12 lg:gap-20 ${
+      variants={variants}
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      className={`flex flex-col md:flex-row items-center gap-12 lg:gap-20 ${
         isEven ? "" : "md:flex-row-reverse"
       }`}>
-      <motion.span
-        aria-hidden="true"
-        variants={ghostVariants}
-        initial="hidden"
-        animate={animate}
-        style={{ y: ghostY }}
-        className={`
-          hidden md:block pointer-events-none absolute select-none
-          font-heading font-black text-[clamp(7rem,18vw,14rem)]
-          leading-none text-primary/10
-          ${isEven ? "right-[38%] md:right-[46%] -bottom-8" : "left-[38%] md:left-[76%] -bottom-8"}
-        `}>
-        {ordinal}
-      </motion.span>
-
-      {/* Text */}
-      <motion.div
-        variants={textVariants}
-        initial="hidden"
-        animate={animate}
-        className="flex-1 space-y-5 relative z-10">
-        <motion.span
-          variants={shouldReduceMotion ? reducedVariant : eyebrowVariants}
-          initial="hidden"
-          animate={animate}
-          className="flex items-center gap-3 text-xs font-mono tracking-[0.2em] uppercase text-primary/70">
+      {/* Text — no internal stagger, moves as one unit with the row */}
+      <div className="flex-1 space-y-5">
+        <span className="flex items-center gap-3 text-xs font-mono tracking-[0.2em] uppercase text-primary/70">
           <span>{ordinal}</span>
           <span className="block h-px w-8 bg-primary/30" aria-hidden="true" />
           <span className="text-muted-foreground/60">Feature</span>
-        </motion.span>
+        </span>
 
-        <motion.h3
-          variants={shouldReduceMotion ? reducedVariant : titleVariants}
-          initial="hidden"
-          animate={animate}
-          className="text-2xl md:text-3xl lg:text-[2.15rem] font-bold text-foreground leading-[1.15] tracking-[-0.02em] font-heading">
+        <h3 className="text-2xl md:text-3xl lg:text-[2.15rem] font-bold text-foreground leading-[1.15] tracking-[-0.02em] font-heading">
           {feature.title}
-        </motion.h3>
+        </h3>
 
-        <motion.p
-          variants={shouldReduceMotion ? reducedVariant : descVariants}
-          initial="hidden"
-          animate={animate}
-          className="text-muted-foreground leading-[1.75] text-base max-w-[44ch]">
+        <p className="text-muted-foreground leading-[1.75] text-base max-w-[44ch]">
           {feature.description}
-        </motion.p>
-      </motion.div>
+        </p>
+      </div>
 
-      {/* Image */}
-      <motion.div
-        variants={imageVariants}
-        initial="hidden"
-        animate={animate}
-        style={shouldReduceMotion ? {} : { y: imageY }}
-        className="flex-1 w-full relative aspect-4/3 will-change-transform rounded-xl overflow-hidden z-10">
+      {/* Image — static, no scroll-linked parallax, no scale */}
+      <div className="flex-1 w-full relative aspect-4/3 rounded-xl overflow-hidden">
         <Image
           src={feature.image}
           alt={feature.title}
@@ -212,20 +114,18 @@ function FeatureRow({
           className="object-cover object-center"
           sizes="(max-width: 768px) 100vw, 50vw"
         />
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   );
 }
 
-export default function FeatureGrid() {
-  const footerRef = useRef<HTMLDivElement>(null);
-  const shouldReduceMotion = useReducedMotion();
-  const footerInView = useInView(footerRef, { once: true, margin: "-10% 0px" });
-
+const FeatureGrid = forwardRef<HTMLElement>(function FeatureGrid(_props, ref) {
   return (
     <section
+      ref={ref}
+      id="features"
       aria-labelledby="seo-content"
-      className="relative z-10 py-24 px-6 w-full flex justify-center">
+      className="relative z-10 py-24 px-6 w-full flex justify-center scroll-mt-24">
       <div className="max-w-6xl mx-auto w-full">
         <h2 id="seo-content" className="sr-only">
           Why CalStory is the best calorie and macro tracker
@@ -237,16 +137,7 @@ export default function FeatureGrid() {
           ))}
         </div>
 
-        <motion.div
-          ref={footerRef}
-          initial={{ y: 16, opacity: 0 }}
-          animate={footerInView ? { y: 0, opacity: 1 } : {}}
-          transition={
-            shouldReduceMotion
-              ? { duration: 0 }
-              : { duration: 0.6, ease: "easeOut" }
-          }
-          className="max-w-xl mx-auto text-center mt-28">
+        <div className="max-w-xl mx-auto text-center mt-28">
           <p className="text-sm text-muted-foreground leading-relaxed">
             Want a deeper walkthrough? Read our guides on{" "}
             <Link
@@ -262,8 +153,10 @@ export default function FeatureGrid() {
             </Link>
             .
           </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
-}
+});
+
+export default FeatureGrid;

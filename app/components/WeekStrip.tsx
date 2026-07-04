@@ -106,10 +106,6 @@ export default function WeekStrip() {
             />
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.span
-                // Re-key on `streak` so a fresh log triggers a
-                // quick "pop" (scale up + fade out the old number,
-                // scale up the new one). `popLayout` avoids layout
-                // shift while the swap happens.
                 key={streak}
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -168,26 +164,18 @@ export default function WeekStrip() {
                     onClick={() => setDate(key)}
                     disabled={isFuture}
                     aria-pressed={key === state.selDate}
-                    // Stagger entrance: each day button fades + slides
-                    // up by 6px on mount. `delay` scales with index so
-                    // the strip "types in" from left to right. We
-                    // re-key on `weekOffset` so the stagger re-plays
-                    // when the user navigates between weeks.
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.25,
-                      delay: 0.04 * i,
-                      ease: [0.21, 0.47, 0.32, 0.98],
-                    }}
-                    whileHover={
-                      isFuture
-                        ? undefined
-                        : { scale: 1.06, transition: { duration: 0.12 } }
-                    }
+                    /* The hover/tap scale is applied to an inner
+                     * element (below) instead of the button itself.
+                     * The strip container is `overflow-x-auto` for
+                     * mobile horizontal scroll, which would clip any
+                     * `transform: scale()` overflow on the button's
+                     * outer box — cutting off the dashed border on
+                     * selected days and the `hover:bg-foreground/20`
+                     * background on normal days. Scaling an inner
+                     * element keeps the button's outer bounds static
+                     * so backgrounds + borders render fully. */
                     whileTap={isFuture ? undefined : { scale: 0.94 }}
                     className={[
-                      // Base: flex-col centered, transition
                       "flex flex-col items-center justify-center gap-1 border-2 shrink-0 rounded-full p-2",
                       "size-12 lg:size-14",
                       isFuture
@@ -196,46 +184,41 @@ export default function WeekStrip() {
                       isToday && "bg-foreground border-transparent",
                       isSel &&
                         !isToday &&
-                        "border-black border-dotted bg-foreground/5",
+                        "border-black border-dotted bg-foreground/5 dark:border-subtle",
                       !isSel && !isToday && "border-transparent",
                       !isToday &&
                         !isSel &&
                         !isFuture &&
                         "bg-transparent hover:bg-foreground/20 opacity-40",
                     ]
+
                       .filter(Boolean)
                       .join(" ")}>
-                    <span
-                      className={[
-                        "text-[10px] font-bold tracking-wider uppercase leading-none",
-                        isToday ? "text-background" : "text-muted-foreground",
-                      ].join(" ")}>
-                      {DAY_LABELS[i]}
-                    </span>
-                    <span
-                      className={[
-                        "font-mono text-base font-semibold leading-none",
-                        isToday ? "text-background" : "text-foreground",
-                      ].join(" ")}>
-                      {d.getDate()}
-                    </span>
-                    <motion.span
-                      className={["w-1.5 h-1.5 rounded-full bg-primary"].join(
-                        " ",
-                      )}
-                      // Dot fades in when there's data — small
-                      // spring so it feels alive.
-                      initial={false}
-                      animate={{
-                        scale: hasData ? 1 : 0,
-                        opacity: hasData ? 1 : 0,
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 320,
-                        damping: 22,
-                      }}
-                    />
+                    <motion.span className="flex flex-col items-center justify-center gap-1">
+                      <span
+                        className={[
+                          "text-[10px] font-bold tracking-wider uppercase leading-none",
+                          isToday ? "text-background" : "text-muted-foreground",
+                        ].join(" ")}>
+                        {DAY_LABELS[i]}
+                      </span>
+                      <span
+                        className={[
+                          "font-mono text-base font-semibold leading-none",
+                          isToday ? "text-background" : "text-foreground",
+                        ].join(" ")}>
+                        {d.getDate()}
+                      </span>
+                      <span
+                        className={[
+                          "w-1.5 h-1.5 rounded-full bg-primary",
+                          hasData
+                            ? "opacity-100 scale-100"
+                            : "opacity-0 scale-0",
+                          "transition-all duration-200",
+                        ].join(" ")}
+                      />
+                    </motion.span>
                   </motion.button>
                 );
               })}

@@ -12,6 +12,7 @@ import {
   Settings,
   X,
   Menu,
+  Activity,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuthStore } from "@/app/store/authStore";
@@ -25,6 +26,7 @@ const NAV: {
   { href: "/dashboard", label: "Home", Icon: Home },
   { href: "/nutrition", label: "Nutrition", Icon: UtensilsCrossed },
   { href: "/workouts", label: "Workouts", Icon: Dumbbell },
+  { href: "/fitness", label: "Fitness", Icon: Activity },
   { href: "/progress", label: "Progress", Icon: TrendingUp },
   { href: "/settings", label: "Settings", Icon: Settings },
 ];

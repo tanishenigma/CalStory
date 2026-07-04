@@ -2,8 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import RecipeForm from "@/app/components/RecipeForm";
-import { Utensils, UtensilsCrossed, Plus, X } from "lucide-react";
+import AIFabChat from "@/app/components/AIFabChat";
+import { Sparkles, X } from "lucide-react";
 
 export default function FAB() {
   const pathname = usePathname();
@@ -50,32 +50,31 @@ export default function FAB() {
       className="fixed bottom-24 sm:bottom-28 md:bottom-8 right-4 sm:right-6 z-50 flex flex-col items-end">
       {open && (
         <div className="mb-4">
-          <RecipeForm onClose={() => setOpen(false)} />
+          <AIFabChat onClose={() => setOpen(false)} />
         </div>
       )}
 
       <button
         onClick={() => setOpen(!open)}
+        aria-label={open ? "Close quick log" : "Open quick log"}
         className="flex h-14 w-14 items-center justify-center rounded-full bg-foreground text-background shadow-[0_8px_24px_oklch(0.2272_0.0049_173.9454/_0.28)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2">
         <div className="relative w-6 h-6">
-          <>
-            <Utensils
-              size={24}
-              className={`absolute inset-0 transition-all duration-300 ${
-                open
-                  ? "opacity-0 scale-75 rotate-90"
-                  : "opacity-100 scale-100 rotate-0"
-              }`}
-            />
-            <UtensilsCrossed
-              size={24}
-              className={`absolute inset-0 transition-all duration-300 ${
-                open
-                  ? "opacity-100 scale-100 rotate-0"
-                  : "opacity-0 scale-75 rotate-90"
-              }`}
-            />
-          </>
+          <Sparkles
+            size={22}
+            className={`absolute inset-0 m-auto transition-all duration-300 ${
+              open
+                ? "opacity-0 scale-75 rotate-90"
+                : "opacity-100 scale-100 rotate-0"
+            }`}
+          />
+          <X
+            size={22}
+            className={`absolute inset-0 m-auto transition-all duration-300 ${
+              open
+                ? "opacity-100 scale-100 rotate-0"
+                : "opacity-0 scale-75 -rotate-90"
+            }`}
+          />
         </div>
       </button>
     </div>

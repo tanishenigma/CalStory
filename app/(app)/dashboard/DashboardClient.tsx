@@ -5,13 +5,25 @@ import Link from "next/link";
 import Lenis from "lenis";
 import { useApp } from "@/app/context/AppContext";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
+import { useFastingTimer } from "@/app/hooks/useFastingTimer";
+import { useHydration } from "@/app/hooks/useHydration";
 import WeekStrip from "@/app/components/WeekStrip";
 import CalorieHero from "@/app/components/CalorieHero";
 import MacroPills from "@/app/components/MacroPills";
+import FastingRing from "@/app/components/FastingRing";
+import HydrationBar from "@/app/components/HydrationBar";
 import BlurFade from "@/app/components/animations/BlurFade";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { MEAL_ICONS } from "@/app/lib/constants";
-import { Utensils, Dumbbell } from "lucide-react";
+import { Utensils } from "lucide-react";
+
+const DEFAULT_CAL_TARGET = 2000;
+const PROTEIN_CAL_RATIO = 0.3;
+const CARB_CAL_RATIO = 0.4;
+const FAT_CAL_RATIO = 0.3;
+const PROTEIN_CAL_PER_GRAM = 4;
+const CARB_CAL_PER_GRAM = 4;
+const FAT_CAL_PER_GRAM = 9;
 
 function sumMacros(meals: { cal: number; p: number; c: number; f: number }[]) {
   return meals.reduce(
@@ -27,20 +39,26 @@ function sumMacros(meals: { cal: number; p: number; c: number; f: number }[]) {
 
 export default function DashboardPage() {
   const { profile, isLoading } = useAuthGuard();
-  const { state } = useApp();
-  const { selDate, meals, workouts } = state;
+  const { state, addHydration, removeHydration, setHydrationGoal } = useApp();
+  const { selDate, meals, workouts, fastingSession, hydrationLog } = state;
+  const fastingTimer = useFastingTimer(fastingSession);
+  const hydration = useHydration(hydrationLog, profile?.volumeUnit ?? "ml");
 
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.1,
       easing: (t) => 1 - Math.pow(1 - t, 4),
     });
+    let rafId: number;
     const raf = (time: number) => {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     };
-    requestAnimationFrame(raf);
-    return () => lenis.destroy();
+    rafId = requestAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
   }, []);
 
   if (isLoading || !profile) return <Spinner variant="dashboard" />;
@@ -52,12 +70,18 @@ export default function DashboardPage() {
   const recentMeals = [...todayMeals].reverse().slice(0, 5);
   const recentWorkouts = [...todayWorkouts].reverse().slice(0, 5);
 
-  const targetKcal = profile.calTarget || 2000;
+  const targetKcal = profile.calTarget || DEFAULT_CAL_TARGET;
 
   const targetMacros = {
-    p: profile.protein || Math.round((targetKcal * 0.3) / 4),
-    c: profile.carbs || Math.round((targetKcal * 0.4) / 4),
-    f: profile.fat || Math.round((targetKcal * 0.3) / 9),
+    p:
+      profile.protein ||
+      Math.round((targetKcal * PROTEIN_CAL_RATIO) / PROTEIN_CAL_PER_GRAM),
+    c:
+      profile.carbs ||
+      Math.round((targetKcal * CARB_CAL_RATIO) / CARB_CAL_PER_GRAM),
+    f:
+      profile.fat ||
+      Math.round((targetKcal * FAT_CAL_RATIO) / FAT_CAL_PER_GRAM),
   };
 
   return (
@@ -94,7 +118,9 @@ export default function DashboardPage() {
               {todayWorkouts.length === 0 ? (
                 <Link href="/workouts" className="block">
                   <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px] hover:bg-gray-50 transition-colors cursor-pointer ">
-                    <div className="text-3xl mb-1">🏋️</div>
+                    <div className="text-3xl mb-1" aria-hidden="true">
+                      🏋️
+                    </div>
                     <div className="font-bold text-[14px] text-foreground">
                       No workout yet
                     </div>
@@ -110,7 +136,9 @@ export default function DashboardPage() {
                       key={w.id}
                       className="flex flex-col divide-y divide-border p-2  ">
                       <div className="flex items-center gap-4 p-4 hover:bg-subtle transition-colors rounded-xl">
-                        <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
+                        <div
+                          className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0"
+                          aria-hidden="true">
                           💪
                         </div>
                         <div className="flex-1 min-w-0">
@@ -133,7 +161,7 @@ export default function DashboardPage() {
             <section>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[17px] font-bold text-foreground">
-                  Recently uploaded
+                  Today's Meals
                 </span>
                 <Link
                   href="/nutrition"
@@ -144,7 +172,9 @@ export default function DashboardPage() {
 
               {todayMeals.length === 0 ? (
                 <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px]">
-                  <div className="text-3xl mb-1">🍽️</div>
+                  <div className="text-3xl mb-1" aria-hidden="true">
+                    🍽️
+                  </div>
                   <div className="font-bold text-[14px] text-foreground">
                     No meals logged
                   </div>
@@ -161,10 +191,7 @@ export default function DashboardPage() {
                         key={m.id}
                         className="flex items-center gap-4 p-4 m-2 hover:bg-subtle hover:rounded-xl transition-colors ">
                         <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
-                          <Icon
-                            size={20}
-                            className="text-foreground"
-                          />
+                          <Icon size={20} className="text-foreground" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-bold text-[15px] text-foreground truncate">
@@ -187,6 +214,75 @@ export default function DashboardPage() {
                   })}
                 </Card>
               )}
+            </section>
+          </BlurFade>
+        </div>
+
+        {/* Third Row: Fasting & Hydration */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Fasting card */}
+          {/* <BlurFade delay={0.3}>
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[17px] font-bold text-foreground">
+                  Fasting
+                </span>
+                <Link
+                  href="/fasting"
+                  className="text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                  {fastingSession?.status === "active"
+                    ? "Manage →"
+                    : "Start fast →"}
+                </Link>
+              </div>
+              <Card className="p-6 flex flex-col items-center gap-4">
+                <FastingRing
+                  progress={fastingTimer.progress}
+                  elapsedLabel={fastingTimer.elapsedLabel}
+                  remainingLabel={fastingTimer.remainingLabel}
+                  targetLabel={fastingTimer.targetLabel}
+                  isComplete={fastingTimer.isComplete}
+                  size={180}
+                  strokeWidth={11}
+                />
+                {!fastingSession || fastingSession.status !== "active" ? (
+                  <Link
+                    href="/fasting"
+                    id="dashboard-fasting-start"
+                    className="w-full text-center py-2.5 rounded-xl bg-foreground text-background text-sm font-bold hover:opacity-85 transition-opacity">
+                    Start a fast
+                  </Link>
+                ) : null}
+              </Card>
+            </section>
+          </BlurFade> */}
+
+          {/* Hydration card */}
+          <BlurFade delay={0.35}>
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[17px] font-bold text-foreground">
+                  Hydration
+                </span>
+                <span className="text-[13px] font-semibold text-muted-foreground">
+                  {hydration.pct >= 1
+                    ? "Goal reached! 💧"
+                    : `${Math.round(hydration.pct * 100)}%`}
+                </span>
+              </div>
+              <Card className="p-5">
+                <HydrationBar
+                  totalMl={hydration.totalMl}
+                  goalMl={hydration.goalMl}
+                  pct={hydration.pct}
+                  entries={hydration.entries}
+                  volumeUnit={profile?.volumeUnit ?? "ml"}
+                  onAdd={addHydration}
+                  onRemove={removeHydration}
+                  onSetGoal={setHydrationGoal}
+                  goalReached={hydration.goalReached}
+                />
+              </Card>
             </section>
           </BlurFade>
         </div>

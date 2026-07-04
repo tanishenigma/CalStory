@@ -8,21 +8,6 @@ import FAB from "@/app/components/FAB";
 import { usePrefsStore } from "@/app/store/prefsStore";
 import { usePathname } from "next/navigation";
 
-/**
- * Mobile-only page slide animation. Mirrors the "swipe between tabs"
- * feel of native iOS/Android shells.
- *
- * - Only runs when the BottomNav is visible (viewport < Tailwind's
- *   `lg` breakpoint = 1024px). On desktop the wrapper renders a
- *   plain <div>, no motion, so the page never animates.
- * - Honours `prefers-reduced-motion: reduce` — falls back to no
- *   animation in that case.
- * - `mode="wait"` so the outgoing page finishes its exit before the
- *   new one enters; this avoids overlapping content during a fast
- *   tap between tabs and keeps the BottomNav indicator above both.
- * - `initial={false}` so we don't animate on first paint (would
- *   flash the page in from the right on hard refresh).
- */
 function MobilePageShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);

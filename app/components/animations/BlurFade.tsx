@@ -1,17 +1,17 @@
-'use client';
-import React from 'react';
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+"use client";
+import React from "react";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 
 interface BlurFadeProps {
-  children:   React.ReactNode;
-  delay?:     number;
-  duration?:  number;
-  yOffset?:   number;
-  blur?:      string;
-  inView?:    boolean;
+  children: React.ReactNode;
+  delay?: number;
+  duration?: number;
+  yOffset?: number;
+  blur?: string;
+  inView?: boolean;
   className?: string;
-  style?:     React.CSSProperties;
+  style?: React.CSSProperties;
 }
 
 export default function BlurFade({
@@ -19,9 +19,9 @@ export default function BlurFade({
   delay = 0,
   duration = 0.4,
   yOffset = 8,
-  blur = '6px',
+  blur = "6px",
   inView = false,
-  className = '',
+  className = "",
   style,
 }: BlurFadeProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -32,11 +32,10 @@ export default function BlurFade({
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: yOffset, filter: `blur(${blur})` }}
-      animate={shouldAnimate ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
+      animate={shouldAnimate ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
       transition={{ duration, delay, ease: [0.21, 0.47, 0.32, 0.98] }}
       className={className}
-      style={style}
-    >
+      style={style}>
       {children}
     </motion.div>
   );

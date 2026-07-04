@@ -9,6 +9,7 @@ import {
   Sun,
   Moon,
   Sparkles,
+  FlaskConical,
 } from "lucide-react";
 import { Card } from "@/app/components/ui/card";
 import { Switch } from "@/app/components/ui/switch";
@@ -107,6 +108,11 @@ export function AppearanceTab() {
           <div>
             <div className="text-sm font-bold mb-1 flex items-center gap-1.5">
               Dynamic Background
+              <span>•</span>
+              <span className="uppercase text-xs flex items-center gap-0.5 text-primary">
+                <FlaskConical size={15} />
+                EXPERIMENTAL
+              </span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Animates a full-screen colour gradient that slowly cycles through
@@ -181,7 +187,7 @@ export function AppearanceTab() {
                     className={[
                       "relative z-10 text-[11px] leading-relaxed",
                       active
-                        ? "text-white/70 dark:text-foreground/60"
+                        ? "text-background/60 dark:text-background/60"
                         : "text-muted-foreground",
                     ].join(" ")}>
                     {opt.sub}

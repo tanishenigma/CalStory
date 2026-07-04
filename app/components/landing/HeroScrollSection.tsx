@@ -3,23 +3,37 @@
 import dynamic from "next/dynamic";
 import { ReactLenis } from "lenis/react";
 import BlurFade from "../animations/BlurFade";
-import { usePrefsStore, resolveTheme } from "@/app/store/prefsStore";
+import { DashboardMock } from "./DashboardMock";
+import { MobileDashboardMock } from "./MobileDashboardMock";
 
 export const dashboardDark = "/screenshots/dashboard_dark.png";
 export const dashboardLight = "/screenshots/dashboard_light.png";
 
-function ScreenshotCard() {
-  const theme = usePrefsStore((s) => s.theme);
-  const isDark = resolveTheme(theme) === "dark";
-
+/**
+ * DesktopScreenshotCard — wide 7:5 canvas, renders `DashboardMock`
+ * (the desktop-style dashboard with sidebar + grid layout).
+ */
+function DesktopScreenshotCard() {
   return (
     <div className="relative w-full aspect-[7/5] overflow-hidden rounded-2xl">
       <div className="absolute inset-0 z-10 pointer-events-none" />
-      <img
-        src={isDark ? dashboardDark : dashboardLight}
-        alt="CalStory dashboard"
-        className="w-full h-full object-cover"
-      />
+      <DashboardMock />
+    </div>
+  );
+}
+
+/**
+ * MobileScreenshotCard — phone-shaped (9:19 portrait) canvas,
+ * renders `MobileDashboardMock`. This mock mirrors the real
+ * CalStory mobile dashboard exactly — logo + streak header,
+ * circular day strip, calories card, stacked macro rows, FAB —
+ * so on a phone the landing hero previews what the user will
+ * actually see when they open the app.
+ */
+function MobileScreenshotCard() {
+  return (
+    <div className="relative mx-auto w-full max-w-90 aspect-[9/19] overflow-hidden rounded-[28px] border border-white/10 shadow-2xl shadow-black/40">
+      <MobileDashboardMock />
     </div>
   );
 }
@@ -48,9 +62,9 @@ const ContainerScroll = dynamic(
 
 function MobileLayout() {
   return (
-    <div className="md:hidden py-36 space-y-6 max-w-xl mx-auto text-center px-4">
+    <div className="md:hidden py-24 space-y-8 max-w-xl mx-auto text-center px-4">
       <BlurFade delay={0.15}>
-        <ScreenshotCard />
+        <MobileScreenshotCard />
       </BlurFade>
       <BlurFade>
         <h2 className="text-3xl font-bold leading-tight">
@@ -70,7 +84,7 @@ function DesktopLayout() {
   return (
     <div className="hidden md:block w-full">
       <ContainerScroll titleComponent={<HeroCopy />}>
-        <ScreenshotCard />
+        <DesktopScreenshotCard />
       </ContainerScroll>
     </div>
   );

@@ -1,8 +1,8 @@
 "use client";
 
 import { ReactLenis } from "lenis/react";
-import { BlurFade } from "@/app/components/BlurFade";
-import { useAuthStore } from "@/app/store/authStore";
+import BlurFade from "@/app/components/animations/BlurFade";
+
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/app/components/landing/Navbar";
@@ -11,11 +11,8 @@ import { ArrowRight } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 
 export function AboutClient() {
-  const { user } = useAuthStore();
   const router = useRouter();
 
-  // Navbar's "Get Started" / mobile "Login" buttons route through here.
-  // Delegate to /auth so the user lands on the dedicated sign-in surface.
   function handleSignIn() {
     router.push("/auth");
   }
@@ -23,7 +20,7 @@ export function AboutClient() {
   return (
     <ReactLenis root options={{ lerp: 0.1, duration: 1.5 }}>
       <div className="relative min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
-        <Navbar onSignIn={handleSignIn} user={user} />
+        <Navbar onSignIn={handleSignIn} />
 
         <main className="relative z-10 pt-32 pb-24 px-6 max-w-3xl mx-auto w-full">
           <BlurFade delay={0.1}>
@@ -99,7 +96,6 @@ export function AboutClient() {
             </div>
           </BlurFade>
         </main>
-
         <Footer />
       </div>
     </ReactLenis>

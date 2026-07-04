@@ -7,6 +7,8 @@ import LenisProvider from "@/app/components/LenisProvider";
 import { cn } from "@/app/lib/utils";
 import { Toaster } from "@/app/components/ui/sonner";
 import { DynamicBackground } from "@/app/components/DynamicBackground";
+import { RouteThemeController } from "@/app/components/RouteThemeController";
+import { SiteJsonLd } from "@/app/components/seo/SiteJsonLd";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -57,6 +59,19 @@ export const metadata: Metadata = {
   publisher: SITE_NAME,
   alternates: {
     canonical: "/",
+    languages: {
+      "en-US": "/",
+    },
+  },
+  // Prevent iOS Safari from auto-linking phone numbers / addresses
+  // in body text, which can visually corrupt numeric data (calorie
+  // counts, weights, etc.).
+  formatDetection: {
+    telephone: false,
+    date: false,
+    address: false,
+    email: false,
+    url: false,
   },
   openGraph: {
     type: "website",
@@ -117,6 +132,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
       className={cn(
         bricolage.variable,
         instrument.variable,
@@ -131,6 +147,10 @@ export default function RootLayout({
   var t=raw?JSON.parse(raw):localStorage.getItem('theme');
   var dark=t==='dark'||(t!=='light'&&(!t||t==='"system"'||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);
   if(dark)document.documentElement.classList.add('dark');
+  // Forced-dark public pages (landing + auth) — add the matching
+  // class before paint so the user never sees a light flash.
+  var p=window.location.pathname;
+  if(p==='/'||p==='/index'||p===''||p==='/auth')document.documentElement.classList.add('forced-dark');
 }catch(e){}})();`,
           }}
         />
@@ -141,8 +161,13 @@ export default function RootLayout({
         />
       </head>
       <body className="font-instrument antialiased selection:bg-primary/30 selection:text-primary-foreground bg-background text-foreground">
+        {/* Site-wide Organization + WebSite JSON-LD. `SearchAction`
+         * inside WebSite powers Google's sitelinks search box.
+         * Server-rendered, no client JS shipped. */}
+        <SiteJsonLd />
         <DynamicBackground />
         <AppProvider>
+          <RouteThemeController />
           <ToastContainer>
             <LenisProvider>{children}</LenisProvider>
           </ToastContainer>

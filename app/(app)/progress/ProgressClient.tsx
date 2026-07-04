@@ -13,15 +13,27 @@ import WeightChanges from "@/app/components/progress/WeightChanges";
 import { WeightHistory } from "@/app/components/progress/WeightHistory";
 import { ConsistencyHeatmap } from "@/app/components/progress/ConsistencyHeatmap";
 import { CalorieVsTdeeChart } from "@/app/components/progress/CalorieVsTdeeChart";
+import { TodayFitnessSync } from "@/app/components/progress/TodayFitnessSync";
+import { useFitnessAutoSync } from "@/app/hooks/useFitnessAutoSync";
 
 export default function ProgressPage() {
   const { profile, isLoading } = useAuthGuard();
-  const { state } = useApp();
+  const { state, saveFitnessLog } = useApp();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Per-page-mount sync: visiting Progress also kicks a fitness sync
+  // so the dashboard reflects fresh step data without the user needing
+  // to open /fitness first.
+  useFitnessAutoSync({
+    enabled: !!profile,
+    onSync: (log) => {
+      void saveFitnessLog(log);
+    },
+  });
 
   const chartData = useMemo(() => {
     if (!profile) return [];
@@ -58,9 +70,10 @@ export default function ProgressPage() {
       <h1 className="mb-4 sm:mb-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
         Progress
       </h1>
+      <TodayFitnessSync />
       <Streak />
       <div className="mb-4  grid grid-cols-1 lg:grid-cols-2 gap-4 items-center p-2">
-        <ConsistencyHeatmap  mode="meals" />
+        <ConsistencyHeatmap mode="meals" />
         <WeightHistory />
         {/* <NutritionQuality /> */}
       </div>

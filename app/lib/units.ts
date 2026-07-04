@@ -3,6 +3,7 @@ import type {
   HeightUnit,
   GoalKey,
   IntensityKey,
+  VolumeUnit,
 } from "@/app/types";
 
 // Unit conversion helpers
@@ -53,3 +54,27 @@ export const INTENSITY_ADJ: Record<IntensityKey, Record<GoalKey, number>> = {
   weightloss: { cut: 0.81, maintain: 1.0, bulk: 1.1 },
   extremeCut: { cut: 0.63, maintain: 1.0, bulk: 1.15 },
 };
+
+// ── Volume conversions ────────────────────────────────────────
+// Values are always stored internally in ml. Display helpers
+// reformat live based on the user's chosen VolumeUnit setting.
+const ML_PER_FLOZ = 29.5735;
+
+/** Convert millilitres to US fluid ounces, rounded to 1 decimal. */
+export const mlToFloz = (ml: number): number =>
+  Math.round((ml / ML_PER_FLOZ) * 10) / 10;
+
+/** Convert US fluid ounces to millilitres, rounded to nearest integer. */
+export const flozToMl = (floz: number): number =>
+  Math.round(floz * ML_PER_FLOZ);
+
+/**
+ * Format a ml quantity for display in the user's preferred unit.
+ * Returns a string like "250 ml", "8.5 fl oz", "1.5 L", etc.
+ */
+export function displayVolume(ml: number, unit: VolumeUnit = "ml"): string {
+  if (unit === "floz") return `${mlToFloz(ml)} fl oz`;
+  // For ml, show as litres when ≥ 1000 ml to keep numbers readable.
+  if (ml >= 1000) return `${Math.round((ml / 1000) * 10) / 10} L`;
+  return `${ml} ml`;
+}

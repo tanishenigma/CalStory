@@ -295,12 +295,11 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
                       className={`rounded-[3px] relative group/cell cursor-pointer ${cell.intensity === 0 && !cell.isFuture ? "bg-foreground/10 dark:bg-foreground/15" : ""}`}
                       style={{
                         backgroundColor: cell.isFuture
-                          ? "transparent"
+                          ? "rgba(0, 0, 0, 0)"
                           : cell.intensity > 0
                             ? `rgba(${accentRgb},${cell.intensity})`
                             : undefined,
-                        // Workout cross-signal uses the same brand primary
-                        // so the heatmap reads as one color language.
+
                         border:
                           mode === "meals" && cell.hasWorkout && !cell.isFuture
                             ? "1px solid oklch(0.7227 0.1920 149.5793 / 0.6)"

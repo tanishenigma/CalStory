@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/app/components/ui/card";
 import BlurFade from "@/app/components/animations/BlurFade";
 import { useToast } from "@/app/components/ToastContainer";
-import type { Profile, HeightUnit, WeightUnit } from "@/app/types";
+import type { Profile, HeightUnit, WeightUnit, VolumeUnit } from "@/app/types";
 
 interface UnitsTabProps {
   profile: Profile;
@@ -13,6 +13,8 @@ interface UnitsTabProps {
   setWeightUnit: (u: WeightUnit) => void;
   heightUnit: HeightUnit;
   setHeightUnit: (u: HeightUnit) => void;
+  volumeUnit: VolumeUnit;
+  setVolumeUnit: (u: VolumeUnit) => void;
   setProfile: (p: Profile) => Promise<void>;
 }
 
@@ -22,6 +24,8 @@ export function UnitsTab({
   setWeightUnit,
   heightUnit,
   setHeightUnit,
+  volumeUnit,
+  setVolumeUnit,
   setProfile,
 }: UnitsTabProps) {
   const toast = useToast();
@@ -29,7 +33,7 @@ export function UnitsTab({
 
   async function saveUnits() {
     setSaving(true);
-    await setProfile({ ...profile, weightUnit, heightUnit });
+    await setProfile({ ...profile, weightUnit, heightUnit, volumeUnit });
     setSaving(false);
     toast("Units saved ✓");
   }
@@ -56,6 +60,7 @@ export function UnitsTab({
               {weightUnit === u.key && (
                 <motion.div
                   layoutId="active-weight-unit"
+                  initial={false}
                   className="absolute inset-0 rounded-xl bg-foreground text-background"
                   transition={{ type: "spring", stiffness: 320, damping: 28 }}
                 />
@@ -89,11 +94,46 @@ export function UnitsTab({
               {heightUnit === u.key && (
                 <motion.div
                   layoutId="active-height-unit"
+                  initial={false}
                   className="absolute inset-0 rounded-xl  bg-foreground text-background"
                   transition={{ type: "spring", stiffness: 320, damping: 28 }}
                 />
               )}
               <div className="relative z-10 font-mono text-3xl font-medium mb-1">
+                {u.sub}
+              </div>
+              <div className="relative z-10 text-sm font-semibold">
+                {u.label}
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div className="text-sm font-bold mb-4">Volume Unit</div>
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          {(
+            [
+              { key: "ml", label: "Millilitres / Litres", sub: "ml / L" },
+              { key: "floz", label: "Fluid Ounces", sub: "fl oz" },
+            ] as { key: VolumeUnit; label: string; sub: string }[]
+          ).map((u) => (
+            <button
+              key={u.key}
+              onClick={() => setVolumeUnit(u.key)}
+              className={`relative p-5 rounded-xl border text-center transition-colors ${
+                volumeUnit === u.key
+                  ? "border-transparent bg-foreground text-background"
+                  : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
+              }`}>
+              {volumeUnit === u.key && (
+                <motion.div
+                  layoutId="active-volume-unit"
+                  initial={false}
+                  className="absolute inset-0 rounded-xl bg-foreground text-background"
+                  transition={{ type: "spring", stiffness: 320, damping: 28 }}
+                />
+              )}
+              <div className="relative z-10 font-mono text-2xl font-medium mb-1">
                 {u.sub}
               </div>
               <div className="relative z-10 text-sm font-semibold">

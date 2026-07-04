@@ -1,8 +1,8 @@
 "use client";
 
 import { ReactLenis } from "lenis/react";
-import { BlurFade } from "@/app/components/BlurFade";
-import { useAuthStore } from "@/app/store/authStore";
+import BlurFade from "@/app/components/animations/BlurFade";
+
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/app/components/landing/Navbar";
 import Footer from "@/app/footer";
@@ -25,7 +25,6 @@ export function BlogShell({
   readTime: string;
   children: ReactNode;
 }) {
-  const { user } = useAuthStore();
   const router = useRouter();
   function handleSignIn() {
     router.push("/auth");
@@ -34,7 +33,7 @@ export function BlogShell({
   return (
     <ReactLenis root options={{ lerp: 0.1, duration: 1.5 }}>
       <div className="relative min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
-        <Navbar onSignIn={handleSignIn} user={user} />
+        <Navbar onSignIn={handleSignIn} />
         <BlurFade>
           <main className="relative z-10 pt-32 pb-24 px-6 max-w-3xl mx-auto w-full">
             <Link

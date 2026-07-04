@@ -33,10 +33,6 @@ export default function AuthPage() {
     setSubmitting(true);
     try {
       await signInWithGoogle();
-      // The Firebase auth listener (initAuthListener → onAuthStateChanged)
-      // updates useAuthStore.user, which makes the redirect effect above
-      // push us to /dashboard. No need to write a hint to localStorage —
-      // Firebase's browserLocalPersistence handles session persistence.
       router.push("/dashboard");
     } catch (err) {
       const code =
@@ -154,24 +150,29 @@ export default function AuthPage() {
           }}
         />
 
-        {/* Light mode image */}
+        {/* Light mode image — only when the user is in a non-forced,
+         * non-dark context. Auth is a forced-dark page so this stays
+         * hidden there; it surfaces only if someone somehow reaches
+         * `/auth` in a true light-mode build. */}
         <Image
           src="/screenshots/dashboard_light.png"
           alt="CalStory — track your progress"
           fill
           quality={100}
           priority
-          className="object-cover object-center dark:hidden "
+          className="object-cover object-center dark:hidden forced-dark:hidden"
         />
 
-        {/* Dark mode image — dimmed */}
+        {/* Dark mode image — dimmed. Shown both for `.dark` (user
+         * picked dark/system-dark) and for `.forced-dark` (landing,
+         * auth — always dark regardless of stored preference). */}
         <Image
           src="/screenshots/dashboard_dark.png"
           alt="CalStory — track your progress"
           fill
           quality={100}
           priority
-          className="hidden dark:block object-cover object-center brightness-[0.55]"
+          className="hidden dark:block forced-dark:block object-cover object-center brightness-[0.55]"
         />
 
         {/* Optional tagline over the image */}

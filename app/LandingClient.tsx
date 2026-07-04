@@ -1,26 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useRef } from "react";
 import { ReactLenis } from "lenis/react";
-import { BlurFade } from "@/app/components/BlurFade";
+import BlurFade from "@/app/components/animations/BlurFade";
+
 import { useAuthStore } from "@/app/store/authStore";
-import { useApp } from "@/app/context/AppContext";
-import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import {
-  ArrowRight,
-  CircleQuestionMark,
-  Brain,
-  TrendingUp,
-  Zap,
-  Shield,
-} from "lucide-react";
+import { ArrowRight, CircleQuestionMark } from "lucide-react";
 import Footer from "./footer";
 import CTASection from "@/app/cta";
-import PrecisionWorkflow from "@/app/components/landing/PrecisionWorkflow";
-import EngineeredPerformance from "@/app/components/landing/EngineeredPerformance";
 import FAQSection from "@/app/components/landing/FAQSection";
 import HeroScrollSection from "@/app/components/landing/HeroScrollSection";
 import { Navbar } from "@/app/components/landing/Navbar";
@@ -29,64 +20,25 @@ import { landingJsonLd } from "@/app/components/landing/landingJsonLd";
 import CurvedLoop from "./components/ui/CurvedLoop";
 import FeatureGrid from "./components/landing/Features";
 import { BackgroundGrid } from "@/app/components/BackgroundGrid";
+import MethodSection from "./MethodSection";
 
 if (typeof window !== "undefined") gsap.registerPlugin(ScrollTrigger);
 
-const STEPS = [
-  {
-    n: "01",
-    title: "Engineer your profile",
-    desc: "Set your physiological benchmarks and goals in under 60 seconds.",
-  },
-  {
-    n: "02",
-    title: "Streamline logging",
-    desc: "Our friction-less interface makes tracking as fast as a text message.",
-  },
-  {
-    n: "03",
-    title: "Maximize results",
-    desc: "Daily data-driven adjustments ensure you never plateau again.",
-  },
-];
-
 export default function LandingPage() {
-  const { user } = useAuthStore();
-  const { state } = useApp();
   const router = useRouter();
-  const stepsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const user = useAuthStore((s) => s.user);
+  const authLoading = useAuthStore((s) => s.loading);
+  const isSignedIn = !!user && !authLoading;
 
-  const hasProfile = !!state.profile;
-
-  useEffect(() => {
-    const circumference = 415;
-    const target = 1840;
-    const endOffset = circumference * (1 - target / 2200);
-
-    const ctx = gsap.context(() => {
-      stepsRef.current.forEach((el, i) => {
-        if (!el) return;
-        gsap.fromTo(
-          el,
-          { opacity: 0, x: -20 },
-          {
-            opacity: 1,
-            x: 0,
-            duration: 0.6,
-            ease: "power3.out",
-            delay: i * 0.1,
-            scrollTrigger: {
-              trigger: el,
-              start: "top 90%",
-              toggleActions: "play none none none",
-            },
-          },
-        );
-      });
-    });
-
-    return () => ctx.revert();
-  }, []);
+  // Refs for the three navbar scroll targets. The navbar scrolls
+  // to `targets[href].current` rather than relying on DOM IDs so
+  // (a) we get a single source of truth for which element is
+  // actually the scroll target (no orphaned IDs), and (b) the
+  // scroll still works on routes where the section wraps a
+  // virtualised / conditionally-rendered child.
+  const featuresRef = useRef<HTMLDivElement>(null);
+  const methodRef = useRef<HTMLElement>(null);
+  const faqRef = useRef<HTMLElement>(null);
 
   function handleSignIn() {
     router.push("/auth");
@@ -95,7 +47,6 @@ export default function LandingPage() {
   return (
     <ReactLenis root options={{ lerp: 0.1, duration: 1.5 }}>
       <div className="pointer-events-none fixed inset-0" style={{ zIndex: 0 }}>
-        {/* Primary green orb — top-right */}
         <div
           className="orb-1 absolute"
           style={{
@@ -111,7 +62,6 @@ export default function LandingPage() {
             filter: "blur(48px)",
           }}
         />
-        {/* Secondary green orb — bottom-left */}
         <div
           className="orb-2 absolute"
           style={{
@@ -127,7 +77,6 @@ export default function LandingPage() {
             filter: "blur(60px)",
           }}
         />
-        {/* Accent deep-green orb — center */}
         <div
           className="orb-3 absolute"
           style={{
@@ -145,19 +94,19 @@ export default function LandingPage() {
         />
       </div>
 
-      {/* Content — relative z-10 sits above the orb layer */}
       <div
         className="relative min-h-screen text-foreground font-sans selection:bg-primary/30"
         style={{ zIndex: 1 }}>
-        {/* NAV */}
-        <Navbar onSignIn={handleSignIn} user={user} />
-        {/* SEO: Organization + SoftwareApplication + FAQPage JSON-LD.
-            Rendered server-side; no client JS shipped. */}
+        <Navbar
+          onSignIn={handleSignIn}
+          targets={{
+            features: featuresRef,
+            "how-it-works": methodRef,
+            faq: faqRef,
+          }}
+        />
         <StructuredData data={landingJsonLd} />
-        {/* HERO - Simplified, single focus */}
         <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-30  min-h-[85vh] w-full overflow-hidden">
-          {/* Hairline grid backdrop — scoped to the hero only so it
-              doesn't bleed into the method/features/FAQ sections. */}
           <BackgroundGrid scopedToHero />
           <BlurFade delay={0.2} className="w-full max-w-5xl mx-auto px-4">
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] mb-6 font-heading">
@@ -176,14 +125,12 @@ export default function LandingPage() {
           <BlurFade
             delay={0.4}
             className="flex flex-wrap items-center justify-center gap-4">
-            {!hasProfile ? (
+            {!isSignedIn ? (
               <>
                 <button
-                  onClick={() =>
-                    user ? router.push("/dashboard") : handleSignIn()
-                  }
+                  onClick={handleSignIn}
                   className="h-12 px-8 rounded-2xl bg-foreground text-background text-base font-bold hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center gap-3 shadow-xl shadow-black/10 whitespace-nowrap">
-                  {user ? "Enter Dashboard" : "Start Tracking"}
+                  Start Tracking
                   <ArrowRight size={18} />
                 </button>
                 <Link
@@ -204,74 +151,31 @@ export default function LandingPage() {
 
           <HeroScrollSection />
         </section>
-        {/* METHOD SECTION */}
-        <section
-          id="how-it-works"
-          className="relative z-10 py-24 px-6  w-full flex justify-center">
-          <div className="max-w-5xl mx-auto w-full">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start">
-              <BlurFade>
-                <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.1] font-heading">
-                  Zero Friction.{" "}
-                  <span className="text-primary">Maximum Results.</span>
-                </h2>
-                <p className="mt-6 text-muted-foreground text-base leading-relaxed">
-                  Most trackers fail because they're too slow. CalStory is
-                  optimized for speed, so you spend less time logging and more
-                  time training.
-                </p>
-              </BlurFade>
-
-              <div className="flex flex-col gap-8">
-                {STEPS.map((s, i) => (
-                  <div
-                    key={s.n}
-                    ref={(el) => {
-                      stepsRef.current[i] = el;
-                    }}
-                    className="flex items-start gap-5 group">
-                    <div className="shrink-0 w-10 h-10 rounded-xl bg-foreground text-background flex items-center justify-center text-sm font-bold tabular-nums group-hover:bg-primary transition-colors">
-                      {s.n}
-                    </div>
-                    <div>
-                      <div className="font-bold text-base mb-1 tracking-tight font-heading">
-                        {s.title}
-                      </div>
-                      <div className="text-muted-foreground text-sm leading-relaxed">
-                        {s.desc}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-        {/*  Features*/}
-        <FeatureGrid />
-
-        {/* FAQ Section */}
+        <MethodSection ref={methodRef} />
+        <FeatureGrid ref={featuresRef} />{" "}
         <section
           id="faq"
-          className="relative z-10 pt-24 px-6 w-full flex justify-center">
+          ref={faqRef}
+          className="relative z-10 py-24 px-6 w-full flex justify-center">
           <div className="max-w-5xl mx-auto w-full flex flex-col gap-20 sm:gap-28">
             <FAQSection />
           </div>
         </section>
-        <section className="relative w-full pt-24 px-6">
-          <CurvedLoop
-            marqueeText="✦ Cal ✦ Story"
-            speed={2}
-            curveAmount={180}
-            direction="right"
-            interactive
-            className="relative z-0 opacity-50 dark:opacity-20"
-          />
-
-          <div className="absolute inset-0 flex items-center justify-center z-10">
+        <div className="relative w-full min-h-screen isolate">
+          <div className="absolute inset-0 2xl:-top-80 -top-40 md:-top-20 z-0 pointer-events-none">
+            <CurvedLoop
+              marqueeText="✦ CalStory"
+              speed={1}
+              curveAmount={180}
+              direction="right"
+              className="w-screen h-screen opacity-50 dark:opacity-20 font-heading"
+            />
+          </div>
+          {/* Foreground — interactive content above the curve */}
+          <div className="relative z-10">
             <CTASection handleSignIn={handleSignIn} />
           </div>
-        </section>
+        </div>
         <Footer />
       </div>
     </ReactLenis>

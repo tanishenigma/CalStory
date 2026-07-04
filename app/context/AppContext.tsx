@@ -12,6 +12,7 @@ import {
   persistPrefsForUser,
   usePrefsStore,
 } from "@/app/store/prefsStore";
+import { useProfileStore } from "@/app/store/profileStore";
 import {
   saveMeal,
   deleteMealDB,
@@ -31,6 +32,13 @@ import {
   saveWeightLog,
   getWeightLogs,
   deleteWeightLogDB,
+  saveFitnessLog,
+  getFitnessLogs,
+  saveFastingSession,
+  getFastingSession,
+  clearFastingSessionDB,
+  saveHydrationLog,
+  getHydrationLog,
 } from "@/app/lib/db";
 import type {
   AppState,
@@ -42,7 +50,12 @@ import type {
   RecentMeal,
   WeightLog,
   WeightUnit,
+  FitnessLog,
+  FastingSession,
+  HydrationLog,
+  HydrationEntry,
 } from "@/app/types";
+import { calcTDEE } from "@/app/lib/tdee";
 
 export const todayKey = (): string => new Date().toISOString().slice(0, 10);
 
@@ -77,7 +90,16 @@ type Action =
   | { type: "SET_TEMPLATES"; payload: SavedWorkout[] }
   | { type: "ADD_WEIGHT_LOG"; payload: WeightLog }
   | { type: "DELETE_WEIGHT_LOG"; id: string }
-  | { type: "SET_WEIGHT_LOGS"; payload: WeightLog[] };
+  | { type: "SET_WEIGHT_LOGS"; payload: WeightLog[] }
+  // Fitness
+  | { type: "SET_FITNESS_LOG"; payload: FitnessLog }
+  // Fasting
+  | { type: "SET_FASTING_SESSION"; payload: FastingSession | null }
+  // Hydration
+  | { type: "SET_HYDRATION_LOG"; payload: HydrationLog | null }
+  | { type: "ADD_HYDRATION_ENTRY"; payload: HydrationEntry }
+  | { type: "REMOVE_HYDRATION_ENTRY"; id: string }
+  | { type: "SET_HYDRATION_GOAL"; goalMl: number };
 
 const initial: AppState = {
   profile: undefined,
@@ -87,6 +109,9 @@ const initial: AppState = {
   recents: [],
   weightLogs: [],
   selDate: todayLocalKey(),
+  fitnessLogs: {},
+  fastingSession: null,
+  hydrationLog: null,
 };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -192,6 +217,58 @@ function reducer(state: AppState, action: Action): AppState {
       };
     case "SET_WEIGHT_LOGS":
       return { ...state, weightLogs: action.payload };
+    case "SET_FITNESS_LOG":
+      return {
+        ...state,
+        fitnessLogs: {
+          ...state.fitnessLogs,
+          [action.payload.date]: action.payload,
+        },
+      };
+    case "SET_FASTING_SESSION":
+      return { ...state, fastingSession: action.payload };
+    case "SET_HYDRATION_LOG":
+      return { ...state, hydrationLog: action.payload };
+    case "ADD_HYDRATION_ENTRY": {
+      const existing = state.hydrationLog ?? {
+        date: todayLocalKey(),
+        goalMl: 2500,
+        entries: [],
+      };
+      return {
+        ...state,
+        hydrationLog: {
+          ...existing,
+          entries: [...existing.entries, action.payload],
+        },
+      };
+    }
+    case "REMOVE_HYDRATION_ENTRY": {
+      if (!state.hydrationLog) return state;
+      return {
+        ...state,
+        hydrationLog: {
+          ...state.hydrationLog,
+          entries: state.hydrationLog.entries.filter((e) => e.id !== action.id),
+        },
+      };
+    }
+    case "SET_HYDRATION_GOAL": {
+      if (!state.hydrationLog) {
+        return {
+          ...state,
+          hydrationLog: {
+            date: todayLocalKey(),
+            goalMl: action.goalMl,
+            entries: [],
+          },
+        };
+      }
+      return {
+        ...state,
+        hydrationLog: { ...state.hydrationLog, goalMl: action.goalMl },
+      };
+    }
     default:
       return state;
   }
@@ -298,6 +375,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           selDate: todayLocalKey(),
         },
       });
+      // Visibly clear the profile store on sign-out so the landing
+      // CTA flips back to "Get started free" without a refresh.
+      useProfileStore.getState().setLive(false);
       return;
     }
 
@@ -317,6 +397,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         const profile = await getProfile(user.uid);
         dispatch({ type: "SET_PROFILE", payload: profile ?? null });
+        // Mirror to the global profile store so marketing-page CTAs
+        // and any other consumer converge on the source of truth.
+        useProfileStore.getState().setLive(profile != null);
         // Kick off the rest in parallel. We don't await it here so the
         // onboarding → dashboard redirect isn't blocked on 5 reads.
         void hydrateSecondary(user.uid);
@@ -325,27 +408,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         // the auth guard show the empty state.
         console.error("[AppContext] primary hydrate failed:", err);
         dispatch({ type: "SET_PROFILE", payload: null });
+        useProfileStore.getState().setLive(false);
       }
     }
     hydrateRemote();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading]);
 
-  // Secondary hydration: meals/workouts/recents/templates. Runs in
-  // the background after the profile is known. Failures are logged
-  // but never block the user from using the app.
+  // Secondary hydration: meals/workouts/recents/templates/fasting/hydration.
+  // Runs in the background after the profile is known.
   const hydrateSecondary = useCallback(async (uid: string): Promise<void> => {
     try {
-      const [recents, templates, weightLogs] = await Promise.all([
-        getRecentMeals(uid),
-        getWorkoutTemplates(uid),
-        getWeightLogs(uid),
-      ]);
+      const [recents, templates, weightLogs, fastingSession, hydrationLog] =
+        await Promise.all([
+          getRecentMeals(uid),
+          getWorkoutTemplates(uid),
+          getWeightLogs(uid),
+          getFastingSession(uid),
+          getHydrationLog(uid, todayLocalKey()),
+        ]);
       const today = todayLocalKey();
-      // Build the past 30 local dates (inclusive of today). The
-      // streak hook and WeekStrip dots both need at least a couple
-      // weeks of data, so we preload a month on hydration. Per-day
-      // fetches still kick in if the user navigates further back.
       const dateKeys: string[] = [];
       const base = new Date();
       for (let i = 0; i < 30; i++) {
@@ -368,8 +450,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           savedWorkouts: templates,
           recents,
           weightLogs,
+          fastingSession: fastingSession ?? null,
+          hydrationLog: hydrationLog ?? null,
         },
       });
+      void today; // suppress unused-var lint
     } catch (err) {
       console.warn("[AppContext] secondary hydrate failed:", err);
     }
@@ -400,6 +485,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setProfile = useCallback(
     async (p: Profile): Promise<void> => {
       dispatch({ type: "SET_PROFILE", payload: p });
+      // Updating the profile always means a profile now exists.
+      // Reflect that immediately so CTA copy across the app updates.
+      useProfileStore.getState().setLive(true);
       if (!user) return;
       // Firestore is the only source of truth for profile data. We no
       // longer mirror the profile to localStorage — keeping it there
@@ -602,6 +690,169 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [user],
   );
 
+  // ── Fitness actions ───────────────────────────────────────
+  const saveFitnessLogAction = useCallback(
+    async (log: FitnessLog): Promise<void> => {
+      dispatch({ type: "SET_FITNESS_LOG", payload: log });
+      if (!user) return;
+      await saveFitnessLog(user.uid, log);
+
+      // Mirror the synced steps + active calories onto the profile, then
+      // recompute TDEE / calTarget. This is what makes the calorie
+      // dashboard "live" instead of stale until the user re-runs
+      // onboarding.
+      //
+      // Gate: recompute when EITHER
+      //   - the source changed (different provider / manual entry), OR
+      //   - the step bucket crossed a TDEE-bucket boundary. The activity
+      //     multiplier in calcTDEE only changes at hard thresholds
+      //     (5k/7.5k/10k/15k), so we recompute at those exact crossings
+      //     to avoid pointless writes on every minor step fluctuation.
+      try {
+        const current = state.profile ?? (await getProfile(user.uid));
+        if (!current) return;
+
+        const sourceChanged = current.syncedFromSource !== log.source;
+        const stepBucket = (s: number): 0 | 1 | 2 | 3 | 4 => {
+          if (s < 5000) return 0;
+          if (s < 7500) return 1;
+          if (s < 10000) return 2;
+          if (s < 15000) return 3;
+          return 4;
+        };
+        const stepBucketChanged =
+          stepBucket(current.syncedSteps ?? current.steps) !==
+          stepBucket(log.steps);
+
+        if (sourceChanged || stepBucketChanged) {
+          const tdeeResult = calcTDEE({
+            gender: current.gender,
+            weight: current.weight,
+            height: current.height,
+            age: current.age,
+            steps: log.steps,
+            workoutsPerWeek: current.workoutsPerWeek,
+            goal: current.goal,
+            intensity: current.intensity,
+          });
+          const updated: Profile = {
+            ...current,
+            steps: log.steps,
+            tdee: tdeeResult.tdee,
+            calTarget: tdeeResult.calTarget,
+            protein: tdeeResult.protein,
+            carbs: tdeeResult.carbs,
+            fat: tdeeResult.fat,
+            syncedSteps: log.steps,
+            syncedActiveCalories: log.activeCalories,
+            syncedFromSource: log.source,
+          };
+          await saveProfile(user.uid, updated);
+          // Only mirror to local state — leave the "macro weight changes"
+          // dispatch to the auth-guard / onboarding flow. This prevents
+          // the user's currently-displayed meal targets from flickering
+          // mid-day while they eat.
+          dispatch({ type: "SET_PROFILE", payload: updated });
+        } else {
+          // Steps in the same bucket and source hasn't changed — just
+          // update the cached mirror (cheap) and skip the TDEE recompute.
+          if (
+            current.syncedSteps !== log.steps ||
+            current.syncedActiveCalories !== log.activeCalories
+          ) {
+            const updated: Profile = {
+              ...current,
+              syncedSteps: log.steps,
+              syncedActiveCalories: log.activeCalories,
+              syncedFromSource: log.source,
+            };
+            await saveProfile(user.uid, updated);
+          }
+        }
+      } catch (err) {
+        // Non-fatal — the fitness log itself was saved; only the
+        // profile mirror / TDEE bump failed.
+        console.error("[AppContext] fitness profile sync failed:", err);
+      }
+    },
+    [user, state.profile],
+  );
+
+  // ── Fasting actions ───────────────────────────────────────
+  const setFastingSession = useCallback(
+    async (session: FastingSession): Promise<void> => {
+      dispatch({ type: "SET_FASTING_SESSION", payload: session });
+      if (!user) return;
+      await saveFastingSession(user.uid, session);
+    },
+    [user],
+  );
+
+  const clearFastingSession = useCallback(async (): Promise<void> => {
+    dispatch({ type: "SET_FASTING_SESSION", payload: null });
+    if (!user) return;
+    await clearFastingSessionDB(user.uid);
+  }, [user]);
+
+  // ── Hydration actions ─────────────────────────────────────
+  const addHydration = useCallback(
+    async (ml: number): Promise<void> => {
+      const entry: HydrationEntry = {
+        id: uid(),
+        ml,
+        loggedAt: Date.now(),
+      };
+      dispatch({ type: "ADD_HYDRATION_ENTRY", payload: entry });
+      if (!user) return;
+      // Re-read current state after optimistic update to get the full log
+      // (the reducer has already updated it, but we need the after-state).
+      // We pass a callback to setState-like pattern; here we rely on the
+      // fact that dispatch is synchronous in useReducer, so state is stale.
+      // Instead we'll persist based on the reducer's own output via a
+      // derived local log object.
+      const today = todayLocalKey();
+      const currentLog = state.hydrationLog ?? {
+        date: today,
+        goalMl: 2500,
+        entries: [],
+      };
+      const updatedLog: HydrationLog = {
+        ...currentLog,
+        entries: [...currentLog.entries, entry],
+      };
+      await saveHydrationLog(user.uid, updatedLog);
+    },
+    [user, state.hydrationLog],
+  );
+
+  const removeHydration = useCallback(
+    async (id: string): Promise<void> => {
+      dispatch({ type: "REMOVE_HYDRATION_ENTRY", id });
+      if (!user || !state.hydrationLog) return;
+      const updatedLog: HydrationLog = {
+        ...state.hydrationLog,
+        entries: state.hydrationLog.entries.filter((e) => e.id !== id),
+      };
+      await saveHydrationLog(user.uid, updatedLog);
+    },
+    [user, state.hydrationLog],
+  );
+
+  const setHydrationGoal = useCallback(
+    async (goalMl: number): Promise<void> => {
+      dispatch({ type: "SET_HYDRATION_GOAL", goalMl });
+      if (!user) return;
+      const today = todayLocalKey();
+      const currentLog: HydrationLog = state.hydrationLog ?? {
+        date: today,
+        goalMl,
+        entries: [],
+      };
+      await saveHydrationLog(user.uid, { ...currentLog, goalMl });
+    },
+    [user, state.hydrationLog],
+  );
+
   return (
     <AppCtx.Provider
       value={{
@@ -617,6 +868,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deleteTemplate,
         logWeight,
         deleteWeightLog,
+        saveFitnessLog: saveFitnessLogAction,
+        setFastingSession,
+        clearFastingSession,
+        addHydration,
+        removeHydration,
+        setHydrationGoal,
       }}>
       {children}
     </AppCtx.Provider>

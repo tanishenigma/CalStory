@@ -1,150 +1,174 @@
-import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { FaGithub } from "react-icons/fa";
+
+const productLinks = [
+  {
+    label: "AI Food Logger",
+    href: "/nutrition/",
+  },
+  {
+    label: "Macro Tracker",
+    href: "/blog/best-macro-calculator",
+  },
+  {
+    label: "TDEE Calculator",
+    href: "/settings",
+  },
+  {
+    label: "Calorie Tracker",
+    href: "/dashboard",
+  },
+  {
+    label: "Progress Dashboard",
+    href: "/progress",
+  },
+];
+
+const resourceLinks = [
+  { label: "Blog", href: "/blog" },
+  { label: "About", href: "/about" },
+  {
+    label: "Calorie Tracking for Beginners",
+    href: "/blog/calorie-tracking-for-beginners",
+  },
+  { label: "Best Macro Calculator Guide", href: "/blog/best-macro-calculator" },
+];
+
+const legalLinks = [
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
+  { label: "Cookie Policy", href: "/cookies" },
+];
 
 const Footer = () => {
   const year = new Date().getFullYear();
+
   return (
-    <footer id="footer" className="relative z-10 py-12  backdrop-blur-sm">
-      <div className=" max-w-6xl mx-auto px-6">
-        <div className="hidden md:grid md:grid-cols-2 items-center gap-8  justify-around">
-          {/* Left: Logo */}
-          <div className="flex justify-start">
+    <footer
+      id="footer"
+      role="contentinfo"
+      className="relative z-10 pt-16 pb-8 backdrop-blur-sm border-t border-border/30">
+      {/* Structured data: entity signal for search engines, unrelated to the visible layout */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "CalStory",
+            url: "https://calstory.app",
+            logo: "https://calstory.app/light.png",
+            email: "support@calstory.app",
+            sameAs: ["https://github.com/tanishenigma"],
+          }),
+        }}
+      />
+
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Top: brand pinned left, nav columns grouped and pinned right */}
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10 md:gap-16">
+          {/* Brand + description + contact */}
+          <div className="md:max-w-xs shrink-0">
             <Link
               href="/"
-              className="flex items-center cursor-pointer relative z-10 shrink-0 gap-2.5 group">
+              aria-label="CalStory home"
+              className="flex items-center gap-2.5 group w-fit">
               <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center transition-transform group-hover:scale-110 overflow-hidden">
-                <img
-                  src="/light.png"
-                  alt="CalStory"
-                  width={28}
-                  height={28}
-                  className="w-7 h-7 object-contain block dark:hidden"
-                />
-                <img
+                <Image
                   src="/dark.png"
-                  alt="CalStory"
+                  alt="CalStory logo"
                   width={28}
                   height={28}
-                  className="w-7 h-7 object-contain hidden dark:block"
+                  loading="lazy"
+                  className="w-7 h-7 object-contain block"
                 />
               </div>
-              <h1 className="font-bold text-xl tracking-tight font-heading">
+              <p className="font-bold text-xl tracking-tight font-heading">
                 CalStory
-              </h1>
+              </p>
             </Link>
-          </div>
-          {/* Between:  links */}
-          <div>
-            <div className="flex flex-2 items-center justify-end gap-3 text-[11px] font-medium text-muted-foreground/80">
-              {" "}
-              <Link
-                href="/blog"
-                className="hover:text-foreground transition-colors">
-                Blog
-              </Link>
-              <Link
-                href="/about"
-                className="hover:text-foreground transition-colors">
-                About
-              </Link>
-              <Link
-                href="/terms"
-                className="hover:text-foreground transition-colors">
-                Terms
-              </Link>
-              <Link
-                href="/privacy"
-                className="hover:text-foreground transition-colors">
-                Privacy
-              </Link>
-              <span className="text-border/60">•</span>
+
+            <p className="mt-4 text-sm text-muted-foreground/80 leading-relaxed max-w-xs">
+              CalStory is the free AI-powered calorie and macro tracker built
+              for lifters and runners. Log meals in plain English, hit your
+              macros, and track workouts in one place.
+            </p>
+
+            <div className="mt-6">
+              <h3 className="font-semibold text-sm font-heading">Contact</h3>
+              <a
+                href="mailto:support@calstory.app"
+                className="mt-2 inline-block text-sm text-muted-foreground/80 hover:text-foreground transition-colors">
+                support@calstory.app
+              </a>
             </div>
           </div>
+
+          {/* Grouped nav columns, pinned together on the right */}
+          <div className="flex flex-col sm:flex-row gap-10 sm:gap-16">
+            {/* Product */}
+            <nav aria-label="Product links">
+              <h3 className="font-semibold text-sm font-heading">Product</h3>
+              <ul className="mt-4 space-y-3 text-sm text-muted-foreground/80 list-none">
+                {productLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="hover:text-foreground transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            {/* Resources */}
+            <nav aria-label="Resource links">
+              <h3 className="font-semibold text-sm font-heading">Resources</h3>
+              <ul className="mt-4 space-y-3 text-sm text-muted-foreground/80 list-none">
+                {resourceLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="hover:text-foreground transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            {/* Legal */}
+            <nav aria-label="Legal links">
+              <h3 className="font-semibold text-sm font-heading">Legal</h3>
+              <ul className="mt-4 space-y-3 text-sm text-muted-foreground/80 list-none">
+                {legalLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="hover:text-foreground transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
         </div>
-        {/* Bottom: Sitemap & Copyright*/}
-        <div className="hidden md:flex-col md:flex pt-4 items-center  justify-around  gap-3 text-[11px] font-medium text-muted-foreground/80 border-t border-border/30  ">
-          <Link
+
+        {/* Bottom bar: copyright + GitHub */}
+        <div className="mt-12 pt-6 border-t border-border/30 flex flex-col-reverse md:flex-row items-center justify-between gap-4 text-[11px] font-medium text-muted-foreground/80">
+          <span>&copy;{year} CalStory. All rights reserved.</span>
+          <a
             href="https://github.com/tanishenigma"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="CalStory on GitHub (opens in a new tab)"
             className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors">
-            <FaGithub size={12} />
+            <FaGithub size={12} aria-hidden="true" />
             <span>GitHub</span>
-          </Link>
-          <span className="text-foreground/60 text-[11px]">
-            ©{year} CalStory. All rights reserved.
-          </span>
-        </div>
-        {/* Mobile: stacked — Logo → Sitemap → Legal → Copyright */}
-        <div className="flex flex-col md:hidden items-center gap-8 text-center">
-          <div className="flex flex-2 md:hidden items-center gap-8 text-center">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 -mb-2">
-              <div className="w-9 h-9 bg-foreground rounded-full flex items-center justify-center overflow-hidden">
-                <img
-                  src="/light.png"
-                  alt="CalStory"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 object-contain block dark:hidden"
-                />
-                <img
-                  src="/dark.png"
-                  alt="CalStory"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 object-contain hidden dark:block"
-                />
-              </div>
-              <span className="font-bold text-2xl tracking-tight font-heading">
-                CalStory
-              </span>
-            </Link>
-
-            {/* Legal links */}
-            <div className="grid grid-cols-2 items-center gap-4 text-xs font-medium text-muted-foreground">
-              <Link
-                href="/blog"
-                className="hover:text-foreground transition-colors">
-                Blog
-              </Link>
-              <Link
-                href="/about"
-                className="hover:text-foreground transition-colors">
-                About
-              </Link>
-              <Link
-                href="/terms"
-                className="hover:text-foreground transition-colors">
-                Terms of Service
-              </Link>
-              <Link
-                href="/privacy"
-                className="hover:text-foreground transition-colors">
-                Privacy Policy
-              </Link>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2.5 text-xs justify-center items-center pt-5  border-t border-border/70">
-            {/* Sitemap links */}
-            <div className="flex  items-center gap-5 text-xs font-medium text-muted-foreground">
-              <Link
-                href="https://github.com/tanishenigma"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors">
-                <FaGithub size={14} />
-                <span>GitHub</span>
-              </Link>
-            </div>
-
-            {/* Copyright — always last on mobile */}
-            <p className="text-[10px] font-medium text-muted-foreground/60 tracking-wider">
-              ©{year} CALSTORY. ALL RIGHTS RESERVED.
-            </p>
-          </div>
+          </a>
         </div>
       </div>
     </footer>

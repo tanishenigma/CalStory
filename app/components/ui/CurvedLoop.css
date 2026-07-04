@@ -18,6 +18,15 @@
   -moz-user-select: none;
   -webkit-user-select: none;
   font-weight: 700;
-  text-transform: uppercase;
   line-height: 1;
+}
+
+/* Decorative — never block clicks meant for content underneath.
+ * `pointer-events: none` cascades to the <text>/<textPath> glyphs
+ * too, so SVG hit-testing can't trap pointer events on the CTA
+ * button or any other interactive content rendered above it. */
+.curved-loop-jacket,
+.curved-loop-svg,
+.curved-loop-svg * {
+  pointer-events: none;
 }

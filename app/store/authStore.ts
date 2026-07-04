@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import type { User } from "firebase/auth";
 import { onAuthChange } from "@/app/lib/auth";
+import { syncProfileUserFromAuth } from "@/app/store/profileStore";
 
 interface AuthState {
   user: User | null;
@@ -35,5 +36,8 @@ export function initAuthListener(): void {
   _listenerStarted = true;
   onAuthChange((user) => {
     useAuthStore.setState({ user, loading: false });
+    // Mirror the same user into the profile store in the same tick so
+    // consumers (CTA, Navbar) update with no `loading`-gate delay.
+    syncProfileUserFromAuth(user);
   });
 }

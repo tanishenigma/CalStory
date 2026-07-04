@@ -141,7 +141,7 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
     <Card className="p-4 sm:p-4 flex flex-col  gap-6 mb-6 h-full justify-evenly">
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <Key size={16} className="text-muted-foreground" />
+          <Key size={16} className="text-foreground " />
           <div className="text-sm font-bold">Your Gemini API Key</div>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">

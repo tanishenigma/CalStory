@@ -493,6 +493,93 @@ html.lenis body {
 }
 
 /* ───────────────────────────────────────────────────────────────
+ * Forced-dark pages.
+ *
+ * `RouteThemeController` adds this class to `<html>` for routes that
+ * are always dark regardless of the user's stored theme preference
+ * (currently `/` and `/auth`). The block mirrors the dark-mode token
+ * overrides above so those pages render in dark even when the user
+ * prefers light. The class is intentionally separate from `.dark` so
+ * `prefsStore.theme` is left untouched — navigating away restores the
+ * user's real preference in one frame.
+ *
+ * Source-order: this block is intentionally placed *after* `.dark`
+ * so when both classes are on `<html>` (user has dark theme AND is
+ * on a forced-dark route), any future token divergence resolves in
+ * favor of the forced-dark override without a specificity arms-race.
+ * ─────────────────────────────────────────────────────────────── */
+.forced-dark {
+  --color-ink: oklch(0.9833 0.0025 165.0767);
+  --color-muted: oklch(0.7118 0.0129 286.0665);
+  --color-border: oklch(0.2739 0.0055 286.0326);
+  --color-divider: oklch(0.21 0.004 286.0326);
+  --color-surface: oklch(0.1972 0.005 145.3814);
+  --color-bg: oklch(0.1479 0.0027 145.4374);
+  --color-subtle: oklch(0.1735 0.0026 145.4374);
+  --color-background: oklch(0.1479 0.0027 145.4374);
+  --color-foreground: oklch(0.9833 0.0025 165.0767);
+  --color-card: oklch(0.1972 0.005 145.3814);
+  --background: oklch(0.1479 0.0027 145.4374);
+  --foreground: oklch(0.9833 0.0025 165.0767);
+  --card: oklch(0.1972 0.005 145.3814);
+  --card-foreground: oklch(0.9833 0.0025 165.0767);
+  --popover: oklch(0.1972 0.005 145.3814);
+  --popover-foreground: oklch(0.9833 0.0025 165.0767);
+  --primary: oklch(0.7227 0.192 149.5793);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.2739 0.0055 286.0326);
+  --secondary-foreground: oklch(0.9833 0.0025 165.0767);
+  --muted: oklch(0.2739 0.0055 286.0326);
+  --muted-foreground: oklch(0.7118 0.0129 286.0665);
+  --accent: oklch(0.2739 0.0055 286.0326);
+  --accent-foreground: oklch(0.9833 0.0025 165.0767);
+  --destructive: oklch(0.3958 0.1331 25.723);
+  --border: oklch(0.2739 0.0055 286.0326);
+  --input: oklch(0.2739 0.0055 286.0326);
+  --ring: oklch(0.7227 0.192 149.5793);
+  --chart-1: oklch(0.7227 0.192 149.5793);
+  --chart-2: oklch(0.8003 0.1821 151.711);
+  --chart-3: oklch(0.8712 0.1363 154.4491);
+  --chart-4: oklch(0.925 0.0806 155.9947);
+  --chart-5: oklch(0.9819 0.0181 155.8263);
+  --sidebar: oklch(0.1479 0.0027 145.4374);
+  --sidebar-foreground: oklch(0.9833 0.0025 165.0767);
+  --sidebar-primary: oklch(0.7227 0.192 149.5793);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.1972 0.005 145.3814);
+  --sidebar-accent-foreground: oklch(0.9833 0.0025 165.0767);
+  --sidebar-border: oklch(0.2739 0.0055 286.0326);
+  --sidebar-ring: oklch(0.7227 0.192 149.5793);
+  --shadow-opacity: 0.3;
+  --shadow-2xs: 0px 10px 20px 0px hsl(0 0% 0% / 0.15);
+  --shadow-xs: 0px 10px 20px 0px hsl(0 0% 0% / 0.15);
+  --shadow-sm:
+    0px 10px 20px 0px hsl(0 0% 0% / 0.3), 0px 1px 2px -1px hsl(0 0% 0% / 0.3);
+  --shadow:
+    0px 10px 20px 0px hsl(0 0% 0% / 0.3), 0px 1px 2px -1px hsl(0 0% 0% / 0.3);
+  --shadow-md:
+    0px 10px 20px 0px hsl(0 0% 0% / 0.3), 0px 2px 4px -1px hsl(0 0% 0% / 0.3);
+  --shadow-lg:
+    0px 10px 20px 0px hsl(0 0% 0% / 0.3), 0px 4px 6px -1px hsl(0 0% 0% / 0.3);
+  --shadow-xl:
+    0px 10px 20px 0px hsl(0 0% 0% / 0.3), 0px 8px 10px -1px hsl(0 0% 0% / 0.3);
+  --shadow-2xl: 0px 10px 20px 0px hsl(0 0% 0% / 0.75);
+
+  /* Same dark-mode navbar tokens as `.dark` so the floating nav
+   * blends with the forced-dark background. */
+  --navbar-bg-rgb: 38, 38, 38;
+  --navbar-fg-rgb: 251, 251, 251;
+  --navbar-bg-scrolled-rgb: 38, 38, 38;
+  --navbar-fg-scrolled-rgb: 251, 251, 251;
+  --navbar-icon-rgb: 251, 251, 251;
+  --navbar-icon-scrolled-rgb: 251, 251, 251;
+  --navbar-border: rgba(160, 160, 160, 0);
+  --navbar-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  --navbar-highlight-from: rgba(255, 255, 255, 0.1);
+  --navbar-highlight-via: rgba(255, 255, 255, 0.05);
+}
+
+/* ───────────────────────────────────────────────────────────────
  * shadcn-style surface primitives
  *
  * All card-like containers in the app should use `.card` instead
@@ -670,4 +757,109 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+.letter-grad-down,
+.letter-grad-up {
+  display: inline-block;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.letter-grad-down {
+  background-image: linear-gradient(
+    to bottom,
+    #ffffff 0%,
+    #ffffff 25%,
+    #2a2a2a 100%
+  );
+}
+
+.letter-grad-up {
+  background-image: linear-gradient(
+    to bottom,
+    #2a2a2a 0%,
+    #ffffff 75%,
+    #ffffff 100%
+  );
+}
+
+/* ─── Full-bleed gradient footer wordmark ─── */
+/* Light mode: clean charcoal gradient, no shadow, no shimmer. */
+.fullbleed-gradient {
+  display: inline-block;
+  background-image: linear-gradient(
+    to bottom,
+    #111111 0%,
+    #2f2f33 45%,
+    #6b6b73 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Subtle "breathing" scale — pure transform, no shadow. */
+@keyframes fullbleedBreath {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.012);
+  }
+}
+
+.fullbleed-gradient {
+  animation: fullbleedBreath 6s ease-in-out infinite;
+}
+
+/* Dark mode: silvery tones, soft glow for separation. */
+.dark .fullbleed-gradient {
+  background-image: linear-gradient(
+    to bottom,
+    #ffffff 0%,
+    #e4e4e7 45%,
+    #71717a 100%
+  );
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.55));
+}
+
+/* ─── MethodSection: scroll-pinned steps with green "active" state ─── */
+.step-item {
+  opacity: 0.45;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+
+.step-item .step-badge {
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease,
+    box-shadow 0.5s ease;
+}
+
+.step-item .step-title,
+.step-item .step-desc {
+  transition: color 0.5s ease;
+}
+
+.step-item.step-active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.step-item.step-active .step-badge {
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  box-shadow: 0 0 0 6px
+    color-mix(in oklab, var(--color-primary) 18%, transparent);
+}
+
+.step-item.step-active .step-title {
+  color: var(--color-primary);
 }

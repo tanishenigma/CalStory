@@ -14,19 +14,23 @@ import type {
   IntensityKey,
   WeightUnit,
   HeightUnit,
+  VolumeUnit,
 } from "@/app/types";
 import { SettingsTabs } from "./components/SettingsTabs";
 import { ProfileTab } from "./components/ProfileTab";
 import { GoalsTab } from "./components/GoalsTab";
 import { UnitsTab } from "./components/UnitsTab";
 import { AppearanceTab } from "./components/AppearanceTab";
+import { DeleteAccountModal } from "./components/DeleteAccountModal";
 import type { Tab } from "./components/types";
+import { User2, TargetIcon, Brush, Ruler } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: "profile", label: "Profile" },
-  { key: "goals", label: "Goals" },
-  { key: "appearance", label: "Style" },
-  { key: "units", label: "Units" },
+const TABS: { key: Tab; label: string; icon: LucideIcon }[] = [
+  { key: "profile", label: "Profile", icon: User2 },
+  { key: "goals", label: "Goals", icon: TargetIcon },
+  { key: "appearance", label: "Style", icon: Brush },
+  { key: "units", label: "Units", icon: Ruler },
 ];
 
 function SettingsPageContent() {
@@ -43,10 +47,8 @@ function SettingsPageContent() {
       : "profile",
   );
   const [editProfileOpen, setEditProfileOpen] = useState<boolean>(false);
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState<boolean>(false);
 
-  // Goals tab form state lives in the parent so the user can flip tabs
-  // and come back without losing their edits. It mirrors the prior
-  // single-file implementation exactly.
   const [goal, setGoal] = useState<GoalKey>(state.profile?.goal || "maintain");
   const [intensity, setIntensity] = useState<IntensityKey>(
     state.profile?.intensity || "weightloss",
@@ -70,6 +72,9 @@ function SettingsPageContent() {
   const [heightUnit, setHeightUnit] = useState<HeightUnit>(
     state.profile?.heightUnit || "metric",
   );
+  const [volumeUnit, setVolumeUnit] = useState<VolumeUnit>(
+    state.profile?.volumeUnit ?? "ml",
+  );
 
   if (isLoading || !profile) return <Spinner variant="settings" />;
 
@@ -82,7 +87,7 @@ function SettingsPageContent() {
     <div className="flex flex-col gap-10">
       <BlurFade>
         <div className="pt-2">
-          <h1 className="text-3xl font-bold mb-2">Settings</h1>
+          <h1 className="text-3xl font-bold ">Settings</h1>
           <p className="text-sm text-muted-foreground">
             Manage your profile, goals and preferences
           </p>
@@ -99,6 +104,7 @@ function SettingsPageContent() {
           profile={state.profile}
           onEditProfile={() => setEditProfileOpen(true)}
           onSignOut={handleSignOut}
+          onDeleteAccount={() => setDeleteAccountOpen(true)}
         />
       )}
 
@@ -128,6 +134,8 @@ function SettingsPageContent() {
           setWeightUnit={setWeightUnit}
           heightUnit={heightUnit}
           setHeightUnit={setHeightUnit}
+          volumeUnit={volumeUnit}
+          setVolumeUnit={setVolumeUnit}
           setProfile={setProfile}
         />
       )}
@@ -137,6 +145,11 @@ function SettingsPageContent() {
       <EditProfileModal
         open={editProfileOpen}
         onClose={() => setEditProfileOpen(false)}
+      />
+
+      <DeleteAccountModal
+        open={deleteAccountOpen}
+        onClose={() => setDeleteAccountOpen(false)}
       />
     </div>
   );

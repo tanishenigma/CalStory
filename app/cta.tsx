@@ -3,36 +3,27 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store/authStore";
-import { BlurFade } from "@/app/components/BlurFade";
-import { useApp } from "@/app/context/AppContext";
-import { Card, CardContent } from "@/app/components/ui/card";
-import { ArrowRight, Sparkles } from "lucide-react";
-import CurvedLoop from "./components/ui/CurvedLoop";
+import BlurFade from "@/app/components/animations/BlurFade";
+import { CardContent } from "@/app/components/ui/card";
+import { ArrowRight } from "lucide-react";
+import { useProfileStore } from "@/app/store/profileStore";
+
 interface CtaSectionProps {
   handleSignIn: () => void;
 }
 
 const CTASection = ({ handleSignIn }: CtaSectionProps) => {
   const { user } = useAuthStore();
-  const { state } = useApp();
   const router = useRouter();
-
-  const hasProfile = !!state.profile;
+  const hasProfile = useProfileStore((s) => s.hasProfile);
+  const profileHydrated = useProfileStore((s) => s.hydrated);
 
   return (
-    <section className="relative z-10 px-6 w-full overflow-hidden">
-      <BlurFade delay={0.1} className="w-full flex justify-center">
-        <Card className="relative w-full max-w-5xl rounded-[32px] overflow-hidden card-elevated backdrop-blur-3xl px-4 sm:px-6 lg:px-8 py-12 lg:py-24 text-center group mx-auto">
-          {/* Atmospheric backgrounds */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 pointer-events-none rounded-[32px]" />
-          <div className="absolute inset-0 bg-noise opacity-[0.03] pointer-events-none" />
-
-          {/* Decorative glow */}
-          <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 blur-[100px] rounded-full pointer-events-none group-hover:bg-primary/15 transition-colors duration-700" />
-          <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
-
-          <CardContent className="relative z-10 space-y-8 w-full p-0">
-            <h2 className="text-4xl md:text-7xl font-bold tracking-tight leading-[1.05] text-balance mx-auto font-heading">
+    <section className="relative z-10 px-6 w-full  overflow-hidden  ">
+      <div className="flex justify-center ">
+        <div className="relative w-full max-w-5xl overflow-hidden  px-4 sm:px-6 lg:px-8 py-12 lg:py-24 text-center group mx-auto rounded-2xl  backdrop-blur-md! dark:backdrop-blur-md! border border-white/10   z-0">
+          <CardContent className="relative  space-y-8 w-full p-0 z-20 ">
+            <h2 className="text-4xl md:text-7xl font-bold tracking-tight leading-[1.05] text-balance mx-auto font-heading ">
               {hasProfile ? "Continue your" : "Ready to hit your"} <br />
               <span className="text-primary">
                 {hasProfile ? "fitness journey" : "absolute peak?"}
@@ -48,7 +39,7 @@ const CTASection = ({ handleSignIn }: CtaSectionProps) => {
             <div className="flex items-center justify-center gap-4 pt-4 w-full">
               <button
                 onClick={() =>
-                  user && hasProfile
+                  user && profileHydrated && hasProfile
                     ? router.push("/dashboard")
                     : handleSignIn()
                 }
@@ -58,8 +49,8 @@ const CTASection = ({ handleSignIn }: CtaSectionProps) => {
               </button>
             </div>
           </CardContent>
-        </Card>
-      </BlurFade>
+        </div>
+      </div>
     </section>
   );
 };

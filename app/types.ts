@@ -361,6 +361,7 @@ export type IntensityKey = "mildCut" | "weightloss" | "extremeCut";
 export type Gender = "male" | "female";
 export type WeightUnit = "kg" | "lbs";
 export type HeightUnit = "metric" | "imperial";
+export type VolumeUnit = "ml" | "floz";
 
 // ─── Profile ───────────────────────────────────────────────
 export interface Profile {
@@ -381,6 +382,12 @@ export interface Profile {
   weightUnit: WeightUnit;
   heightUnit: HeightUnit;
   /**
+   * Volume display unit for hydration and liquid measurements.
+   * Stored here so all components can reformat live without restart.
+   * Default when absent: "ml" (litres).
+   */
+  volumeUnit?: VolumeUnit;
+  /**
    * Date of birth as an ISO string (YYYY-MM-DD). The canonical
    * source of truth for age — `age` is derived from this on read
    * and any save that includes `dob` will recompute it.
@@ -388,6 +395,28 @@ export interface Profile {
   dob?: string;
 
   onboardedAt?: number;
+
+  /**
+   * Cached "current step count" from the most recent successful
+   * fitness sync. Mirror of `fitnessLogs[today].steps`, kept on
+   * the profile so calorie math + the dashboard read the latest
+   * value without an extra Firestore round-trip. Updated by
+   * AppContext whenever a fitness sync lands.
+   */
+  syncedSteps?: number;
+
+  /**
+   * Cached "current active calorie burn" from the most recent
+   * successful fitness sync. Mirror of `fitnessLogs[today].activeCalories`.
+   */
+  syncedActiveCalories?: number;
+
+  /**
+   * Where the cached `syncedSteps` / `syncedActiveCalories` came
+   * from. We use this to decide whether to recompute TDEE on a
+   * new sync (same source → no-op, different source → recompute).
+   */
+  syncedFromSource?: "google_fit" | "manual";
 }
 
 /**
@@ -411,9 +440,64 @@ export interface WeightLog {
   note?: string;
 }
 
+// ─── Fitness Sync ───────────────────────────────────────────
+/**
+ * A single day's aggregated fitness data pulled from an external
+ * platform (Google Fit) or manually entered.
+ * Firestore path: users/{uid}/fitness_logs/{date}
+ */
+export interface FitnessLog {
+  date: string; // YYYY-MM-DD local date
+  steps: number;
+  activeCalories: number;
+  basalCalories: number;
+  /** Which platform provided this data. */
+  source: "google_fit" | "manual";
+  /** Unix-ms timestamp of when we last pulled from the API. */
+  syncedAt: number;
+}
+
+// ─── Fasting Tracker ────────────────────────────────────────
+export type FastingStatus = "active" | "completed" | "broken";
+
+/**
+ * A fasting session. Stored at users/{uid}/fasting/active.
+ * All timestamps are UTC milliseconds — elapsed time is computed
+ * as `Date.now() - startUtcMs`, never via local-hour subtraction.
+ */
+export interface FastingSession {
+  id: string;
+  /** UTC ms when the fast started. */
+  startUtcMs: number;
+  /** Target fast length in milliseconds (e.g. 16h = 57600000). */
+  targetDurationMs: number;
+  status: FastingStatus;
+  /** UTC ms when the fast ended (set on complete/break). */
+  endUtcMs?: number;
+}
+
+// ─── Hydration Tracker ──────────────────────────────────────
+export interface HydrationEntry {
+  id: string;
+  /** Amount in millilitres. Always stored as ml; display unit is separate. */
+  ml: number;
+  loggedAt: number; // Unix-ms
+}
+
+/**
+ * One day's hydration record.
+ * Firestore path: users/{uid}/hydration/{date}
+ * Resets at local midnight (each new local day = new document).
+ */
+export interface HydrationLog {
+  date: string; // YYYY-MM-DD local date
+  goalMl: number; // daily target in ml
+  entries: HydrationEntry[];
+}
+
 // ─── App State ─────────────────────────────────────────────
 export interface AppState {
-  profile: Profile | null | undefined; // undefined = not yet hydrated
+  profile: Profile | null | undefined;
   meals: Record<string, Meal[]>;
   workouts: Record<string, Workout[]>;
   savedWorkouts: SavedWorkout[];
@@ -421,6 +505,13 @@ export interface AppState {
 
   weightLogs: WeightLog[];
   selDate: string;
+
+  /** Today's fitness data (steps, calories) from Google Fit or manual entry. */
+  fitnessLogs: Record<string, FitnessLog>;
+  /** The currently active fasting session, or null if none. */
+  fastingSession: FastingSession | null;
+  /** Today's hydration log, or null if not yet loaded. */
+  hydrationLog: HydrationLog | null;
 }
 
 // ─── Context ───────────────────────────────────────────────
@@ -443,6 +534,18 @@ export interface AppContextValue {
   ) => Promise<WeightLog | null>;
 
   deleteWeightLog: (id: string) => Promise<void>;
+
+  // ── Fitness Sync ──
+  saveFitnessLog: (log: FitnessLog) => Promise<void>;
+
+  // ── Fasting Tracker ──
+  setFastingSession: (session: FastingSession) => Promise<void>;
+  clearFastingSession: () => Promise<void>;
+
+  // ── Hydration Tracker ──
+  addHydration: (ml: number) => Promise<void>;
+  removeHydration: (id: string) => Promise<void>;
+  setHydrationGoal: (goalMl: number) => Promise<void>;
 }
 
 export interface AuthContextValue {

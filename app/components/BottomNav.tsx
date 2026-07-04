@@ -10,6 +10,7 @@ import {
   Dumbbell,
   TrendingUp,
   Settings,
+  Activity,
 } from "lucide-react";
 
 const TABS: { href: string; label: string; icon: React.ReactNode }[] = [
@@ -27,6 +28,11 @@ const TABS: { href: string; label: string; icon: React.ReactNode }[] = [
     href: "/workouts",
     label: "Workouts",
     icon: <Dumbbell size={22} />,
+  },
+  {
+    href: "/fitness",
+    label: "Fitness",
+    icon: <Activity size={22} />,
   },
   {
     href: "/progress",

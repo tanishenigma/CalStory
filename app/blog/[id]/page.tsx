@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { BlogShell } from "../BlogShell";
 import { StructuredData } from "@/app/components/seo/StructuredData";
+import { RelatedGuides } from "@/app/components/blog/RelatedGuides";
 import { articleJsonLd } from "@/app/components/seo/articleJsonLd";
 import { BLOG_POSTS, getBlogPost } from "../_posts";
+import { postMetadataFor } from "@/lib/blog/postMetadata";
+import type { PostSlug } from "@/lib/blog/clusters";
 
 interface Params {
   id: string;
@@ -16,32 +18,20 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const post = getBlogPost(id);
-  if (!post) {
+  /* The FAQ count is derived at build time from POST_BODIES below;
+   * we don't have it here, so the buildPostMetadata helper falls back
+   * to 0. The visible FAQ list is what Google matches against for
+   * rich-result eligibility — the count is informational metadata,
+   * not a hard assertion. */
+  const meta = postMetadataFor(id);
+  if (!meta) {
     return {
       title: "Post Not Found",
       description:
         "The requested blog post could not be found on CalStory — explore our other evidence-led guides on calorie tracking, TDEE, macro splits and training.",
     };
   }
-  return {
-    title: post.title,
-    description: post.description,
-    alternates: { canonical: `/blog/${post.id}` },
-    openGraph: {
-      type: "article",
-      title: post.title,
-      description: post.description,
-      publishedTime: post.publishedTime,
-      modifiedTime: post.modifiedTime,
-      authors: ["CalStory Team"],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: post.title,
-      description: post.description,
-    },
-  };
+  return meta;
 }
 
 export function generateStaticParams(): { id: string }[] {
@@ -191,7 +181,7 @@ const POST_BODIES: Record<
           </li>
         </ul>
 
-        <h2>What to do when tracking breaks down</h2>
+        <h2 id="progress">What to do when tracking breaks down</h2>
         <p>
           You will eat at a restaurant and not know the calories. You will have
           a binge day. You will go on vacation. None of these are failures —
@@ -279,7 +269,7 @@ const POST_BODIES: Record<
           </strong>
         </p>
 
-        <h2>Step 1: compute a starting TDEE</h2>
+        <h2 id="tdee">Step 1: compute a starting TDEE</h2>
         <p>
           For most lifters, the Mifflin-St Jeor equation plus an activity
           multiplier of 1.5–1.65 is a defensible starting point. Use{" "}
@@ -441,29 +431,13 @@ export default async function PostPage({
             <p>{f.answer}</p>
           </div>
         ))}
-        <p className="mt-10">
-          {post.id === "calorie-tracking-for-beginners" ? (
-            <>
-              Want a deeper dive into macros specifically? Read{" "}
-              <Link
-                href="/blog/best-macro-calculator"
-                className="text-primary hover:underline">
-                The Best Macro Calculator for Lifters
-              </Link>
-              .
-            </>
-          ) : (
-            <>
-              New to tracking altogether? Start with{" "}
-              <Link
-                href="/blog/calorie-tracking-for-beginners"
-                className="text-primary hover:underline">
-                Calorie Tracking for Beginners
-              </Link>
-              .
-            </>
-          )}
-        </p>
+        {/* RelatedGuides reads the cluster config from
+         * `lib/blog/clusters.ts` and pulls the post registry from
+         * `app/blog/_posts.ts`, so adding a new post to those two
+         * files automatically populates the related-posts + closing
+         * CTA blocks below. The `PostSlug` cast is safe because
+         * every slug in BLOG_POSTS is one of the literals. */}
+        <RelatedGuides slug={post.id as PostSlug} />
       </BlogShell>
     </>
   );

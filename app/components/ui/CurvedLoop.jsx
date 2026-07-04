@@ -1,14 +1,14 @@
 import { useRef, useEffect, useState, useMemo, useId } from "react";
 import "./CurvedLoop.css";
-import { BlurFade } from "@/app/components/BlurFade";
+import BlurFade from "@/app/components/animations/BlurFade";
 
 const CurvedLoop = ({
   marqueeText = "",
   speed = 2,
   className,
   curveAmount = 400,
-  direction = "left",
-  interactive = true,
+  direction = "right",
+  interactive = false,
 }) => {
   const text = useMemo(() => {
     const hasTrailing = /\s|\u00A0$/.test(marqueeText);
@@ -128,7 +128,11 @@ const CurvedLoop = ({
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerLeave={endDrag}>
-        <svg className="curved-loop-svg" viewBox="0 0 1440 120">
+        <svg
+          className="curved-loop-svg"
+          viewBox="0 0 1440 120"
+          aria-hidden="true"
+          focusable="false">
           <text
             ref={measureRef}
             xmlSpace="preserve"

@@ -27,14 +27,14 @@ export const metadata: Metadata = {
 const blogJsonLd = {
   "@context": "https://schema.org",
   "@type": "Blog",
+  "@id": `${SITE_URL}/blog#blog`,
   name: "CalStory Blog",
   url: `${SITE_URL}/blog`,
   description:
     "Practical guides on calorie tracking, TDEE, macro splits, and training.",
+  inLanguage: "en-US",
   publisher: {
-    "@type": "Organization",
-    name: "CalStory",
-    url: SITE_URL,
+    "@id": `${SITE_URL}/#organization`,
   },
 };
 
@@ -56,9 +56,7 @@ export default function BlogIndexPage() {
                 <h2 className="text-2xl md:text-3xl font-bold text-foreground group-hover:text-primary transition-colors font-heading tracking-tight mb-2">
                   {p.title}
                 </h2>
-                <p className="text-muted-foreground">
-                  {p.description}
-                </p>
+                <p className="text-muted-foreground">{p.description}</p>
                 <span className="text-sm text-muted-foreground mt-2 inline-block">
                   Read the guide →
                 </span>
