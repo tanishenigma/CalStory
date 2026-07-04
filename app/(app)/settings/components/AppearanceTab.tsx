@@ -108,7 +108,6 @@ export function AppearanceTab() {
           <div>
             <div className="text-sm font-bold mb-1 flex items-center gap-1.5">
               Dynamic Background
-              <span>•</span>
               <span className="uppercase text-xs flex items-center gap-0.5 text-primary">
                 <FlaskConical size={15} />
                 EXPERIMENTAL

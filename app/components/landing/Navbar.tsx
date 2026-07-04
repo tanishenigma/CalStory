@@ -415,7 +415,7 @@ export function Navbar({
             aria-label="Toggle menu"
             style={{ color: textColor }}
             className="p-1.5 rounded-lg opacity-80 hover:opacity-100 transition-opacity cursor-pointer">
-            {mobileOpen ? <X size={20} /> : <Menu size={18} />}
+            {mobileOpen ? "" : <Menu size={18} />}
           </motion.button>
         </div>
       </motion.nav>

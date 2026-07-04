@@ -87,9 +87,7 @@ function FeatureRow({
 
   const textY = useTransform(scrollYProgress, [0, 1], [28, -28]);
   const imageY = useTransform(scrollYProgress, [0, 1], [-28, 28]);
-  // Subtle scale on the image so it grows ~4% as you scroll past,
-  // giving the photo a hint of forward motion. Keeps the focus on
-  // the text at the same time.
+
   const imageScale = useTransform(scrollYProgress, [0, 1], [1.04, 1.12]);
 
   const variants = shouldReduceMotion ? reducedVariant : rowVariants;
