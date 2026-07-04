@@ -358,7 +358,11 @@ function FAQItem({
           type="button"
           onClick={onToggle}
           aria-expanded={isOpen}
-          className="w-full text-left px-5 sm:px-6 py-4 sm:py-5 flex items-center gap-4 cursor-pointer group">
+          /* Tighter gap (3) on phones, 4 on sm+. The icon and toggle
+           * are fixed-width so flex-1 question text gets the rest.
+           * min-w-0 on the question span lets it shrink and wrap on
+           * narrow viewports instead of pushing the toggle off-screen. */
+          className="w-full text-left px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3 sm:gap-4 cursor-pointer group">
           {/* Icon badge */}
           <motion.div
             animate={
@@ -375,12 +379,13 @@ function FAQItem({
                   }
             }
             transition={{ duration: 0.25 }}
-            className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center">
-            <Icon size={16} />
+            className="shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center">
+            <Icon size={15} className="sm:hidden" />
+            <Icon size={16} className="hidden sm:block" />
           </motion.div>
 
           {/* Question text */}
-          <span className="flex-1 font-bold text-sm sm:text-base text-foreground tracking-tight">
+          <span className="flex-1 min-w-0 font-bold text-sm sm:text-base text-foreground tracking-tight break-words">
             {item.q}
           </span>
 
@@ -438,11 +443,18 @@ function FAQItem({
                  * below matches the rest of the FAQ card. */
                 className="px-5 sm:px-6 pt-4 pb-5 text-left text-xs sm:text-sm text-muted-foreground leading-relaxed
                   [&_p]:mb-3 [&_p:last-child]:mb-0
+                  [&_p]:break-words
                   [&_strong]:text-foreground [&_strong]:font-semibold
-                  [&_a]:text-primary [&_a:hover]:underline
+                  [&_a]:text-primary [&_a:hover]:underline [&_a]:break-words
                   [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1.5 [&_ol]:my-3
                   [&_li]:my-0
-                  [&_code]:font-mono [&_code]:text-[11px] [&_code]:bg-foreground/5 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded
+                  /* Inline <code> blocks in the TDEE answer are
+                   * long (~70 chars). Allow them to wrap across
+                   * lines on phones narrower than ~380px so the
+                   * formula never overflows the card. break-words
+                   * is the modern Tailwind alias for overflow-wrap:
+                   * break-word. */
+                  [&_code]:font-mono [&_code]:text-[11px] [&_code]:sm:text-xs [&_code]:bg-foreground/5 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:break-words [&_code]:[overflow-wrap:anywhere]
                   [&_em]:text-foreground/80 [&_em]:not-italic">
                 {item.a}
               </motion.div>
@@ -479,7 +491,11 @@ export default function FAQSection() {
   return (
     <section
       id="faq"
-      className="flex flex-col items-center text-center px-2 relative">
+      /* px-4 on phones (16px gutters), 6 on sm+ (24px). Was px-2
+       * (8px) which felt claustrophobic on the smallest phones and
+       * let the long "Frequently Asked Questions" title crowd the
+       * screen edges. */
+      className="flex flex-col items-center text-center px-4 sm:px-6 relative">
       {/* Floating decorative dots */}
       <FloatingDot x="5%" y="10%" delay={0} />
       <FloatingDot x="92%" y="25%" delay={1.2} />
@@ -511,7 +527,9 @@ export default function FAQSection() {
         </motion.p>
       </div>
 
-      {/* FAQ list */}
+      {/* FAQ list — max-w-3xl keeps the cards readable on tablet+
+       * (the longest answer is ~3 paragraphs); on phones the cards
+       * are full-bleed within the section padding. */}
       <div className="w-full max-w-3xl flex flex-col gap-3">
         {FAQS.map((item, i) => (
           <FAQItem

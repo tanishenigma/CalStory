@@ -41,26 +41,36 @@ const MethodSection = forwardRef<HTMLElement>(
       if (typeof window === "undefined") return;
       gsap.registerPlugin(ScrollTrigger);
 
-      const ctx = gsap.context(() => {
-        ScrollTrigger.create({
-          trigger: sectionRef.current,
-          start: "120% top",
-          end: "+=80%",
-          onUpdate: (self) => {
-            const progress = self.progress;
+      const mm = gsap.matchMedia();
 
-            if (progress < 0.08) {
-              setActiveIndex(0);
-            } else if (progress < 0.45) {
-              setActiveIndex(1);
-            } else {
-              setActiveIndex(2);
-            }
-          },
-        });
-      });
+      mm.add(
+        {
+          isMobile: "(max-width: 767px)",
+          isDesktop: "(min-width: 768px)",
+        },
+        (context) => {
+          const { isMobile } = context.conditions as { isMobile: boolean };
 
-      return () => ctx.revert();
+          ScrollTrigger.create({
+            trigger: sectionRef.current,
+            start: isMobile ? "100% top" : "120% top",
+            end: isMobile ? "+=150%" : "+=80%",
+
+            onUpdate: (self) => {
+              const progress = self.progress;
+              if (progress < 0.08) {
+                setActiveIndex(0);
+              } else if (progress < 0.45) {
+                setActiveIndex(1);
+              } else {
+                setActiveIndex(2);
+              }
+            },
+          });
+        },
+      );
+
+      return () => mm.revert();
     }, []);
 
     return (

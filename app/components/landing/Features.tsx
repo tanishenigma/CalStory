@@ -7,6 +7,9 @@ import {
   motion,
   useInView,
   useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionValue,
   type Variants,
 } from "framer-motion";
 
@@ -77,6 +80,18 @@ function FeatureRow({
     margin: "-15% 0px -15% 0px",
   });
 
+  const { scrollYProgress } = useScroll({
+    target: rowRef,
+    offset: ["start end", "end start"],
+  });
+
+  const textY = useTransform(scrollYProgress, [0, 1], [28, -28]);
+  const imageY = useTransform(scrollYProgress, [0, 1], [-28, 28]);
+  // Subtle scale on the image so it grows ~4% as you scroll past,
+  // giving the photo a hint of forward motion. Keeps the focus on
+  // the text at the same time.
+  const imageScale = useTransform(scrollYProgress, [0, 1], [1.04, 1.12]);
+
   const variants = shouldReduceMotion ? reducedVariant : rowVariants;
 
   return (
@@ -88,33 +103,87 @@ function FeatureRow({
       className={`flex flex-col md:flex-row items-center gap-12 lg:gap-20 ${
         isEven ? "" : "md:flex-row-reverse"
       }`}>
-      {/* Text — no internal stagger, moves as one unit with the row */}
-      <div className="flex-1 space-y-5">
-        <span className="flex items-center gap-3 text-xs font-mono tracking-[0.2em] uppercase text-primary/70">
-          <span>{ordinal}</span>
-          <span className="block h-px w-8 bg-primary/30" aria-hidden="true" />
-          <span className="text-muted-foreground/60">Feature</span>
-        </span>
+      {/* Text — parallax-translated by the row's scroll progress.
+       * When reduced-motion is on we pass a no-op motion value
+       * (identity transform) so the layout is identical but no
+       * scroll work happens. */}
+      <ParallaxText y={shouldReduceMotion ? undefined : textY}>
+        <div className="flex-1 space-y-5">
+          <span className="flex items-center gap-3 text-xs font-mono tracking-[0.2em] uppercase text-primary/70">
+            <span>{ordinal}</span>
+            <span className="block h-px w-8 bg-primary/30" aria-hidden="true" />
+            <span className="text-muted-foreground/60">Feature</span>
+          </span>
 
-        <h3 className="text-2xl md:text-3xl lg:text-[2.15rem] font-bold text-foreground leading-[1.15] tracking-[-0.02em] font-heading">
-          {feature.title}
-        </h3>
+          <h3 className="text-2xl md:text-3xl lg:text-[2.15rem] font-bold text-foreground leading-[1.15] tracking-[-0.02em] font-heading">
+            {feature.title}
+          </h3>
 
-        <p className="text-muted-foreground leading-[1.75] text-base max-w-[44ch]">
-          {feature.description}
-        </p>
-      </div>
+          <p className="text-muted-foreground leading-[1.75] text-base max-w-[44ch]">
+            {feature.description}
+          </p>
+        </div>
+      </ParallaxText>
 
-      {/* Image — static, no scroll-linked parallax, no scale */}
+      {/* Image — opposite-direction Y translate + slight scale. The
+       * outer <div> has overflow-hidden + rounded-xl so the
+       * translate-y on the inner <motion.div> is visually clipped,
+       * which is what gives the "the photo is in a window"
+       * parallax look instead of the image sliding out of the
+       * frame. */}
       <div className="flex-1 w-full relative aspect-4/3 rounded-xl overflow-hidden">
-        <Image
-          src={feature.image}
-          alt={feature.title}
-          fill
-          className="object-cover object-center"
-          sizes="(max-width: 768px) 100vw, 50vw"
-        />
+        <motion.div
+          style={{
+            y: imageY,
+            scale: imageScale,
+            width: "100%",
+            height: "100%",
+            position: "relative",
+          }}>
+          <Image
+            src={feature.image}
+            alt={feature.title}
+            fill
+            className="object-cover object-center"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+        </motion.div>
       </div>
+    </motion.div>
+  );
+}
+
+/* ------------------------------------------------------------------
+ * ParallaxText
+ *
+ * Tiny wrapper that applies a scroll-linked Y translate to its
+ * children. Passing `y={undefined}` (reduced-motion) renders a plain
+ * div so the row's layout is unchanged.
+ *
+ * The wrapper has no opacity, no scale, no other transform — just
+ * the Y translate — because we're layering the entrance variant
+ * (`opacity`/`y`) on the *parent* row. Composing two Y transforms
+ * via nested motion divs would lose the entrance animation, so the
+ * entrance plays once (in-view trigger) and the parallax plays
+ * continuously (scroll-linked). They're independent transforms on
+ * independent elements.
+ * ------------------------------------------------------------------ */
+function ParallaxText({
+  children,
+  y,
+}: {
+  children: React.ReactNode;
+  y: MotionValue<number> | undefined;
+}) {
+  if (!y) {
+    // Reduced-motion path: render the children directly. This keeps
+    // the DOM identical to the pre-parallax layout and avoids any
+    // transform-related compositing work.
+    return <>{children}</>;
+  }
+  return (
+    <motion.div style={{ y, willChange: "transform" }} className="flex-1">
+      {children}
     </motion.div>
   );
 }
