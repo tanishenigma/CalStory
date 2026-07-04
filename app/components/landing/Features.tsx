@@ -101,12 +101,8 @@ function FeatureRow({
       className={`flex flex-col md:flex-row items-center gap-12 lg:gap-20 ${
         isEven ? "" : "md:flex-row-reverse"
       }`}>
-      {/* Text — parallax-translated by the row's scroll progress.
-       * When reduced-motion is on we pass a no-op motion value
-       * (identity transform) so the layout is identical but no
-       * scroll work happens. */}
       <ParallaxText y={shouldReduceMotion ? undefined : textY}>
-        <div className="flex-1 space-y-5">
+        <div className="flex-1 space-y-5 ">
           <span className="flex items-center gap-3 text-xs font-mono tracking-[0.2em] uppercase text-primary/70">
             <span>{ordinal}</span>
             <span className="block h-px w-8 bg-primary/30" aria-hidden="true" />
@@ -123,13 +119,7 @@ function FeatureRow({
         </div>
       </ParallaxText>
 
-      {/* Image — opposite-direction Y translate + slight scale. The
-       * outer <div> has overflow-hidden + rounded-xl so the
-       * translate-y on the inner <motion.div> is visually clipped,
-       * which is what gives the "the photo is in a window"
-       * parallax look instead of the image sliding out of the
-       * frame. */}
-      <div className="flex-1 w-full relative aspect-4/3 rounded-xl overflow-hidden">
+      <div className="flex-1 w-full relative aspect-4/3 rounded-xl overflow-hidden pt-8 ">
         <motion.div
           style={{
             y: imageY,
