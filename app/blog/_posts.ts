@@ -64,6 +64,33 @@ export const BLOG_POSTS: Record<string, BlogPostMeta> = {
     modifiedTime: "2026-06-26",
     cluster: "tdee",
   },
+  "what-is-a-calorie": {
+    id: "what-is-a-calorie",
+    title: "What Is a Calorie? The Energy Unit Behind Every Diet",
+    description:
+      "A calorie is a unit of energy, not sugar and not weight. How calories in food are measured, where the kcal label comes from, and how to use the number — not worship it.",
+    publishedTime: "2026-07-05",
+    modifiedTime: "2026-07-05",
+    cluster: "tdee",
+  },
+  "what-is-a-calorie-deficit": {
+    id: "what-is-a-calorie-deficit",
+    title: "What Is a Calorie Deficit — and How Big Should Yours Be?",
+    description:
+      "A calorie deficit is the gap between the calories you burn and the calories you eat. How to find yours, how big to make it, and why 500 kcal/day is the sweet spot for most lifters.",
+    publishedTime: "2026-07-05",
+    modifiedTime: "2026-07-05",
+    cluster: "tdee",
+  },
+  "3-3-3-rule-diet": {
+    id: "3-3-3-rule-diet",
+    title: "The 3-3-3 Rule Diet: A Simple Eating Schedule That Works",
+    description:
+      "The 3-3-3 rule is three meals a day, spaced three hours apart, finishing three hours before bed. Why this scaffold beats skipping breakfast — and how to layer calories on top.",
+    publishedTime: "2026-07-05",
+    modifiedTime: "2026-07-05",
+    cluster: "tdee",
+  },
 };
 
 export function getBlogPost(id: string): BlogPostMeta | undefined {

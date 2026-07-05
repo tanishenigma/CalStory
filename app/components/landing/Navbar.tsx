@@ -16,14 +16,6 @@ import { Menu, X } from "lucide-react";
 import { useAuthStore } from "@/app/store/authStore";
 import { useProfileStore } from "@/app/store/profileStore";
 
-/**
- * Map of `href` target key → element ref attached to the section in
- * `LandingClient`. Resolving the target via ref is more reliable than
- * `document.getElementById` (which fails for sections that mount
- * after the navbar, e.g. below-the-fold reveals, or whose `id` is on
- * an ancestor the navbar cannot see). Passing the ref down keeps
- * the navbar dumb: it scrolls to whatever the parent owns.
- */
 export type NavbarTargets = Partial<{
   features: RefObject<HTMLElement | null>;
   "how-it-works": RefObject<HTMLElement | null>;
@@ -34,6 +26,8 @@ const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Features", href: "/#features" },
   { label: "Method", href: "/#how-it-works" },
   { label: "FAQ", href: "/#faq" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 function useNavbarTokens() {
@@ -187,12 +181,14 @@ export function Navbar({
   );
   const paddingX = useTransform(smoothScroll, [0, 80], [20, 16], easeConfig);
   const height = useTransform(smoothScroll, [0, 100], [72, 56], easeConfig);
-  const maxWidth = useTransform(smoothScroll, [0, 80], [1400, 720], easeConfig);
-  const top = useTransform(smoothScroll, [0, 80], [0, 12], easeConfig);
+  const maxWidth = useTransform(
+    smoothScroll,
+    [0, 100],
+    [1500, 1200],
+    easeConfig,
+  );
+  const top = useTransform(smoothScroll, [0, 80], [4, 14], easeConfig);
 
-  // Animate the navbar background from the unscrolled (transparent)
-  // state toward the theme-defined scrolled background. Both endpoints
-  // come from CSS tokens so dark mode just works.
   const bgR = useTransform(
     smoothScroll,
     [0, 80],
@@ -303,7 +299,7 @@ export function Navbar({
   const overflow = useMotionTemplate`hidden`;
 
   return (
-    <div className="fixed inset-x-0 top-0 z-50 flex justify-center">
+    <div className="fixed inset-x-0 top-0 z-50 flex justify-center ">
       <motion.nav
         style={{
           borderRadius,
@@ -312,7 +308,7 @@ export function Navbar({
           top,
           paddingLeft: paddingX,
           paddingRight: paddingX,
-          backgroundColor, // Explicitly mapped to backgroundColor
+          backgroundColor,
           backgroundImage,
           backgroundSize: "16px 16px",
           boxShadow,
@@ -321,7 +317,7 @@ export function Navbar({
           WebkitBackdropFilter: "blur(12px)",
           border,
         }}
-        className="relative w-[calc(100%-2rem)] flex items-center justify-between will-change-transform">
+        className="relative w-[calc(100%-2rem)] flex items-center justify-between will-change-transform py-8">
         <motion.div
           style={{
             opacity: highlightOpacity,

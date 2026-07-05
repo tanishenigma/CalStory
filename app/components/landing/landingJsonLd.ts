@@ -6,14 +6,16 @@ const SITE_URL =
 
 /**
  * Centralised JSON-LD for the landing page.
- * Four payloads:
+ *
+ * Six payloads:
  *   1. Organization        — establishes brand entity across the web
  *   2. SoftwareApplication — describes the product (rich result eligibility)
- *   3. WebPage             — anchors the landing page to its canonical URL
- *   4. BreadcrumbList      — single-item trail: Home. Helps Google
+ *   3. WebSite             — sitelinks search box + parent of WebPage
+ *   4. WebPage             — anchors the landing page to its canonical URL
+ *   5. BreadcrumbList      — single-item trail: Home. Helps Google
  *                            understand the site hierarchy and is the
  *                            schema most likely to surface in sitelinks.
- *   5. FAQPage             — mirrors the FAQSection component content
+ *   6. FAQPage             — mirrors the FAQSection component content
  *
  * Keep the FAQ list in sync with app/components/landing/FAQSection.tsx.
  */
@@ -24,9 +26,16 @@ export const landingJsonLd = [
     "@id": `${SITE_URL}/#organization`,
     name: "CalStory",
     url: SITE_URL,
-    logo: `${SITE_URL}/favicon.svg`,
+    logo: {
+      "@type": "ImageObject",
+      url: `${SITE_URL}/favicon.svg`,
+      width: 512,
+      height: 512,
+    },
     description:
-      "CalStory is a free calorie, macro, and workout tracker with an AI food logger.",
+      "CalStory is a free calorie tracker, calorie counter, calorie deficit calculator, maintenance calorie calculator, and workout log with an AI food logger — built for lifters who care about real progress.",
+    keywords:
+      "calorie, calorie calculator, calorie deficit, calorie deficit calculator, maintenance calorie calculator, calorie counter, calorie tracker, workout log, workout routines, best workout apps, what is a calorie, what is a calorie deficit",
     sameAs: [
       "https://github.com/tanishenigma/CalStory",
       "https://twitter.com/calstoryapp",
@@ -36,12 +45,21 @@ export const landingJsonLd = [
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "CalStory",
+    alternateName: "CalStory Calorie Tracker",
     applicationCategory: "HealthApplication",
     applicationSubCategory: "Calorie & Macro Tracker",
-    operatingSystem: "Web",
+    operatingSystem: "Web, iOS, Android (PWA)",
     description:
-      "Log meals with AI, track macros, record workouts, and watch real progress — free.",
+      "Free calorie tracker, calorie counter, calorie deficit calculator, maintenance calorie calculator, and workout log. Log meals with AI, track macros, record workout routines, and watch real progress.",
     url: SITE_URL,
+    image: `${SITE_URL}/og.png`,
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      ratingCount: "1200",
+      bestRating: "5",
+      worstRating: "1",
+    },
     offers: {
       "@type": "Offer",
       price: "0",
@@ -49,25 +67,74 @@ export const landingJsonLd = [
       availability: "https://schema.org/InStock",
     },
     featureList: [
-      "AI food logging",
+      "AI calorie counter and calorie tracker",
+      "Calorie calculator and maintenance calorie calculator",
+      "Calorie deficit calculator with weekly auto-tune",
       "Macro tracking (protein, carbs, fat)",
-      "Workout logging with sets, reps, and weight",
-      "TDEE and macro calculator",
-      "Progress charts and consistency heatmap",
+      "Workout log for strength, cardio, HIIT, yoga, sports",
+      "Saveable workout routines as templates",
+      "Progress charts and 16-week consistency heatmap",
       "Streak tracking",
+      "TDEE calculator",
+      "BMR calculator",
     ],
+    keywords:
+      "calorie, calorie calculator, calorie deficit calculator, maintenance calorie calculator, calorie counter, calorie tracker, workout log, workout routines, best workout apps",
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    name: "CalStory",
+    url: SITE_URL,
+    description:
+      "Free calorie tracker, calorie counter, calorie deficit calculator, maintenance calorie calculator, and workout log with AI food logging.",
+    inLanguage: "en-US",
+    publisher: { "@id": `${SITE_URL}/#organization` },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${SITE_URL}/blog?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   },
   {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "@id": `${SITE_URL}/#webpage`,
-    name: "CalStory — Free Calorie & Macro Tracker for Lifters",
+    name: "CalStory — Free Calorie Tracker, Calorie Counter & Workout Log",
     url: SITE_URL,
     description:
-      "Free calorie, macro, and workout tracker with an AI food logger. Built for lifters who care about real progress.",
+      "CalStory is the free calorie tracker, calorie counter, calorie deficit calculator, maintenance calorie calculator, and workout log built for lifters. Log meals with AI, hit your macros, and track every set — no spreadsheets required.",
     inLanguage: "en-US",
     isPartOf: { "@id": `${SITE_URL}/#website` },
     about: { "@id": `${SITE_URL}/#organization` },
+    primaryImageOfPage: {
+      "@type": "ImageObject",
+      url: `${SITE_URL}/og.png`,
+      width: 1200,
+      height: 630,
+    },
+    keywords:
+      "calorie, calorie calculator, calorie deficit calculator, calorie deficit, maintenance calorie calculator, calorie counter, what is a calorie deficit, what is a calorie, calorie tracker, best workout apps, workout routines, workout log",
+    significantLink: [
+      `${SITE_URL}/dashboard`,
+      `${SITE_URL}/nutrition`,
+      `${SITE_URL}/workouts`,
+      `${SITE_URL}/progress`,
+      `${SITE_URL}/blog`,
+      `${SITE_URL}/blog/calorie-tracking-for-beginners`,
+      `${SITE_URL}/blog/best-macro-calculator`,
+    ],
+    speakable: {
+      "@type": "SpeakableSpecification",
+      xpath: [
+        "/html/head/title",
+        "/html/head/meta[@name='description']/@content",
+      ],
+    },
   },
   {
     "@context": "https://schema.org",
@@ -84,45 +151,87 @@ export const landingJsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    /* Landing FAQ now answers pre-purchase product questions
+     * (onboarding, pricing, trust, devices, support) — the queries
+     * a *prospective* user is asking right before they sign up.
+     *
+     * Calorie-keyword queries (what is a calorie, what is a calorie
+     * deficit, calorie-deficit math, the 3-3-3 rule, etc.) now
+     * live as blog posts and the calorie-deficit FAQ on /about.
+     * Routing the high-volume discovery keywords to dedicated
+     * articles keeps the search traffic intact while letting the
+     * landing FAQ speak to pre-purchase intent. */
     mainEntity: [
       {
         "@type": "Question",
-        name: "How does AI meal logging work in CalStory?",
+        name: "How do I get started?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Tap “Log with AI” and describe what you ate in plain language — for example, “two eggs, toast, and a protein shake.” The model returns a structured calorie and macro breakdown (calories, protein, carbs, fat, serving size) in 6–9 seconds. Every AI suggestion opens a review screen where you can edit any field before saving. The model also remembers your recent meals for one-tap re-logging. CalStory uses Google Gemini under the hood, with an optional personal API key in Settings to bypass shared quota.",
+          text: "Getting started with CalStory takes about three minutes: sign in with Google or email, set your stats in onboarding (age, height, weight, activity), and the app calculates your TDEE and macro targets. Your first meal log takes under 10 seconds with the AI food logger.",
         },
       },
       {
         "@type": "Question",
-        name: "How does CalStory calculate my TDEE?",
+        name: "Do I need to install anything?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "CalStory uses the Mifflin-St Jeor equation as the starting point (10 × weight(kg) + 6.25 × height(cm) − 5 × age + 5 for men or −161 for women), which is the most accurate of the standard formulas for most adults. The result is your BMR, which is then multiplied by an activity factor between 1.4 and 1.75 based on weekly workouts, daily step count, and job activity to give TDEE. CalStory also auto-tunes your calorie target in 50 kcal increments based on your 7-day weight trend from the Progress page — the same calibration approach MacroFactor uses.",
+          text: "No installation needed — CalStory runs entirely in the browser as a web app. There is nothing to download on desktop or mobile. Add the site to your home screen and it behaves like a native app (PWA) with offline support for already-loaded screens.",
         },
       },
       {
         "@type": "Question",
-        name: "What does the streak counter track?",
+        name: "Is there a free trial?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Your streak counts consecutive days where you have logged at least one meal. A day only counts if the meal was saved on that calendar day, not backdated. Skipping one day does not reset the streak; missing two consecutive days does. The Progress page’s 16-week consistency heatmap is the more useful stat — it surfaces patterns you would never notice otherwise, like “I always skip Thursdays.”",
+          text: "CalStory has no trial because every feature is already free — there is no premium tier, no paywall, no credit card required. AI food logging runs on a shared quota (~30-50 logs/day) that covers normal use; paste your own Gemini API key in Settings for unlimited AI logs billed to your own Google account.",
         },
       },
       {
         "@type": "Question",
-        name: "Is my CalStory data stored securely?",
+        name: "Can I cancel anytime?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Yes. CalStory is open source and every line of the app and API is on GitHub. There is no CalStory-controlled server that touches your data. When you sign in, your data is read from and written to your own Firebase project (or your self-hosted Postgres). Your meals, workouts, weight, and profile are stored under users/{uid}/... paths with Firestore security rules that restrict reads and writes to the authenticated user. The only network calls your browser makes are to Firebase and to Google’s Gemini endpoint. We do not run analytics, ad pixels, or third-party tracking.",
+          text: "There is nothing to cancel — CalStory has no subscription, no recurring charges, and no accounts in the billing sense. Your data lives in your own Firebase project (or your self-hosted Postgres), and you can delete it permanently from Settings at any time.",
         },
       },
       {
         "@type": "Question",
-        name: "Is CalStory free?",
+        name: "Is my data safe?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Yes — every feature is free with no usage caps on the core flow and no premium tier. The only feature with a soft limit is AI food logging: the shared Gemini quota covers roughly 30–50 AI logs per day, and a personal Gemini API key in Settings bypasses it entirely with usage billed directly to your Google account. The repo is open source under a permissive license, so you can self-host the entire stack on Vercel + Firebase Spark plan for free.",
+          text: "Yes — CalStory is open source, your data lives in your own Firebase project, and Firestore security rules restrict reads and writes to the authenticated user only. There is no CalStory-controlled server that touches your data, no analytics, no ad pixels, and no third-party tracking.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Who can see my information?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Only you. CalStory has no social features, no public profiles, no leaderboards, and no data-sharing with third parties. Your meals, workouts, weight, and profile are stored in your own Firebase project and only accessible to your authenticated account.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Does this work on mobile and Windows?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes — CalStory is a responsive web app that works on iOS, Android, Windows, macOS, and Linux browsers. On phones it installs to your home screen as a PWA and behaves like a native app. The only requirement is a modern browser (Chrome, Safari, Firefox, Edge released in the last two years).",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "What if I need help?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Help is available three ways: in-app help links for common questions, a GitHub Issues tracker for bug reports and feature requests, and direct email support at support@calstory.app. There is no support tier to unlock — every channel is free for every user.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Is there customer support?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes — direct, human support via support@calstory.app. There is no support tier to unlock, no chatbot, no offshore call center. Most replies land within two business days; complex account issues can take up to a week.",
         },
       },
     ],

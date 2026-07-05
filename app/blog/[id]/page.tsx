@@ -393,6 +393,495 @@ const POST_BODIES: Record<
       </>
     ),
   },
+  "what-is-a-calorie": {
+    intro:
+      "A calorie is a unit of energy — not sugar, not weight, not a number to fear. Here is what the food label actually measures, why nutrition labels say kcal instead, and how to use the number without obsessing over it.",
+    readTime: "6 min read",
+    faqs: [
+      {
+        question: "What exactly is a calorie?",
+        answer:
+          "A calorie is a unit of energy. In nutrition, it measures how much energy food provides and how much energy your body burns through activity, training, and basic functions like breathing and digestion.",
+      },
+      {
+        question: "What is one calorie in food?",
+        answer:
+          "One calorie is the energy it takes to raise the temperature of 1 gram of water by 1°C. A food label that says 100 kcal actually means 100,000 of these tiny heat units — the labels use kilocalories so the numbers stay small.",
+      },
+      {
+        question: "Are calories sugar?",
+        answer:
+          "No. A calorie is a unit of energy; sugar is one of many foods that contain calories. One gram of sugar provides about 4 calories, the same as protein or starch.",
+      },
+      {
+        question: "What foods are high in calories?",
+        answer:
+          "Calorie-dense foods are almost always high in fat or low in water — nuts and nut butters, oils, butter, cheese, chocolate, dried fruit, granola, and avocado. Most run 400 to 900 kcal per 100 grams.",
+      },
+    ],
+    body: () => (
+      <>
+        <p>
+          <strong>A calorie is a unit of energy.</strong> In nutrition, it
+          measures how much energy food provides to your body and how much
+          energy your body burns through activity, training, and the basic work
+          of staying alive — breathing, digesting, keeping your heart beating.
+          When the calories you take in equal the calories you burn, your weight
+          stays stable. Eat more than you burn and you gain weight; eat less and
+          you lose it. That is the entire story of calories, and every diet on
+          the planet is built on top of it.
+        </p>
+
+        <h2>Where the word comes from</h2>
+        <p>
+          The word <em>calorie</em> comes from the Latin <em>calor</em> (heat).
+          A calorie is technically the amount of energy needed to raise the
+          temperature of 1 gram of water by 1 degree Celsius. That is a tiny
+          unit — so small that nobody uses it for food. When nutrition labels
+          say a food has 100 calories, they actually mean 100{" "}
+          <strong>kilocalories</strong> (kcal) — each kcal is 1,000 of those
+          tiny heat units. The terms get used interchangeably because food
+          energy numbers would otherwise be unwieldy. A 100 kcal apple actually
+          contains 100,000 of the gram-scale calories.
+        </p>
+        <p>
+          That is also why exercise machines and food labels do not match. A
+          treadmill that says you burned 300 calories means 300 kcal. The number
+          is the same; only the unit name drops the &ldquo;kilo-&rdquo; for
+          convenience. Treat them as identical and you will not get confused.
+        </p>
+
+        <h2>Where calories in food come from</h2>
+        <p>
+          Almost every calorie in your diet comes from one of three
+          macronutrients:
+        </p>
+        <ul>
+          <li>
+            <strong>Protein</strong> — 4 kcal per gram. Builds and repairs
+            muscle, makes enzymes, keeps you full.
+          </li>
+          <li>
+            <strong>Carbohydrates</strong> — 4 kcal per gram. The body&apos;s
+            preferred fuel for high-intensity work and brain function.
+          </li>
+          <li>
+            <strong>Fat</strong> — 9 kcal per gram. More than twice as
+            calorie-dense as protein or carbs, which is why fatty foods (nuts,
+            oils, butter, cheese) add up fast.
+          </li>
+        </ul>
+        <p>
+          Alcohol contributes 7 kcal per gram, which is why a few drinks quietly
+          add a few hundred calories to your day. Fiber is a carbohydrate your
+          body cannot digest, so it contributes roughly 2 kcal per gram and a
+          lot of bulk that keeps you full. Everything else on a nutrition label
+          — vitamins, minerals, water — has effectively zero calories.
+        </p>
+
+        <h2>How many calories do you actually need?</h2>
+        <p>
+          Your daily calorie need is your Total Daily Energy Expenditure (TDEE),
+          which is the sum of three things:{" "}
+          <strong>basal metabolic rate</strong> (the calories you burn lying
+          still), <strong>activity thermogenesis</strong> (calories burned
+          moving around and exercising), and{" "}
+          <strong>the thermic effect of food</strong> (the calories burned
+          digesting what you ate).
+        </p>
+        <p>
+          For a moderately active 30-year-old lifter, TDEE usually lands between
+          2,400 and 3,000 kcal/day. A 60-year-old sedentary woman might sit
+          closer to 1,600. These numbers move with your body weight, training
+          volume, age, and sex, which is why one-size-fits-all calorie targets
+          are always wrong by at least 10%. Use the{" "}
+          <a
+            href="/blog/calorie-tracking-for-beginners"
+            className="text-primary hover:underline">
+            Calorie Tracking for Beginners
+          </a>{" "}
+          setup guide to compute your real number, then track and adjust.
+        </p>
+
+        <h2>Calories are a tool, not a verdict</h2>
+        <p>
+          The single most useful reframe: a calorie is a measurement, not a
+          moral judgment. A 200 kcal doughnut and a 200 kcal chicken breast both
+          contain 200 kcal of energy, and your body uses that energy the same
+          way for the basic work of staying alive. The doughnut will leave you
+          hungry an hour later because it has almost no protein or fiber; the
+          chicken will keep you full because it has 35 g of protein. Same
+          energy, very different satiety, very different nutrition.
+        </p>
+        <p>
+          Counting calories helps you understand the energy side of the
+          equation. It does not tell you whether the food is nutritious, whether
+          it contains the micronutrients your body needs, or whether it leaves
+          you satisfied. Pair calorie tracking with a protein floor and a
+          vegetable habit and you have the whole picture. Skip the protein and
+          you end up eating 1,800 kcal of cereal and wondering why you are
+          starving.
+        </p>
+
+        <h2>Practical rules for using the number</h2>
+        <p>Three rules that survive every diet study ever published:</p>
+        <ol>
+          <li>
+            <strong>Hit protein first.</strong> 1.6 to 2.2 g per kilogram of
+            bodyweight is the range with evidence behind it for muscle retention
+            and growth. Everything else is fine-tuning.
+          </li>
+          <li>
+            <strong>
+              Set total calories from your goal, not from a guess.
+            </strong>{" "}
+            Maintenance for weight stability, minus 300 to 500 kcal for fat
+            loss, plus 200 to 400 for muscle gain. Bigger moves cost you muscle
+            or add fat.
+          </li>
+          <li>
+            <strong>Track the trend, not the daily number.</strong> A 7-day
+            rolling average of your weight tells you whether your calorie target
+            is working. Daily weight bounces 1 to 2 kg from water and sodium
+            alone.
+          </li>
+        </ol>
+
+        <h2>Where CalStory fits</h2>
+        <p>
+          CalStory&apos;s AI food logger turns plain-English descriptions into
+          calorie and macro totals in roughly nine seconds — no barcode
+          scanning, no typing every gram. The dashboard shows your calorie ring
+          and macro pills in real time, and the Progress page plots the trend so
+          you can see whether the number you set is actually working. Together,
+          they take the arithmetic out of calorie tracking without removing the
+          signal.
+        </p>
+      </>
+    ),
+  },
+  "what-is-a-calorie-deficit": {
+    intro:
+      "A calorie deficit is the gap between the calories your body burns and the calories you eat. How to find your real number, how big to make the gap, and why 500 kcal/day is the sweet spot for most lifters.",
+    readTime: "8 min read",
+    faqs: [
+      {
+        question: "What is a calorie deficit?",
+        answer:
+          "A calorie deficit happens when you eat fewer calories than your body burns in a day. Your body then taps into stored energy — mainly fat — to make up the difference, which is why a consistent deficit leads to weight loss over time.",
+      },
+      {
+        question: "How much calorie deficit do I need to lose weight?",
+        answer:
+          "Losing one pound of fat requires roughly a 3,500-calorie deficit, so 500 kcal/day under TDEE loses about 1 lb/week. Sustainable plans stay in the 300 to 750 kcal/day range; bigger deficits cost more muscle and energy.",
+      },
+      {
+        question: "Is 1,000 calories a day good for weight loss?",
+        answer:
+          "1,000 kcal/day is almost always too low for active adults and lifters, and it usually causes muscle loss, fatigue, and metabolic adaptation. A 300 to 500 calorie deficit below maintenance is safer and more sustainable.",
+      },
+      {
+        question: "Can you build muscle in a calorie deficit?",
+        answer:
+          "Yes — body recomposition is possible in a mild deficit if you strength train consistently and eat 0.7 to 1 g of protein per pound of bodyweight. Beginners and lifters returning after a break see the best results.",
+      },
+    ],
+    body: () => (
+      <>
+        <p>
+          <strong>
+            A calorie deficit is the gap between the calories your body burns
+            and the calories you feed it.
+          </strong>{" "}
+          When the number on the way out exceeds the number on the way in, your
+          body pulls the difference from stored energy — mostly fat, with a
+          small contribution from glycogen and a smaller one from muscle protein
+          if the deficit is aggressive. That is the entire mechanism behind
+          weight loss. Every diet that has ever produced real results works
+          because it created a consistent calorie deficit.
+        </p>
+
+        <h2>How big should the deficit be?</h2>
+        <p>
+          The size of the deficit determines two things: how fast you lose
+          weight, and how much muscle you keep. The standard heuristic is{" "}
+          <strong>3,500 kcal ≈ 1 pound of fat</strong>, which means a 500
+          kcal/day deficit produces about a pound of fat loss per week. That is
+          the rate most lifters do well at.
+        </p>
+        <ul>
+          <li>
+            <strong>300 kcal/day deficit:</strong> roughly 0.5 lb/week. Best
+            when you are already lean, returning from a break, or trying to
+            preserve performance during a competition block.
+          </li>
+          <li>
+            <strong>500 kcal/day deficit:</strong> roughly 1 lb/week. The sweet
+            spot for most people — fast enough to see progress, small enough to
+            keep training volume high.
+          </li>
+          <li>
+            <strong>750 kcal/day deficit:</strong> roughly 1.5 lb/week. Faster
+            but harder to sustain. Use short cycles, not the default.
+          </li>
+          <li>
+            <strong>1,000+ kcal/day deficit:</strong> too aggressive for anyone
+            who trains. Expect muscle loss, fatigue, hunger, and metabolic
+            adaptation within 2 to 3 weeks.
+          </li>
+        </ul>
+
+        <h2>How to find your real deficit number</h2>
+        <p>The formula is simple in principle and messy in practice:</p>
+        <ol>
+          <li>
+            Calculate your TDEE with the Mifflin-St Jeor equation (10 ×
+            weight(kg) + 6.25 × height(cm) − 5 × age + 5 for men or −161 for
+            women), then multiply by an activity factor between 1.4 and 1.75
+            based on weekly workouts, daily steps, and job activity.
+          </li>
+          <li>Subtract 300 to 500 kcal. That is your daily calorie target.</li>
+          <li>
+            Log your weight for two to three weeks. Compare the trend to what
+            the math predicted. If you are losing faster than expected, eat 50
+            to 100 kcal more. If slower, eat 50 to 100 less.
+          </li>
+        </ol>
+        <p>
+          The recalibration step is the part most calculators skip, and it is
+          the part that actually works. Predictive equations are off by ~10% on
+          average and up to 30% in outliers — see{" "}
+          <a
+            href="https://pubmed.ncbi.nlm.nih.gov/2305711/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline">
+            Hall et al. (2011)
+          </a>
+          . The trend-aware trackers (MacroFactor, CalStory) outperform one-shot
+          calculators because they adjust the target as your weight changes,
+          instead of staying frozen at your onboarding number.
+        </p>
+
+        <h2>Why aggressive deficits backfire</h2>
+        <p>Three things happen when you cut too hard:</p>
+        <p>
+          <strong>1. Muscle loss.</strong> A 2010 meta-analysis by{" "}
+          <a
+            href="https://pubmed.ncbi.nlm.nih.gov/20613879/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline">
+            Helms, Fitschen, and Aragon
+          </a>{" "}
+          found that aggressive deficits (≥ 1,000 kcal/day) resulted in
+          significantly more lean mass loss than moderate ones in
+          resistance-trained athletes. A 500 kcal deficit preserves muscle when
+          paired with adequate protein and continued strength training.
+        </p>
+        <p>
+          <strong>2. Metabolic adaptation.</strong> Resting metabolic rate drops
+          disproportionately to the deficit. A 2016 study in{" "}
+          <em>The American Journal of Clinical Nutrition</em> showed that
+          metabolic adaptation after extreme weight loss can persist for years —
+          which is why so many crash dieters regain the weight.
+        </p>
+        <p>
+          <strong>3. Hormonal and performance hits.</strong> Testosterone drops,
+          thyroid function slows, training volume becomes impossible to sustain,
+          and mood takes a beating. None of these are conducive to keeping the
+          weight off.
+        </p>
+
+        <h2>How to eat in a deficit without losing muscle</h2>
+        <p>Four rules that survive every intervention trial:</p>
+        <ol>
+          <li>
+            <strong>Keep protein high.</strong> 1.6 to 2.2 g per kilogram of
+            bodyweight is the range with evidence behind it. Protein is the most
+            satiating macro and the one your body uses to preserve muscle during
+            a cut.
+          </li>
+          <li>
+            <strong>Lift heavy.</strong> Strength training sends the signal to
+            your body that your muscle is load-bearing and needs to be kept.
+            Cardio-only cuts lose more lean mass.
+          </li>
+          <li>
+            <strong>Prioritize volume foods.</strong> Vegetables, lean proteins,
+            broth-based soups, and eggs keep you full on fewer calories than
+            calorie-dense foods (nuts, oils, cheese) do.
+          </li>
+          <li>
+            <strong>Track the trend, not the scale.</strong> Daily weight
+            bounces 1 to 2 kg from water and sodium alone. A 7-day rolling
+            average tells you whether the deficit is actually working.
+          </li>
+        </ol>
+
+        <h2>Where CalStory fits</h2>
+        <p>
+          CalStory computes your TDEE with Mifflin-St Jeor during onboarding,
+          sets your daily calorie target 300 to 500 below maintenance, and
+          recalibrates the number every week as you log your weight. The calorie
+          ring on the dashboard shows what you have left for the day, the macro
+          pills show whether you are hitting protein, and the Progress page
+          plots the trend so you can see the deficit working before the mirror
+          tells you.
+        </p>
+      </>
+    ),
+  },
+  "3-3-3-rule-diet": {
+    intro:
+      "The 3-3-3 rule is three meals a day, spaced three hours apart, finishing three hours before bed. Why this scaffold works, what it does not do, and how to layer real calorie tracking on top.",
+    readTime: "5 min read",
+    faqs: [
+      {
+        question: "What is the 3-3-3 rule diet?",
+        answer:
+          "The 3-3-3 rule is a habit scaffold: eat three balanced meals a day, spaced at least three hours apart, and stop eating three hours before bed. It is not a calorie or macro protocol — pair it with a real calorie target to turn it into an actual fat-loss plan.",
+      },
+      {
+        question: "Does the 3-3-3 rule help you lose weight?",
+        answer:
+          "The 3-3-3 rule helps with adherence — fewer decision points, regulated hunger cues, and no late-night snacking — but it does not cause fat loss by itself. You still need a calorie deficit underneath.",
+      },
+      {
+        question: "How many calories should each meal be on the 3-3-3 rule?",
+        answer:
+          "Divide your daily calorie target by three. On a 2,000 kcal/day deficit plan, each meal is roughly 650 to 700 kcal, with the bulk coming from protein and fiber-rich foods.",
+      },
+      {
+        question: "Can I snack on the 3-3-3 rule?",
+        answer:
+          "The point of the scaffold is to reduce unplanned snacking. If you do snack, log it and adjust the next meal to stay inside your calorie target — that is the real rule underneath the rule.",
+      },
+    ],
+    body: () => (
+      <>
+        <p>
+          <strong>The 3-3-3 rule is a habit scaffold, not a diet.</strong> Three
+          meals a day, spaced at least three hours apart, with the last meal
+          finishing three hours before bed. That is the whole thing. It does not
+          prescribe calories, macros, or food choices — it prescribes a
+          structure that makes the rest easier to stick with.
+        </p>
+
+        <h2>Why the scaffold works</h2>
+        <p>Three concrete reasons:</p>
+        <p>
+          <strong>1. Hunger cues regulate.</strong> Eating on a roughly
+          predictable schedule trains ghrelin and leptin to fire on a schedule
+          too. After two weeks on the rule, most people find they get hungry at
+          meal times instead of getting random cravings between them. The
+          willpower tax goes down because your body stops sending false-alarm
+          hunger signals.
+        </p>
+        <p>
+          <strong>2. Decision points collapse.</strong> &ldquo;Should I eat now
+          or wait?&rdquo; &ldquo;Is this a snack or a meal?&rdquo; &ldquo;Should
+          I have seconds?&rdquo; The 3-3-3 rule answers all three with a single
+          heuristic: next meal is in three hours, this is not that meal, and so
+          the answer is wait. Fewer decisions = better adherence, which is the
+          single biggest predictor of whether a calorie target actually produces
+          fat loss.
+        </p>
+        <p>
+          <strong>3. Late-night snacking disappears.</strong> The
+          three-hour-before-bed cutoff removes the most common adherence-killer
+          — the post-dinner couch snack that nobody logs. Eating earlier also
+          improves sleep onset and sleep quality, both of which independently
+          improve body composition outcomes.
+        </p>
+
+        <h2>What the rule does not do</h2>
+        <p>
+          The 3-3-3 rule does not cause fat loss. It is a container for the
+          calorie and macro target that actually causes fat loss. You can follow
+          the rule perfectly and still gain weight by eating 3,500 kcal per
+          meal. Conversely, you can eat six small meals a day on a calorie
+          deficit and lose the same amount of fat as someone on three meals. The
+          number of meals is a preference; the calorie balance is the mechanism.
+        </p>
+        <p>
+          That is also why the 3-3-3 rule is so popular — it is flexible. You
+          decide what goes into the three meals; the rule decides when they
+          happen. Most lifters do well with a protein anchor at each meal (eggs
+          at breakfast, chicken at lunch, fish or beef at dinner) plus
+          vegetables and a starch or fruit. The macro split takes care of itself
+          once the structure is in place.
+        </p>
+
+        <h2>How to layer real calories on top</h2>
+        <p>The math:</p>
+        <ol>
+          <li>
+            Calculate your TDEE with the Mifflin-St Jeor equation. CalStory does
+            this in onboarding; if you are not on CalStory, the{" "}
+            <a
+              href="/blog/best-macro-calculator"
+              className="text-primary hover:underline">
+              macro calculator guide
+            </a>{" "}
+            walks through it.
+          </li>
+          <li>
+            Subtract 300 to 500 kcal for a moderate deficit. That is your daily
+            calorie target.
+          </li>
+          <li>
+            Divide by three. On a 2,000 kcal/day target, each meal is roughly
+            650 to 700 kcal. Round to the nearest 50.
+          </li>
+          <li>
+            Hit 0.5 to 0.7 g of protein per pound of bodyweight at each meal.
+            For a 180-pound lifter, that is 30 to 40 g of protein per meal —
+            about a palm-sized serving of chicken, fish, beef, eggs, or a scoop
+            of whey.
+          </li>
+        </ol>
+        <p>
+          The structure does the rest. You will eat roughly the same number of
+          calories every day because the structure tells you when to stop, and
+          your weight will trend in the right direction because the calorie
+          target is doing the actual work.
+        </p>
+
+        <h2>When the rule breaks</h2>
+        <p>Three situations where the 3-3-3 rule needs adjustment:</p>
+        <p>
+          <strong>1. Heavy training days.</strong> If you train twice a day or
+          you are doing heavy compound work, three meals may leave you
+          under-fueled. Add a fourth small meal (or a targeted pre/post-workout
+          snack) and pull calories from the other meals to compensate.
+        </p>
+        <p>
+          <strong>2. Intermittent fasters.</strong> If you already eat inside an
+          8-hour window, the 3-3-3 rule is too rigid. The scaffold you want is
+          fewer decision points inside your eating window — same idea, different
+          shape.
+        </p>
+        <p>
+          <strong>3. Shift workers.</strong> &ldquo;Three hours before
+          bed&rdquo; is meaningless if your bedtime moves. Anchor on whatever
+          your wake time is and shift the three meals forward or back
+          accordingly.
+        </p>
+
+        <h2>Where CalStory fits</h2>
+        <p>
+          CalStory&apos;s calorie ring on the dashboard is the simplest way to
+          know whether your three meals are landing on target. The AI food
+          logger turns &ldquo;oatmeal with berries and a protein shake&rdquo;
+          into a saved entry in roughly nine seconds; log each meal when you
+          finish it, glance at the ring, adjust the next meal if you are over or
+          under. The 3-3-3 rule handles the <em>when</em>; CalStory handles the{" "}
+          <em>how much</em>.
+        </p>
+      </>
+    ),
+  },
 };
 
 export default async function PostPage({

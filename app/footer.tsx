@@ -28,6 +28,7 @@ const productLinks = [
 const resourceLinks = [
   { label: "Blog", href: "/blog" },
   { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
   {
     label: "Calorie Tracking for Beginners",
     href: "/blog/calorie-tracking-for-beginners",
@@ -97,9 +98,14 @@ const Footer = () => {
 
             <div className="mt-6">
               <h3 className="font-semibold text-sm font-heading">Contact</h3>
+              <Link
+                href="/contact"
+                className="mt-2 inline-block text-sm text-muted-foreground/80 hover:text-foreground transition-colors">
+                Get in touch
+              </Link>
               <a
                 href="mailto:support@calstory.app"
-                className="mt-2 inline-block text-sm text-muted-foreground/80 hover:text-foreground transition-colors">
+                className="mt-1 inline-block text-xs text-muted-foreground/60 hover:text-foreground/80 transition-colors break-all">
                 support@calstory.app
               </a>
             </div>

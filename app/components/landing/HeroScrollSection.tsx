@@ -45,8 +45,9 @@ function HeroCopy() {
         Get fit with <span className="text-primary">AI-powered</span> tracking.
       </h2>
       <p className="text-muted-foreground text-base md:text-xs leading-relaxed lg:text-sm xl:text-xl xxl:text-xl">
-        CalStory uses computer vision to log meals from a single photo — then
-        continuously adapts your calorie and macro targets to your metabolism.
+        CalStory turns plain-English meal descriptions into logged calories and
+        macros in seconds — then continuously adapts your calorie and macro
+        targets to your metabolism.
       </p>
     </div>
   );
@@ -72,8 +73,9 @@ function MobileLayout() {
           tracking.
         </h2>
         <p className="text-muted-foreground text-base leading-relaxed mt-3">
-          CalStory uses computer vision to log meals from a single photo — then
-          continuously adapts your calorie and macro targets to your metabolism.
+          CalStory turns plain-English meal descriptions into logged calories
+          and macros in seconds — then continuously adapts your calorie and
+          macro targets to your metabolism.
         </p>
       </BlurFade>
     </div>

@@ -12,13 +12,14 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight, CircleQuestionMark } from "lucide-react";
 import Footer from "./footer";
 import CTASection from "@/app/cta";
-import FAQSection from "@/app/components/landing/FAQSection";
+import SeoFaq from "@/app/components/landing/SeoFaq";
 import HeroScrollSection from "@/app/components/landing/HeroScrollSection";
 import { Navbar } from "@/app/components/landing/Navbar";
 import { StructuredData } from "@/app/components/seo/StructuredData";
 import { landingJsonLd } from "@/app/components/landing/landingJsonLd";
 import CurvedLoop from "./components/ui/CurvedLoop";
 import FeatureGrid from "./components/landing/Features";
+import SeoContent from "./components/landing/SeoContent";
 import { BackgroundGrid } from "@/app/components/BackgroundGrid";
 import MethodSection from "./MethodSection";
 
@@ -38,7 +39,10 @@ export default function LandingPage() {
   // virtualised / conditionally-rendered child.
   const featuresRef = useRef<HTMLDivElement>(null);
   const methodRef = useRef<HTMLElement>(null);
-  const faqRef = useRef<HTMLElement>(null);
+
+  /* The FAQ block (SeoFaq) renders with `id="faq"` directly, so
+   * the navbar's `/#faq` link resolves it via
+   * `document.getElementById` without needing a ref here. */
 
   function handleSignIn() {
     router.push("/auth");
@@ -102,7 +106,6 @@ export default function LandingPage() {
           targets={{
             features: featuresRef,
             "how-it-works": methodRef,
-            faq: faqRef,
           }}
         />
         <StructuredData data={landingJsonLd} />
@@ -152,15 +155,9 @@ export default function LandingPage() {
           <HeroScrollSection />
         </section>
         <MethodSection ref={methodRef} />
-        <FeatureGrid ref={featuresRef} />{" "}
-        <section
-          id="faq"
-          ref={faqRef}
-          className="relative z-10 py-24 px-6 w-full flex justify-center">
-          <div className="max-w-5xl mx-auto w-full flex flex-col gap-20 sm:gap-28">
-            <FAQSection />
-          </div>
-        </section>
+        <FeatureGrid ref={featuresRef} />
+        <SeoContent />
+        <SeoFaq />
         <div className="relative w-full min-h-screen isolate">
           <div className="absolute inset-0 2xl:-top-80 -top-40 md:-top-20 z-0 pointer-events-none">
             <CurvedLoop

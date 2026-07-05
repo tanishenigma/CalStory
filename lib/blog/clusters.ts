@@ -416,7 +416,10 @@ export const KEYWORD_MAP: KeywordEntry[] = [
 
 export type PostSlug =
   | "calorie-tracking-for-beginners"
-  | "best-macro-calculator";
+  | "best-macro-calculator"
+  | "what-is-a-calorie"
+  | "what-is-a-calorie-deficit"
+  | "3-3-3-rule-diet";
 
 export interface ClusterDef {
   /** URL slug of the pillar landing page (planned, may not exist yet). */
@@ -437,8 +440,20 @@ export const CLUSTERS: Record<string, ClusterDef> = {
     pillarLabel: "TDEE & Macros",
     pillarDescription:
       "Everything you need to know about total daily energy expenditure, macro splits, and how to adjust as your training changes.",
-    articles: ["calorie-tracking-for-beginners", "best-macro-calculator"],
-    siblingLinks: ["best-macro-calculator", "calorie-tracking-for-beginners"],
+    articles: [
+      "calorie-tracking-for-beginners",
+      "best-macro-calculator",
+      "what-is-a-calorie",
+      "what-is-a-calorie-deficit",
+      "3-3-3-rule-diet",
+    ],
+    siblingLinks: [
+      "best-macro-calculator",
+      "calorie-tracking-for-beginners",
+      "what-is-a-calorie",
+      "what-is-a-calorie-deficit",
+      "3-3-3-rule-diet",
+    ],
   },
 };
 
@@ -456,6 +471,9 @@ export function clusterForPost(slug: PostSlug): ClusterDef | null {
 export const BLOG_CTA: Record<PostSlug, CTAFeature> = {
   "calorie-tracking-for-beginners": "generic",
   "best-macro-calculator": "macro-tracker",
+  "what-is-a-calorie": "ai-logger",
+  "what-is-a-calorie-deficit": "tdee",
+  "3-3-3-rule-diet": "generic",
 };
 
 export const CTA_PATH: Record<CTAFeature, string> = {
@@ -545,6 +563,45 @@ export const TITLE_VARIANTS: Record<
         "Three macro presets, one Mifflin-St Jeor equation, and the maintenance check that prevents 80% of beginner mistakes.",
     },
   ],
+  "what-is-a-calorie": [
+    {
+      title:
+        "What Is a Calorie? The Energy Unit Behind Every Diet You Have Tried",
+      description:
+        "A calorie is a unit of energy, not sugar and not weight. Where the number comes from, why the food label says kcal, and how to use it without obsessing over it.",
+    },
+    {
+      title:
+        "How Many Calories Are in Food? The kcal vs Calorie Confusion, Solved",
+      description:
+        "Nutrition labels say kcal, exercise machines say calories. The numbers are the same, the names are not. Here is the one-line fix.",
+    },
+  ],
+  "what-is-a-calorie-deficit": [
+    {
+      title: "What Is a Calorie Deficit, and Why 500 kcal/day Beats 1,000",
+      description:
+        "A calorie deficit is the gap between calories burned and calories eaten. Why moderate deficits (300-500 kcal) protect muscle and how to find your real number.",
+    },
+    {
+      title: "How to Calculate a Calorie Deficit Without a Spreadsheet",
+      description:
+        "TDEE minus 300-500 kcal is the simple formula. Here's the long version, with the Mifflin-St Jeor math and the activity factor that actually moves the needle.",
+    },
+  ],
+  "3-3-3-rule-diet": [
+    {
+      title:
+        "The 3-3-3 Rule Diet: A Simple Eating Schedule That Actually Works",
+      description:
+        "Three meals, three hours apart, three hours before bed. Why this scaffold beats skipping breakfast, and how to layer real calories on top.",
+    },
+    {
+      title: "Meal Timing for Lifters: Does the 3-3-3 Rule Help You Lose Fat?",
+      description:
+        "The 3-3-3 rule is a habit scaffold, not a fat-loss protocol. How to use it without falling for meal-timing hype.",
+    },
+  ],
 };
 
 /* ------------------------------------------------------------------
@@ -581,6 +638,27 @@ export const BACKLOG: BacklogRow[] = [
     slug: "best-macro-calculator",
     title: "The Best Macro Calculator for Lifters",
     keyword: "best macro calculator for lifters",
+    cluster: "tdee",
+    status: "published",
+  },
+  {
+    slug: "what-is-a-calorie",
+    title: "What Is a Calorie? The Energy Unit Behind Every Diet",
+    keyword: "what is a calorie",
+    cluster: "tdee",
+    status: "published",
+  },
+  {
+    slug: "what-is-a-calorie-deficit",
+    title: "What Is a Calorie Deficit — and How Big Should Yours Be?",
+    keyword: "what is a calorie deficit",
+    cluster: "tdee",
+    status: "published",
+  },
+  {
+    slug: "3-3-3-rule-diet",
+    title: "The 3-3-3 Rule Diet: A Simple Eating Schedule That Works",
+    keyword: "3-3-3 rule diet",
     cluster: "tdee",
     status: "published",
   },

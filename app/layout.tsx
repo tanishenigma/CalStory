@@ -25,24 +25,46 @@ const instrument = Instrument_Sans({
 
 const SITE_NAME = "CalStory";
 const SITE_DESCRIPTION =
-  "CalStory is a free calorie, macro, and workout tracker with an AI food logger — built for lifters who care about real progress.";
+  "CalStory is a free calorie tracker, calorie counter, and workout log with an AI food logger — built for lifters who care about real progress.";
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
   "https://calstory.app";
 
+const OG_IMAGE = {
+  url: "/og.png",
+  secureUrl: "/og.png",
+  width: 1200,
+  height: 630,
+  alt: "CalStory — Free Calorie Tracker, Calorie Counter & Workout Log",
+  type: "image/png",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} - Free Calorie Tracker`,
+    default: `${SITE_NAME} — Free Calorie Tracker, Calorie Counter & Workout Log`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  category: "Health & Fitness",
+  classification: "Health, Fitness, Nutrition",
   verification: {
     google: "googleb18fe1957a712708",
   },
   keywords: [
+    "calorie",
+    "calorie calculator",
+    "calorie deficit calculator",
+    "calorie deficit",
+    "maintenance calorie calculator",
+    "calorie counter",
+    "what is a calorie deficit",
+    "what is a calorie",
     "calorie tracker",
+    "best workout apps",
+    "workout routines",
+    "workout log",
     "macro tracker",
     "food logger",
     "AI food log",
@@ -52,6 +74,10 @@ export const metadata: Metadata = {
     "lifting tracker",
     "strength training log",
     "calorie counting app",
+    "weight loss tracker",
+    "fitness tracker",
+    "nutrition tracker",
+    "BMR calculator",
   ],
   authors: [{ name: SITE_NAME, url: SITE_URL }],
   creator: SITE_NAME,
@@ -77,28 +103,34 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — Free Calorie & Macro Tracker for Lifters`,
+    title: `${SITE_NAME} — Free Calorie Tracker, Calorie Counter & Workout Log`,
     description: SITE_DESCRIPTION,
-    images: [
-      {
-        url: "/og.png",
-        width: 1200,
-        height: 630,
-        alt: `${SITE_NAME} — Track what you eat. Build your story.`,
-        type: "image/png",
-      },
-    ],
+    determiner: "auto",
+    // The `images` array below is what Facebook, LinkedIn, Discord,
+    // Slack, and iMessage render when the URL is shared. The fields
+    // map directly to og:title / og:description / og:image / og:image:*
+    // meta tags. `secureUrl` is the explicit https variant — some
+    // scrapers ignore `url` if it's a relative path.
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Free Calorie & Macro Tracker for Lifters`,
-    description: SITE_DESCRIPTION,
-    images: ["/og.png"],
+    site: "@calstoryapp",
     creator: "@calstoryapp",
+    title: `${SITE_NAME} — Free Calorie Tracker, Calorie Counter & Workout Log`,
+    description: SITE_DESCRIPTION,
+    images: {
+      url: OG_IMAGE.url,
+      alt: OG_IMAGE.alt,
+    },
+  },
+  facebook: {
+    appId: undefined,
   },
   robots: {
     index: true,
     follow: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
@@ -112,6 +144,15 @@ export const metadata: Metadata = {
     apple: "/favicon.svg",
   },
   manifest: "/manifest.webmanifest",
+  other: {
+    "theme-color": "#0a0a0a",
+    "apple-mobile-web-app-title": SITE_NAME,
+    "application-name": SITE_NAME,
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "format-detection": "telephone=no",
+  },
 };
 
 export const viewport: Viewport = {
