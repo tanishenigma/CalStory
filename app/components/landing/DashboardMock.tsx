@@ -77,7 +77,7 @@ const MEAL_DEMO_POOL: MealDemo[] = [
   {
     id: "m1",
     icon: Sun,
-    name: "Grilled Chicken with Brown Rice Bowl",
+    name: "Grilled Tofu with Brown Rice Bowl",
     time: "Lunch",
     cal: 360,
   },
@@ -91,7 +91,7 @@ const MEAL_DEMO_POOL: MealDemo[] = [
   {
     id: "m3",
     icon: Moon,
-    name: "3 Butter Roti and Achari Chaap",
+    name: "Veggie Burrito Bowl",
     time: "Lunch",
     cal: 480,
   },
@@ -536,21 +536,21 @@ export function DashboardMock() {
 
           <div className="flex flex-col gap-2 min-w-0 md:h-64">
             <MacroCard
-              emoji="🥦"
+              emoji="🍞"
               color="#34d399"
               label="Carbs"
               value={cLeft}
               unit="g"
             />
             <MacroCard
-              emoji="🍗"
+              emoji="🥛"
               color="#f87171"
               label="Protein"
               value={pLeft}
               unit="g"
             />
             <MacroCard
-              emoji="🥑"
+              emoji="🧈"
               color="#facc15"
               label="Fats"
               value={fLeft}

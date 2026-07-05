@@ -66,7 +66,7 @@ const MEAL_DEMO_POOL: MealDemo[] = [
   {
     id: "m1",
     icon: Sun,
-    name: "Grilled Chicken with Brown Rice Bowl",
+    name: "Grilled Tofu with Brown Rice Bowl",
     time: "Lunch",
     cal: 360,
     hasData: true,
@@ -82,7 +82,7 @@ const MEAL_DEMO_POOL: MealDemo[] = [
   {
     id: "m3",
     icon: Moon,
-    name: "3 Butter Roti and Achari Chaap",
+    name: "Veggie Burrito Bowl",
     time: "Lunch",
     cal: 480,
     hasData: true,
@@ -450,18 +450,18 @@ export function MobileDashboardMock() {
 
         {/* Macros — stacked full-width rows, like the real mobile app */}
         <MobileMacroRow
-          emoji="🥦"
+          emoji="🍞"
           color="#34d399"
           label="Carbs"
           value={cLeft}
         />
         <MobileMacroRow
-          emoji="🍗"
+          emoji="🥛"
           color="#f87171"
           label="Protein"
           value={pLeft}
         />
-        <MobileMacroRow emoji="🥑" color="#facc15" label="Fats" value={fLeft} />
+        <MobileMacroRow emoji="🧈" color="#facc15" label="Fats" value={fLeft} />
 
         {/* Today's Workout */}
         <section>

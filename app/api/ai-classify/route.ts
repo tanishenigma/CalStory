@@ -19,38 +19,55 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
  * "food" and surface a small notice in the UI to follow up with the
  * workout. Multi-intent single messages are rare in practice; if
  * usage shows otherwise we can extend the prompt with ordering hints.
+ *
+ * The caller may pass `conversationHistory` so the classifier can
+ * resolve short follow-ups like "please also log 50 pushups" — read
+ * alone those are ambiguous ("also log" implies an addendum to a
+ * prior turn), and without context the model would default to
+ * "food" per the in-doubt rule, sending workouts to the wrong
+ * pipeline. Forwarding the last few turns lets the model see the
+ * prior intent and route the follow-up correctly.
  * ------------------------------------------------------------------ */
 const SYSTEM_PROMPT = `You are a routing classifier for CalStory, a fitness tracking app.
-The user will type a short free-form message. Decide which logging flow it belongs to.
+The user is having a multi-turn chat with the assistant and just sent a new message. Decide which logging flow(s) it belongs to. The user can mention BOTH food and a workout in the same turn — in that case return BOTH intents so the app can run both pipelines.
+
+You may also receive the recent chat history (up to the last few turns). Use it to disambiguate short follow-ups — phrases like "also log X", "and I did Y too", "log that as a workout instead", or any reply that only makes sense in context of a previous turn. The greeting / welcome message from the model is NOT a real user request — treat it as neutral context, not as evidence that the user wants to log food.
 
 Return ONLY valid JSON in this exact shape — no markdown, no commentary:
 {
-  "intent": "food" | "workout",
-  "confidence": number,        // 0..1, how sure you are
-  "reason": string             // ≤ 12 words, used for debugging only
+  "intents": ("food" | "workout")[],  // 1 or 2 entries; both if mixed
+  "confidence": number,                 // 0..1, how sure you are
+  "reason": string                      // ≤ 12 words, used for debugging only
 }
 
 Rules:
-- "food" when the message describes a meal, snack, drink, calories, macros, ingredients, or quantities of something eaten (e.g. "2 eggs and toast", "protein shake", "big bowl of pasta").
-- "workout" when the message describes exercises, sets/reps/weight, cardio, running, yoga, sports, training, or any physical activity (e.g. "bench 80kg 3x10", "ran 5km", "did yoga").
-- When in doubt, return "food". Food is the more common entry and the UI lets the user correct it.
-- Never return anything outside the JSON object.`;
+- Classify ONLY the latest user message, not the whole conversation.
+- Return BOTH "food" and "workout" if the message contains a clear food mention AND a clear workout mention (e.g. "I ate 100g chicken and did 10 pushups", "after my rice I ran 5km", "I also did 10 pushups and ate 100g soya chunks").
+- Return ONLY "food" if the message mentions only food / meals / drinks (e.g. "2 eggs and toast", "protein shake", "200g chicken and rice").
+- Return ONLY "workout" if the message mentions only exercises / training (e.g. "Pull-ups 3x12", "Bench 80kg 3x10", "Ran 5km in 25 minutes", "Did yoga for 30 min", "50 pushups", "Pull-ups", "Pushups").
+- "workout" examples that are ALWAYS workout (set/rep notation, exercise verbs, exercise names).
+- When a message contains set/rep notation like "3x12", "5x5", "3x10 @ 80kg", it is ALWAYS a workout — exercise notation is unambiguous.
+- If the message is genuinely ambiguous AND there's no useful history (just a greeting), prefer ["workout"] — the food pipeline can clarify ("what did you eat?"), and a food message routed to workout is a much worse user experience than the reverse.
+- Never return anything outside the JSON object. Never return an empty array.`;
 
 type ClassifyResponse = {
-  intent: "food" | "workout";
+  intents: Array<"food" | "workout">;
   confidence: number;
   reason: string;
 };
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  let body: { message: string };
+  let body: {
+    message: string;
+    conversationHistory?: Array<{ role: "user" | "model"; content: string }>;
+  };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { message } = body;
+  const { message, conversationHistory } = body;
   if (!message?.trim()) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
   }
@@ -79,13 +96,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   if (!apiKey) {
-    // Without an API key we still need a sensible default. Food is the
-    // safer bet — it has the higher per-session volume — and the user
-    // can immediately type "actually I meant a workout" if wrong.
+    // Without an API key we still need a sensible default. We bias
+    // toward "workout" because the food pipeline has a friendly
+    // fallback ("what did you eat?") when it receives a non-food
+    // message, but the workout pipeline rejects non-workout inputs
+    // outright. A false-workout is much easier to recover from than
+    // a false-food.
     return NextResponse.json({
-      intent: "food",
+      intent: "workout",
       confidence: 0,
-      reason: "no Gemini key — defaulting to food",
+      reason: "no Gemini key — defaulting to workout",
     });
   }
 
@@ -98,9 +118,34 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       generationConfig: { temperature: 0.1 },
     });
 
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: message }] }],
-    });
+    // Build a multi-turn contents array so the classifier can see the
+    // last few user/model turns before deciding. We cap to the last 6
+    // turns (3 exchanges) to keep the token cost trivial — older
+    // context almost never changes the routing decision.
+    const safeHistory = conversationHistory || [];
+    const recentHistory = safeHistory
+      .slice(-6)
+      .filter(
+        (m) =>
+          (m.role === "user" || m.role === "model") &&
+          typeof m.content === "string" &&
+          m.content.trim().length > 0,
+      );
+
+    const contents: Array<{
+      role: "user" | "model";
+      parts: { text: string }[];
+    }> = [
+      ...recentHistory.map((m) => ({
+        role: m.role as "user" | "model",
+        parts: [{ text: m.content }],
+      })),
+      // The new turn is always last so the model sees it in the
+      // correct chronological slot.
+      { role: "user", parts: [{ text: message }] },
+    ];
+
+    const result = await model.generateContent({ contents });
     const raw = result.response.text().trim();
     const cleaned = raw
       .replace(/^```(?:json)?\s*/i, "")
@@ -109,32 +154,45 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     try {
       const parsed = JSON.parse(cleaned) as ClassifyResponse;
-      // Defensive: clamp confidence, force intent to the enum.
-      const intent: "food" | "workout" =
-        parsed.intent === "workout" ? "workout" : "food";
+      // Defensive: clamp confidence, force every entry in `intents`
+      // to the enum, dedupe, and never return an empty array.
+      const raw = Array.isArray(parsed.intents) ? parsed.intents : [];
+      const intents: Array<"food" | "workout"> = Array.from(
+        new Set(
+          raw
+            .map((i) => (i === "workout" ? "workout" : "food"))
+            .filter(
+              (i): i is "food" | "workout" => i === "food" || i === "workout",
+            ),
+        ),
+      );
+      const finalIntents =
+        intents.length > 0
+          ? intents
+          : (["workout"] as Array<"food" | "workout">);
       const confidence = Math.max(
         0,
         Math.min(1, Number(parsed.confidence) || 0),
       );
       return NextResponse.json({
-        intent,
+        intents: finalIntents,
         confidence,
         reason: String(parsed.reason ?? "").slice(0, 80),
       });
     } catch {
       console.error("[ai-classify] JSON parse failed. Raw:", raw);
       return NextResponse.json({
-        intent: "food",
+        intents: ["workout"],
         confidence: 0,
-        reason: "classifier returned unparseable JSON — defaulted to food",
+        reason: "classifier returned unparseable JSON — defaulted to workout",
       });
     }
   } catch (err) {
     console.error("[ai-classify] Gemini SDK error:", err);
     return NextResponse.json({
-      intent: "food",
+      intents: ["workout"],
       confidence: 0,
-      reason: "classifier call failed — defaulted to food",
+      reason: "classifier call failed — defaulted to workout",
     });
   }
 }

@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Instrument_Sans, Geist } from "next/font/google";
 import { AppProvider } from "@/app/context/AppContext";
 import ToastContainer from "@/app/components/ToastContainer";
-import LenisProvider from "@/app/components/LenisProvider";
 import { cn } from "@/app/lib/utils";
 import { Toaster } from "@/app/components/ui/sonner";
 import { DynamicBackground } from "@/app/components/DynamicBackground";
@@ -82,10 +81,11 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: "/og.svg",
+        url: "/og.png",
         width: 1200,
         height: 630,
         alt: `${SITE_NAME} — Track what you eat. Build your story.`,
+        type: "image/png",
       },
     ],
   },
@@ -93,7 +93,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${SITE_NAME} — Free Calorie & Macro Tracker for Lifters`,
     description: SITE_DESCRIPTION,
-    images: ["/og.svg"],
+    images: ["/og.png"],
     creator: "@calstoryapp",
   },
   robots: {
@@ -145,7 +145,9 @@ export default function RootLayout({
             __html: `(function(){try{
   var raw=localStorage.getItem('ft_theme');
   var t=raw?JSON.parse(raw):localStorage.getItem('theme');
-  var dark=t==='dark'||(t!=='light'&&(!t||t==='"system"'||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  // Default is dark. Light is only honored when the user picked it
+  // explicitly; "system" still follows the OS preference.
+  var dark=t==='dark'||!t||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
   if(dark)document.documentElement.classList.add('dark');
   // Forced-dark public pages (landing + auth) — add the matching
   // class before paint so the user never sees a light flash.
@@ -168,9 +170,7 @@ export default function RootLayout({
         <DynamicBackground />
         <AppProvider>
           <RouteThemeController />
-          <ToastContainer>
-            <LenisProvider>{children}</LenisProvider>
-          </ToastContainer>
+          <ToastContainer>{children}</ToastContainer>
         </AppProvider>
         <Toaster />
       </body>

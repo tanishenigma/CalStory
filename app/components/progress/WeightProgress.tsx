@@ -95,6 +95,23 @@ function heuristicTarget(
   return goal === "cut" ? startKg * 0.9 : startKg * 1.1;
 }
 
+/** Pick the best available target weight for the progress bar.
+ *
+ *  Preference order:
+ *    1. `profile.targetWeight` — what the user typed in Settings → Goals.
+ *    2. The legacy ±10% heuristic (so existing users without a target
+ *       still see a meaningful bar after this change ships).
+ *    3. `null` — maintain goal with no target set → don't render a bar.
+ */
+function resolveTargetKg(
+  profileTarget: number | undefined,
+  startKg: number,
+  goal: "cut" | "maintain" | "bulk" | undefined,
+): number | null {
+  if (profileTarget && profileTarget > 0) return profileTarget;
+  return heuristicTarget(startKg, goal);
+}
+
 export function WeightProgress() {
   const { state } = useApp();
   const [activeFrame, setActiveFrame] = useState<Timeframe>("1M");
@@ -138,12 +155,15 @@ export function WeightProgress() {
     }
     const start = toDisplay(allSorted[0].weight);
     const current = trend.smoothed[trend.smoothed.length - 1] ?? start;
-    const targetRawKg = heuristicTarget(allSorted[0].weight, profile?.goal);
-    const target = targetRawKg === null ? 0 : toDisplay(targetRawKg);
-
+    const targetRawKg = resolveTargetKg(
+      profile?.targetWeight,
+      allSorted[0].weight,
+      profile?.goal,
+    );
     if (targetRawKg === null) {
       return { start, current, target: current, pct: 100, hasTarget: false };
     }
+    const target = toDisplay(targetRawKg);
 
     const totalSpan = target - start;
     const covered = current - start;
@@ -156,7 +176,25 @@ export function WeightProgress() {
       hasTarget: true,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allSorted, trend.smoothed, displayUnit, profile?.goal]);
+  }, [
+    allSorted,
+    trend.smoothed,
+    displayUnit,
+    profile?.goal,
+    profile?.targetWeight,
+  ]);
+
+  // Display-unit target — same source the progress bar uses, so the
+  // stat block and bar always agree. Returns null when truly no
+  // target exists (e.g. maintain goal without an explicit value),
+  // which the JSX renders as "—".
+  const targetWeightDisplay = useMemo<number | null>(() => {
+    const startKg = allSorted[0]?.weight ?? profile?.weight ?? 0;
+    const kg = resolveTargetKg(profile?.targetWeight, startKg, profile?.goal);
+    if (kg === null || kg <= 0) return null;
+    return toDisplay(kg);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.targetWeight, profile?.goal, displayUnit, allSorted]);
 
   const chartData = useMemo<ChartData<"line">>(() => {
     const days = TF_DAYS[activeFrame];
@@ -314,7 +352,7 @@ export function WeightProgress() {
         </div>
 
         <div className="flex flex-wrap justify-between items-end gap-y-3 border-t border-border pt-4 mb-4">
-          <div className="flex gap-6">
+          <div className="flex gap-4 sm:gap-6 flex-wrap">
             <div>
               <div className="text-[11px] font-bold text-muted-foreground mb-1 uppercase tracking-wider">
                 Current
@@ -337,6 +375,19 @@ export function WeightProgress() {
                 </span>
               </div>
             </div>
+            {targetWeightDisplay !== null && (
+              <div>
+                <div className="text-[11px] font-bold text-muted-foreground mb-1 uppercase tracking-wider">
+                  Target
+                </div>
+                <div className="text-2xl font-mono font-bold text-foreground">
+                  {targetWeightDisplay.toFixed(1)}{" "}
+                  <span className="text-sm font-sans font-medium text-muted-foreground">
+                    {displayUnit}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           <div className="text-right">
             <div

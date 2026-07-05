@@ -80,14 +80,17 @@ export default function MacroPills({ macros, target }: Props) {
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
           <div className="w-12 h-12 rounded-full flex bg-emerald-50/50 items-center justify-center relative shrink-0">
             <MeterRing pct={cPct} colorClass="text-emerald-500">
-              🥦
+              🍞
             </MeterRing>
           </div>
           <span className="text-base font-bold text-foreground truncate">
             {cLeft}g Carbs Left
           </span>
         </div>
-        <ChevronRight size={20} className="text-muted-foreground shrink-0 ml-2" />
+        <ChevronRight
+          size={20}
+          className="text-muted-foreground shrink-0 ml-2"
+        />
       </Link>
 
       {/* Protein Pill */}
@@ -97,14 +100,17 @@ export default function MacroPills({ macros, target }: Props) {
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
           <div className="w-12 h-12 rounded-full bg-red-50/50 flex items-center justify-center relative shrink-0">
             <MeterRing pct={pPct} colorClass="text-red-500">
-              🥩
+              🥛
             </MeterRing>
           </div>
           <span className="text-base font-bold text-foreground truncate">
             {pLeft}g Protein Left
           </span>
         </div>
-        <ChevronRight size={20} className="text-muted-foreground shrink-0 ml-2" />
+        <ChevronRight
+          size={20}
+          className="text-muted-foreground shrink-0 ml-2"
+        />
       </Link>
 
       {/* Fat Pill */}
@@ -114,14 +120,17 @@ export default function MacroPills({ macros, target }: Props) {
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
           <div className="w-12 h-12 rounded-full bg-yellow-50/50 flex items-center justify-center relative shrink-0">
             <MeterRing pct={fPct} colorClass="text-yellow-500">
-              🥑
+              🧈
             </MeterRing>
           </div>
           <span className="text-base font-bold text-foreground truncate">
             {fLeft}g Fats Left
           </span>
         </div>
-        <ChevronRight size={20} className="text-muted-foreground shrink-0 ml-2" />
+        <ChevronRight
+          size={20}
+          className="text-muted-foreground shrink-0 ml-2"
+        />
       </Link>
     </div>
   );

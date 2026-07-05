@@ -37,7 +37,7 @@ export type FabMessage =
       id: string;
       role: "user";
       text: string;
-      intent?: FabIntent; // set after classification round-trip
+      intents?: FabIntent[]; // set after classification round-trip; > 1 means mixed
       timestamp: number;
     }
   | {
@@ -94,6 +94,17 @@ export function useAIFabChat({
   // food and workout turns.
   const [pendingIntent, setPendingIntent] = useState<FabIntent | null>(null);
 
+  // Intents that the user has already confirmed and saved. The UI
+  // reads this to know whether the corresponding confirmation card
+  // should still be active. Important for mixed-intent messages
+  // where both a meal AND a workout are pending — without this, the
+  // second confirm might re-save the first one or, worse, the loop
+  // in confirmLog() might pick the wrong intent based on message
+  // order.
+  const [confirmedIntents, setConfirmedIntents] = useState<Set<FabIntent>>(
+    () => new Set(),
+  );
+
   // Pending payload — what confirmLog() will save.
   const pendingMeal = useMemo<PendingMeal | null>(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -138,22 +149,258 @@ export function useAIFabChat({
     return headers;
   }, [user]);
 
+  // Fast keyword-based intent detector. The LLM classifier is good
+  // for ambiguous natural language, but it sometimes defaults to
+  // "food" on clear workout inputs ("Pull-ups 3x12", "bench 80kg
+  // 3x10", "ran 5km"). For messages that match these patterns we
+  // skip the round-trip and route directly to the workout pipeline.
+  // This keeps the common case snappy and immune to LLM bias.
+  const WORKOUT_KEYWORDS = [
+    "pull-up",
+    "pullup",
+    "push-up",
+    "pushup",
+    "push up",
+    "pull up",
+    "chin-up",
+    "chinup",
+    "bench",
+    "squat",
+    "deadlift",
+    "press",
+    "row",
+    "curl",
+    "lunge",
+    "plank",
+    "crunch",
+    "sit-up",
+    "situp",
+    "burpee",
+    "jumping jack",
+    "kettlebell",
+    "dumbbell",
+    "barbell",
+    "rep",
+    "reps",
+    "set",
+    "sets",
+    "x12",
+    "x10",
+    "x8",
+    "x15",
+    "x20",
+    "x5",
+    "x3",
+    "kg",
+    "lb",
+    " lbs",
+    "×",
+    "ran ",
+    "run ",
+    "running",
+    "jog",
+    "jogged",
+    "5k",
+    "10k",
+    "marathon",
+    "treadmill",
+    "bike",
+    "biked",
+    "cycling",
+    "swam",
+    "swim",
+    "swimming",
+    "yoga",
+    "pilates",
+    "hiit",
+    "crossfit",
+    "wod",
+    "lifted",
+    "lift ",
+    "trained",
+    "training",
+    "workout",
+    "exercise",
+    "cardio",
+    "sport",
+    "match",
+    "game",
+    "tournament",
+    "session",
+    "repped",
+    "max",
+    "pr ",
+    "1rm",
+    "one rep",
+    "stairmaster",
+    "elliptical",
+  ];
+
+  function detectIntentHeuristic(text: string): FabIntent[] {
+    const t = text.toLowerCase().trim();
+    if (!t) return [];
+    const intents: FabIntent[] = [];
+
+    // Set notation like "3x12", "3x10 @ 80kg", "3 sets x 12 reps"
+    // is an unambiguous workout pattern. Require a workout keyword
+    // alongside so we don't false-positive on food descriptions
+    // like "3x protein shakes a day".
+    const setNotation =
+      /\b\d+\s*[x×@]\s*\d+(\s*(?:kg|lb|lbs|rpe|reps?))?\b/i.test(t);
+    const hasWorkoutKeyword = WORKOUT_KEYWORDS.some(
+      (k) => t.includes(k) && k.length >= 4,
+    );
+    if (setNotation && hasWorkoutKeyword) {
+      intents.push("workout");
+    } else if (hasWorkoutKeyword) {
+      intents.push("workout");
+    }
+
+    // Food markers — words that strongly imply a meal / snack / drink
+    // rather than a workout. Bare numbers like "100g" alone are too
+    // weak (workouts can also use grams for plates), so we require a
+    // consumable noun too.
+    const FOOD_KEYWORDS = [
+      "ate",
+      "eat",
+      "eaten",
+      "eating",
+      "had",
+      "have",
+      "drank",
+      "drink",
+      "drunk",
+      "drinking",
+      "snack",
+      "snacked",
+      "meal",
+      "breakfast",
+      "lunch",
+      "dinner",
+      "brunch",
+      "feast",
+      "cheat meal",
+      "calories",
+      "calorie",
+      "kcal",
+      "protein",
+      "carbs",
+      "fat",
+      "fats",
+      "macro",
+      "macros",
+      "grams of",
+      "g of",
+      "cup of",
+      "slice of",
+      "tbsp",
+      "tsp",
+      "tablespoon",
+      "teaspoon",
+      "bowl of",
+      "plate of",
+      "sandwich",
+      "salad",
+      "pizza",
+      "burger",
+      "rice",
+      "noodles",
+      "pasta",
+      "bread",
+      "toast",
+      "egg",
+      "eggs",
+      "chicken",
+      "beef",
+      "pork",
+      "fish",
+      "salmon",
+      "tuna",
+      "shrimp",
+      "tofu",
+      "paneer",
+      "soya",
+      "soy",
+      "chuinksi",
+      "chunki",
+      "protein shake",
+      "shake",
+      "smoothie",
+      "juice",
+      "coffee",
+      "tea",
+      "water",
+      "milk",
+      "yogurt",
+      "yoghurt",
+      "cheese",
+      "apple",
+      "banana",
+      "berries",
+      "nuts",
+      "almond",
+      "peanut",
+      "oats",
+      "granola",
+      "cereal",
+      "chips",
+      "fries",
+      "chocolate",
+      "candy",
+      "ice cream",
+      "cookie",
+      "cake",
+      "wine",
+      "beer",
+      "whisky",
+    ];
+    if (FOOD_KEYWORDS.some((k) => t.includes(k))) {
+      intents.push("food");
+    }
+
+    // Quantity-like "100g X" or "2 cups Y" is a strong food signal
+    // even without a keyword match — common in cooking / meal logs.
+    if (/\b\d+\s*(g|grams?|oz|ml|l|cup|tbsp|tsp)\b/i.test(t) && !setNotation) {
+      if (!intents.includes("food")) intents.push("food");
+    }
+
+    return intents;
+  }
+
   const classify = useCallback(
-    async (text: string): Promise<FabIntent> => {
+    async (text: string, history: FabMessage[]): Promise<FabIntent[]> => {
+      // 1. Heuristic fast-path. Saves a network round-trip and is
+      //    immune to the LLM's bias toward "food".
+      const heuristic = detectIntentHeuristic(text);
+      if (heuristic.length > 0) return heuristic;
+
       const headers = await buildHeaders();
+      // Trim the snapshot down to the role/content pairs the
+      // classifier endpoint understands. We only send the last few
+      // turns — older context is irrelevant for routing and we want
+      // to keep the request small.
+      const conversationHistory = history.slice(-6).map((m) => ({
+        role: m.role,
+        content: m.text,
+      }));
       try {
         const res = await fetch("/api/ai-classify", {
           method: "POST",
           headers,
-          body: JSON.stringify({ message: text }),
+          body: JSON.stringify({ message: text, conversationHistory }),
         });
-        if (!res.ok) return "food";
-        const data = (await res.json()) as { intent?: FabIntent };
-        return data.intent === "workout" ? "workout" : "food";
+        if (!res.ok) return ["food"];
+        const data = (await res.json()) as { intents?: FabIntent[] };
+        if (Array.isArray(data.intents) && data.intents.length > 0) {
+          return data.intents.filter(
+            (i): i is FabIntent => i === "food" || i === "workout",
+          );
+        }
+        return ["food"];
       } catch {
         // Network down or classifier endpoint missing — food is the
         // safer default and the user can immediately re-ask.
-        return "food";
+        return ["food"];
       }
     },
     [buildHeaders],
@@ -230,73 +477,87 @@ export function useAIFabChat({
       });
 
       try {
-        // 1. Classify intent (cheap, single-turn).
-        const intent = await classify(trimmed);
+        // A new turn invalidates any previously-confirmed intents —
+        // the cards above are stale now.
+        setConfirmedIntents(new Set());
 
-        // 2. Stamp the intent onto the user message in place.
+        // 1. Classify intent(s). May return 1 or 2 intents so that
+        //    mixed messages like "I ate 100g chicken and did 10
+        //    pushups" run BOTH pipelines in parallel.
+        const intents = await classify(trimmed, snapshot);
+
+        // 2. Stamp the intents onto the user message in place.
         setMessages((prev) =>
-          prev.map((m) => (m.id === userMsg.id ? { ...m, intent } : m)),
+          prev.map((m) => (m.id === userMsg.id ? { ...m, intents } : m)),
         );
 
-        // 3. Dispatch to the per-domain endpoint.
+        // 3. Dispatch to per-domain endpoint(s) in parallel.
         const headers = await buildHeaders();
-        if (intent === "workout") {
-          const res = await fetch("/api/ai-log-workout", {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              message: trimmed,
-              conversationHistory: toWorkoutHistory(snapshot),
-              userId,
-              date,
-            }),
-          });
-          const data = (await res.json()) as {
-            message: string;
-            workout: PendingWorkout | null;
-            askSaveTemplate?: boolean;
-            suggestions?: string[];
-          };
-          const modelMsg: FabMessage = {
-            id: uid2(),
-            role: "model",
-            text: data.message,
-            intent: "workout",
-            workout: data.workout,
-            askSaveTemplate: data.askSaveTemplate ?? false,
-            suggestions: data.suggestions ?? [],
-            timestamp: Date.now(),
-          };
-          setMessages((prev) => [...prev, modelMsg]);
-          if (data.workout) setPendingIntent("workout");
-        } else {
-          const res = await fetch("/api/ai-log-food", {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              message: trimmed,
-              conversationHistory: toFoodHistory(snapshot),
-              userId,
-              date,
-            }),
-          });
-          const data = (await res.json()) as {
-            message: string;
-            meal: PendingMeal | null;
-            suggestions?: string[];
-          };
-          const modelMsg: FabMessage = {
-            id: uid2(),
-            role: "model",
-            text: data.message,
-            intent: "food",
-            meal: data.meal,
-            suggestions: data.suggestions ?? [],
-            timestamp: Date.now(),
-          };
-          setMessages((prev) => [...prev, modelMsg]);
-          if (data.meal) setPendingIntent("food");
-        }
+        const foodPromise = intents.includes("food")
+          ? (async () => {
+              const res = await fetch("/api/ai-log-food", {
+                method: "POST",
+                headers,
+                body: JSON.stringify({
+                  message: trimmed,
+                  conversationHistory: toFoodHistory(snapshot),
+                  userId,
+                  date,
+                }),
+              });
+              const data = (await res.json()) as {
+                message: string;
+                meal: PendingMeal | null;
+                suggestions?: string[];
+              };
+              const modelMsg: FabMessage = {
+                id: uid2(),
+                role: "model",
+                text: data.message,
+                intent: "food",
+                meal: data.meal,
+                suggestions: data.suggestions ?? [],
+                timestamp: Date.now(),
+              };
+              setMessages((prev) => [...prev, modelMsg]);
+              if (data.meal) setPendingIntent("food");
+            })()
+          : Promise.resolve();
+
+        const workoutPromise = intents.includes("workout")
+          ? (async () => {
+              const res = await fetch("/api/ai-log-workout", {
+                method: "POST",
+                headers,
+                body: JSON.stringify({
+                  message: trimmed,
+                  conversationHistory: toWorkoutHistory(snapshot),
+                  userId,
+                  date,
+                }),
+              });
+              const data = (await res.json()) as {
+                message: string;
+                workout: PendingWorkout | null;
+                askSaveTemplate?: boolean;
+                suggestions?: string[];
+              };
+              const modelMsg: FabMessage = {
+                id: uid2(),
+                role: "model",
+                text: data.message,
+                intent: "workout",
+                workout: data.workout,
+                askSaveTemplate: data.askSaveTemplate ?? false,
+                suggestions: data.suggestions ?? [],
+                timestamp: Date.now(),
+              };
+              setMessages((prev) => [...prev, modelMsg]);
+              if (data.workout) setPendingIntent("workout");
+            })()
+          : Promise.resolve();
+
+        await Promise.all([foodPromise, workoutPromise]);
       } catch (err) {
         console.error("[useAIFabChat] sendMessage error:", err);
         const errMsg: FabMessage = {
@@ -325,27 +586,26 @@ export function useAIFabChat({
   );
 
   /**
-   * Confirm and persist the most-recent pending payload. We branch on
-   * the intent that produced the last structured model message so
-   * mixed threads log to the right pipeline.
+   * Confirm and persist the pending payload for the given intent.
+   *
+   * Caller MUST pass the explicit intent (`food` or `workout`) —
+   * we no longer guess from message order, because mixed-intent
+   * sends produce two pending payloads and the wrong one could win
+   * a race. Each model's confirmation card passes its own intent
+   * in via onConfirmFood / onConfirmWorkout.
+   *
+   * For mixed-intent turns, the user can save each side separately:
+   * tap "Save meal" → confirmLog("food") → food saved.
+   * Then tap "Save workout" → confirmLog("workout") → workout saved.
+   * Both invocations are independent and idempotent (already-saved
+   * intents are no-ops).
    */
   const confirmLog = useCallback(
-    async (saveAsTemplate = false) => {
-      // Figure out the right pipeline from the messages themselves
-      // (preferred over pendingIntent, which only tracks the latest
-      // model message regardless of payload).
-      let intent: FabIntent | null = null;
-      for (let i = messages.length - 1; i >= 0; i--) {
-        const m = messages[i];
-        if (m.role !== "model") continue;
-        if (m.meal) {
-          intent = "food";
-          break;
-        }
-        if (m.workout) {
-          intent = "workout";
-          break;
-        }
+    async (intent: FabIntent, saveAsTemplate = false) => {
+      // Idempotency: if the user (or a stale callback) double-taps,
+      // the second call is a no-op.
+      if (confirmedIntents.has(intent)) {
+        return;
       }
 
       if (intent === "food" && pendingMeal) {
@@ -370,6 +630,14 @@ export function useAIFabChat({
         };
         setMessages((prev) => [...prev, done]);
         setPendingIntent(null);
+        setConfirmedIntents((prev) => {
+          const next = new Set(prev);
+          next.add("food");
+          // Only clear pendingMeal once both intents (if both were
+          // pending) are confirmed. We track the previous value
+          // via the snapshot argument passed in below.
+          return next;
+        });
         return;
       }
 
@@ -410,14 +678,80 @@ export function useAIFabChat({
         };
         setMessages((prev) => [...prev, done]);
         setPendingIntent(null);
+        setConfirmedIntents((prev) => new Set(prev).add("workout"));
         return;
       }
 
-      // Nothing pending — surface a soft hint rather than throwing.
-      toast.error("Nothing to log yet — describe a meal or workout first.");
+      // Nothing pending for this intent — surface a soft hint rather
+      // than throwing. (We only error if NEITHER intent has a
+      // pending payload.)
+      if (!pendingMeal && !pendingWorkout) {
+        toast.error("Nothing to log yet — describe a meal or workout first.");
+      }
     },
-    [messages, pendingMeal, pendingWorkout, addMeal, addWorkout, saveTemplate],
+    [
+      confirmedIntents,
+      pendingMeal,
+      pendingWorkout,
+      addMeal,
+      addWorkout,
+      saveTemplate,
+    ],
   );
+
+  /**
+   * Mark a pending payload as "edit mode": focuses the chat input
+   * and prefills it with a refinement prefix so the user can type
+   * their correction. The pending payload stays on screen until the
+   * user either confirms it or sends a replacement message.
+   */
+  const editPending = useCallback(
+    (intent: FabIntent, requestEdit: (prefill: string) => void) => {
+      if (intent === "food" && pendingMeal) {
+        requestEdit(`Adjust the meal "${pendingMeal.name}" — `);
+      } else if (intent === "workout" && pendingWorkout) {
+        requestEdit(`Adjust the workout "${pendingWorkout.name}" — `);
+      } else {
+        // Nothing pending to edit — ignore silently. The UI button
+        // is only shown when a payload exists, so this is just
+        // belt-and-suspenders.
+      }
+    },
+    [pendingMeal, pendingWorkout],
+  );
+
+  /**
+   * Discard a pending payload without saving. Removes the model
+   * message containing that payload so the confirmation card goes
+   * away. Marks the intent as "confirmed" so the dual-save state
+   * machine doesn't try to re-render it (idempotent no-op from now
+   * on).
+   */
+  const discardPending = useCallback((intent: FabIntent) => {
+    setMessages((prev) => {
+      // Walk from the end and drop the FIRST model message that
+      // carries a payload of the matching intent. We only drop one
+      // message so other cards (the other intent for mixed turns,
+      // or earlier cards) are unaffected.
+      for (let i = prev.length - 1; i >= 0; i--) {
+        const m = prev[i];
+        if (m.role !== "model") continue;
+        if (intent === "food" && m.meal) {
+          return [...prev.slice(0, i), ...prev.slice(i + 1)];
+        }
+        if (intent === "workout" && m.workout) {
+          return [...prev.slice(0, i), ...prev.slice(i + 1)];
+        }
+      }
+      return prev;
+    });
+    // Marking as "confirmed" makes the card disappear from the UI
+    // (the bubble reads `confirmedIntents.has(m.intent)` to decide
+    // whether to show "Saved ✓"), and prevents any stale callback
+    // from re-saving the now-orphaned payload.
+    setConfirmedIntents((prev) => new Set(prev).add(intent));
+    setPendingIntent(null);
+  }, []);
 
   const reset = useCallback(() => {
     setMessages([
@@ -438,6 +772,7 @@ export function useAIFabChat({
     setError(null);
     setIsLoading(false);
     setPendingIntent(null);
+    setConfirmedIntents(new Set());
   }, []);
 
   // Auto-scroll the message thread (the panel component passes us a
@@ -457,8 +792,11 @@ export function useAIFabChat({
     pendingWorkout,
     pendingIntent,
     pendingSuggestions,
+    confirmedIntents,
     sendMessage,
     confirmLog,
+    editPending,
+    discardPending,
     reset,
   };
 }

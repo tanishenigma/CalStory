@@ -66,13 +66,33 @@ export default function AIFabChat({ onClose }: Props) {
     pendingMeal,
     pendingWorkout,
     pendingSuggestions,
+    confirmedIntents,
     sendMessage,
     confirmLog,
+    editPending,
+    discardPending,
     reset,
   } = useAIFabChat({ date, userId });
 
   const [inputValue, setInputValue] = useState("");
   const [isLogging, setIsLogging] = useState(false);
+
+  // Ref for the chat input — used by Edit to focus + prefill.
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  /** Wire up by Edit: focuses the input and prefills with a
+   *  refinement phrase so the user can type their correction. */
+  function handleEditIntent(intent: FabIntent) {
+    editPending(intent, (prefill: string) => {
+      setInputValue(prefill);
+      // Focus + place caret at the end so the user can keep typing.
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+        const len = prefill.length;
+        inputRef.current?.setSelectionRange(len, len);
+      });
+    });
+  }
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -93,10 +113,10 @@ export default function AIFabChat({ onClose }: Props) {
     await sendMessage(msg);
   }
 
-  async function handleConfirm(saveAsTemplate = false) {
+  async function handleConfirm(intent: FabIntent, saveAsTemplate = false) {
     setIsLogging(true);
     try {
-      await confirmLog(saveAsTemplate);
+      await confirmLog(intent, saveAsTemplate);
     } finally {
       setIsLogging(false);
     }
@@ -138,12 +158,6 @@ export default function AIFabChat({ onClose }: Props) {
               </div>
             </div>
           </div>
-          <button
-            onClick={handleClose}
-            aria-label="Close quick log"
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors">
-            <X size={16} />
-          </button>
         </div>
 
         {/* ── Message thread ──────────────────────────────────── */}
@@ -155,11 +169,20 @@ export default function AIFabChat({ onClose }: Props) {
             <FabMessageBubble
               key={m.id}
               message={m}
-              onConfirmFood={() => handleConfirm(false)}
+              onConfirmFood={() => handleConfirm("food")}
               onConfirmWorkout={(saveAsTemplate) =>
-                handleConfirm(saveAsTemplate)
+                handleConfirm("workout", saveAsTemplate)
               }
+              onEditFood={() => handleEditIntent("food")}
+              onEditWorkout={() => handleEditIntent("workout")}
+              onDiscardFood={() => discardPending("food")}
+              onDiscardWorkout={() => discardPending("workout")}
               isLogging={isLogging}
+              alreadySaved={
+                m.role === "model" && m.intent
+                  ? confirmedIntents.has(m.intent)
+                  : false
+              }
             />
           ))}
 
@@ -187,7 +210,6 @@ export default function AIFabChat({ onClose }: Props) {
             ))}
           </div>
         )}
-
         {/* ── Input row ───────────────────────────────────────── */}
         <div className="px-3.5 py-3 border-t border-border flex gap-2 items-center">
           <input
@@ -252,26 +274,55 @@ function FabMessageBubble({
   message,
   onConfirmFood,
   onConfirmWorkout,
+  onEditFood,
+  onEditWorkout,
+  onDiscardFood,
+  onDiscardWorkout,
   isLogging,
+  alreadySaved,
 }: {
   message: FabMessage;
   onConfirmFood: () => void;
   onConfirmWorkout: (saveAsTemplate: boolean) => void;
+  /** Wire the in-card Edit button back to the chat input: focuses
+   *  the box and prefills with a refinement phrase so the user can
+   *  type their correction (e.g. "Adjust the meal 'X' — use 200g"). */
+  onEditFood: () => void;
+  onEditWorkout: () => void;
+  /** Discard the pending payload without saving. Removes the card
+   *  from the timeline and marks the intent as confirmed so the
+   *  state machine stays consistent. */
+  onDiscardFood: () => void;
+  onDiscardWorkout: () => void;
   isLogging: boolean;
+  /** True when this model message's payload (meal or workout) has
+   *  already been confirmed and saved. The matching card shows a
+   *  "Saved ✓" label so a stale tap can't double-save. */
+  alreadySaved?: boolean;
 }) {
   if (message.role === "user") {
-    const meta = message.intent ? INTENT_META[message.intent] : null;
-    const Icon = meta?.icon;
+    // Mixed messages (food + workout) get both pills side-by-side
+    // so the user can see at a glance which agents are running.
+    const intents = message.intents ?? [];
     return (
       <div className="flex flex-col items-end gap-1">
-        {meta && (
-          <div
-            className={cn(
-              "flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border",
-              meta.tone,
-            )}>
-            {Icon && <Icon size={10} />}
-            {meta.label}
+        {intents.length > 0 && (
+          <div className="flex items-center gap-1">
+            {intents.map((it) => {
+              const m = INTENT_META[it];
+              const Icon = m.icon;
+              return (
+                <div
+                  key={it}
+                  className={cn(
+                    "flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border",
+                    m.tone,
+                  )}>
+                  <Icon size={10} />
+                  {m.label}
+                </div>
+              );
+            })}
           </div>
         )}
         <div
@@ -314,27 +365,47 @@ function FabMessageBubble({
       </div>
 
       {message.meal && (
-        <div className="w-full max-w-[95%]">
+        <div className="w-full max-w-[95%] relative group">
           <MealConfirmationCard
             meal={message.meal}
             onConfirm={onConfirmFood}
-            onEdit={() => {}}
+            onEdit={onEditFood}
             isLogging={isLogging}
+            alreadySaved={alreadySaved}
           />
+          {!alreadySaved && (
+            <button
+              type="button"
+              onClick={onDiscardFood}
+              disabled={isLogging}
+              aria-label="Discard this meal estimate"
+              className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-black/40 hover:bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed">
+              ×
+            </button>
+          )}
         </div>
       )}
 
       {message.workout && (
-        <div className="w-full max-w-[95%]">
+        <div className="w-full max-w-[95%] relative group">
           <WorkoutConfirmationCard
             workout={message.workout}
             askSaveTemplate={message.askSaveTemplate ?? false}
             onConfirm={onConfirmWorkout}
-            onEdit={() => {
-              // Same as above — refine by re-typing.
-            }}
+            onEdit={onEditWorkout}
             isLogging={isLogging}
+            alreadySaved={alreadySaved}
           />
+          {!alreadySaved && (
+            <button
+              type="button"
+              onClick={onDiscardWorkout}
+              disabled={isLogging}
+              aria-label="Discard this workout estimate"
+              className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-black/40 hover:bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed">
+              ×
+            </button>
+          )}
         </div>
       )}
     </div>

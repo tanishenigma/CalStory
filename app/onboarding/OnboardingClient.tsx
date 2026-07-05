@@ -11,6 +11,14 @@ import { GOALS } from "@/app/lib/constants";
 import { lbsToKg, ftInToCm } from "@/app/lib/units";
 import { dobToAge, maxDobIso, minDobIso } from "@/app/lib/age";
 import BlurFade from "@/app/components/animations/BlurFade";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/components/ui/select";
+import { cn } from "@/app/lib/utils";
 import type {
   Gender,
   GoalKey,
@@ -23,6 +31,33 @@ interface IntensityOption {
   key: IntensityKey;
   emoji: string;
   pct: string;
+}
+
+/** Map a Firestore / network error to a message a user can act on.
+ *  We deliberately avoid leaking Firebase codes verbatim — users
+ *  don't care, they want to know what to try next. */
+function describeFirestoreError(err: unknown): string {
+  const code =
+    err && typeof err === "object" && "code" in err
+      ? String((err as { code: unknown }).code)
+      : "";
+  if (code === "permission-denied" || code === "firestore/permission-denied") {
+    return "You don't have access to save this profile. Please sign in again and retry.";
+  }
+  if (
+    code === "unavailable" ||
+    code === "firestore/unavailable" ||
+    code === "network-request-failed"
+  ) {
+    return "Network error — please check your connection and try again.";
+  }
+  if (code === "quota-exceeded" || code === "resource-exhausted") {
+    return "CalStory is temporarily busy. Please try again in a moment.";
+  }
+  if (code === "deadline-exceeded" || code === "timed-out") {
+    return "The request took too long. Please try again.";
+  }
+  return "We couldn't save your profile. Please try again in a moment.";
 }
 
 const INTENSITIES: IntensityOption[] = [
@@ -80,7 +115,7 @@ interface FormState {
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { state, setProfile } = useApp();
+  const { state, setProfile, logWeight } = useApp();
   const { user, loading } = useAuthStore();
   const toast = useToast();
 
@@ -119,10 +154,65 @@ export default function OnboardingPage() {
   const [intensity, setIntensity] =
     useState<FormState["intensity"]>("weightloss");
 
+  // Target weight is what the user is working toward. Pre-filled
+  // with the ±10% heuristic from current weight so a user can just
+  // accept the default; the field is editable (and skippable). The
+  // value follows the active display unit and gets converted to kg
+  // on save, matching every other weight input in the app.
+  const [targetWeight, setTargetWeight] = useState<string>("");
+
   const [weightUnit, setWeightUnit] = useState<WeightUnit>("kg");
   const [heightUnit, setHeightUnit] = useState<HeightUnit>("metric");
   const [feet, setFeet] = useState<string>("");
   const [inches, setInches] = useState<string>("");
+
+  // ── Inline form errors ───────────────────────────────────────
+  // Per-field error messages rendered directly under each input.
+  // Keys are field names; absence of a key means "no error".
+  //
+  // `submitError` is a banner-level error for failures that
+  // aren't tied to a single field (e.g. Firestore refused to save
+  // the profile, network is down). It sits above the action
+  // buttons so the user can read it before retrying.
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+
+  /** Set a single field error. Pass an empty string to clear. */
+  function setFieldError(field: string, message: string) {
+    setErrors((prev) => {
+      if (!message) {
+        if (!(field in prev)) return prev;
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      }
+      return { ...prev, [field]: message };
+    });
+  }
+
+  /** Clear every error for the current step. Called on `next()` so
+   *  the user gets a clean slate when advancing forward. */
+  function clearErrorsForStep() {
+    setErrors({});
+    setSubmitError(null);
+  }
+
+  // Auto-fill the target weight with the heuristic default (±10%
+  // from the user's current weight in the active display unit).
+  // Recomputes when the current weight or goal direction changes —
+  // so the user always sees a sensible default when they land on
+  // the target-weight step. Already-edited values are preserved.
+  useEffect(() => {
+    const w = weightUnit === "lbs" ? lbsToKg(Number(weight)) : Number(weight);
+    if (!w || w <= 0) return;
+    const targetKg = goal === "cut" ? w * 0.9 : goal === "bulk" ? w * 1.1 : w;
+    const display =
+      weightUnit === "lbs"
+        ? Math.round(targetKg * 2.20462 * 10) / 10
+        : Math.round(targetKg * 10) / 10;
+    setTargetWeight(String(display));
+  }, [weight, goal, weightUnit]);
 
   // Show a spinner while auth or profile is still resolving, so we don't
   // briefly flash the form for users who are about to be redirected away.
@@ -152,40 +242,138 @@ export default function OnboardingPage() {
   }
 
   function next() {
-    if (step === 1 && !name.trim()) {
-      toast("Enter your name", "⚠️");
+    clearErrorsForStep();
+    if (step === 1) {
+      if (!name.trim()) {
+        setFieldError("name", "Please enter your name to continue.");
+        toast("Enter your name", "⚠️");
+        return;
+      }
+      setStep((s) => Math.min(s + 1, 6));
       return;
     }
     if (step === 2) {
+      let hasError = false;
+      if (dobToAge(dob) === null) {
+        setFieldError(
+          "dob",
+          "Please enter a valid date of birth (you need to be at least 13).",
+        );
+        hasError = true;
+      }
       const wKg =
         weightUnit === "lbs" ? lbsToKg(Number(weight)) : Number(weight);
+      if (!weight || Number.isNaN(wKg) || wKg < 30 || wKg > 635) {
+        setFieldError(
+          "weight",
+          weightUnit === "lbs"
+            ? "Enter a weight between 66 and 1400 lbs."
+            : "Enter a weight between 30 and 635 kg.",
+        );
+        hasError = true;
+      }
       const hCm =
         heightUnit === "imperial"
           ? ftInToCm(Number(feet), Number(inches))
           : Number(height);
-      if (dobToAge(dob) == null || !wKg || !hCm) {
-        toast("Fill all fields correctly", "⚠️");
+      if (heightUnit === "metric") {
+        if (!height || Number.isNaN(hCm) || hCm < 100 || hCm > 250) {
+          setFieldError("height", "Enter a height between 100 and 250 cm.");
+          hasError = true;
+        }
+      } else {
+        const f = Number(feet);
+        const i = Number(inches);
+        if (
+          !feet ||
+          !inches ||
+          Number.isNaN(f) ||
+          Number.isNaN(i) ||
+          f < 3 ||
+          f > 8 ||
+          i < 0 ||
+          i > 11
+        ) {
+          setFieldError(
+            "height",
+            "Enter a height between 3 ft 0 in and 8 ft 11 in.",
+          );
+          hasError = true;
+        }
+      }
+      if (hasError) return;
+      setStep((s) => Math.min(s + 1, 6));
+      return;
+    }
+    if (step === 3) {
+      const s = Number(steps);
+      if (!steps || Number.isNaN(s) || s < 0 || s > 50000) {
+        setFieldError("steps", "Enter a step count between 0 and 50,000.");
+        toast("Enter your average daily steps", "⚠️");
         return;
       }
-    }
-    if (step === 3 && !steps) {
-      toast("Enter your average daily steps", "⚠️");
+      setStep((s) => Math.min(s + 1, 6));
       return;
     }
-    if (step === 4 && !goal) {
-      toast("Pick your goal", "⚠️");
+    if (step === 4) {
+      if (!goal) {
+        setFieldError("goal", "Pick a goal direction to continue.");
+        toast("Pick your goal", "⚠️");
+        return;
+      }
+      setStep((s) => Math.min(s + 1, 6));
       return;
     }
-    setStep((s) => Math.min(s + 1, 5));
+    if (step === 5 && goal !== "maintain") {
+      // Target weight is pre-filled with a heuristic value, so the
+      // only failure mode is someone manually clearing the field. In
+      // that case we silently treat it as "no target" rather than
+      // blocking the user — the Progress page falls back to the
+      // heuristic, so the experience is still good.
+      if (!targetWeight || Number.isNaN(Number(targetWeight))) {
+        setTargetWeight("");
+      }
+    }
+    setStep((s) => Math.min(s + 1, 6));
   }
 
   async function finish() {
+    if (submitting) return;
+    clearErrorsForStep();
+
     const wKg = weightUnit === "lbs" ? lbsToKg(Number(weight)) : Number(weight);
     const hCm =
       heightUnit === "imperial"
         ? ftInToCm(Number(feet), Number(inches))
         : Number(height);
     const ageNum = dobToAge(dob) ?? 0;
+    const targetKg =
+      !targetWeight || Number.isNaN(Number(targetWeight))
+        ? undefined
+        : weightUnit === "lbs"
+          ? lbsToKg(Number(targetWeight))
+          : Number(targetWeight);
+
+    // Re-validate the full set before writing. Anything we missed
+    // during `next()` (e.g. someone JS-stepped forward) lands here.
+    const hasHardError =
+      !name.trim() ||
+      ageNum <= 0 ||
+      !wKg ||
+      wKg < 30 ||
+      wKg > 230 ||
+      !hCm ||
+      hCm < 100 ||
+      hCm > 250 ||
+      !goal;
+    if (hasHardError) {
+      setSubmitError(
+        "Some fields look off. Please go back and double-check before submitting.",
+      );
+      toast("Check the form for errors", "⚠️");
+      return;
+    }
+
     const calc = calcTDEE({
       gender,
       weight: wKg,
@@ -196,27 +384,59 @@ export default function OnboardingPage() {
       goal: goal as GoalKey,
       intensity,
     });
-    await setProfile({
-      name,
-      age: ageNum,
-      dob,
-      gender,
-      weight: wKg,
-      height: hCm,
-      steps: Number(steps),
-      workoutsPerWeek: Number(workoutsPerWeek),
-      goal: goal as GoalKey,
-      intensity,
-      ...calc,
-      weightUnit,
-      heightUnit,
-      onboardedAt: Date.now(),
-    });
-    toast(`Welcome, ${name}! 🎉`);
-    router.push("/dashboard");
+
+    setSubmitting(true);
+    try {
+      await setProfile({
+        name,
+        age: ageNum,
+        dob,
+        gender,
+        weight: wKg,
+        height: hCm,
+        targetWeight: targetKg,
+        steps: Number(steps),
+        workoutsPerWeek: Number(workoutsPerWeek),
+        goal: goal as GoalKey,
+        intensity,
+        ...calc,
+        weightUnit,
+        heightUnit,
+        onboardedAt: Date.now(),
+      });
+      // Seed the very first weigh-in so the Progress page chart has
+      // data immediately (instead of an empty "Log a weight to start
+      // tracking" state). `logWeight` mirrors the new weight onto
+      // `profile.weight`, but we already set it above — the mirror
+      // is idempotent here.
+      //
+      // logWeight failure is non-fatal: profile is saved and the
+      // user is fully onboarded. We surface it as a non-blocking
+      // warning rather than aborting the redirect.
+      try {
+        await logWeight(wKg, weightUnit);
+      } catch (logErr) {
+        console.warn(
+          "[onboarding] profile saved but initial weigh-in failed:",
+          logErr,
+        );
+        toast(
+          "Account created, but we couldn't seed your first weigh-in. You can log one from the Progress page.",
+          "⚠️",
+        );
+      }
+      toast(`Welcome, ${name}! 🎉`);
+      router.push("/dashboard");
+    } catch (err) {
+      const msg = describeFirestoreError(err);
+      console.error("[onboarding] finish failed:", err);
+      setSubmitError(msg);
+      toast("We couldn't save your profile", "❌");
+      setSubmitting(false);
+    }
   }
 
-  const pv = step === 5 ? preview() : null;
+  const pv = step === 6 ? preview() : null;
 
   return (
     <div
@@ -240,7 +460,7 @@ export default function OnboardingPage() {
         }}>
         {/* Progress bars */}
         <div className="flex gap-1.5 mb-9">
-          {[1, 2, 3, 4, 5].map((i) => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
               className={`flex-1 h-[3px] rounded transition-colors duration-300 ${
@@ -267,13 +487,31 @@ export default function OnboardingPage() {
               </label>
               <input
                 id="ob-name"
-                className="w-full px-3.5 py-3 text-foreground bg-background border border-border rounded-lg text-sm focus:border-foreground/50 outline-none transition-all"
+                aria-invalid={Boolean(errors.name) || undefined}
+                aria-describedby={errors.name ? "ob-name-error" : undefined}
+                className={`w-full px-3.5 py-3 text-foreground bg-background border rounded-lg text-sm focus:outline-none transition-all ${
+                  errors.name
+                    ? "border-destructive focus:border-destructive"
+                    : "border-border focus:border-foreground/50"
+                }`}
                 placeholder="e.g. david"
                 autoFocus
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (errors.name) setFieldError("name", "");
+                }}
                 onKeyDown={(e) => e.key === "Enter" && next()}
               />
+              {errors.name && (
+                <p
+                  id="ob-name-error"
+                  role="alert"
+                  className="mt-1.5 text-[11px] font-medium text-destructive flex items-start gap-1.5">
+                  <span aria-hidden>⚠</span>
+                  <span>{errors.name}</span>
+                </p>
+              )}
             </div>
             <button
               onClick={next}
@@ -385,16 +623,30 @@ export default function OnboardingPage() {
                   type="date"
                   min={minDobIso()}
                   max={maxDobIso()}
-                  className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
                   value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                  autoFocus
+                  onChange={(e) => {
+                    setDob(e.target.value);
+                    if (errors.dob) setFieldError("dob", "");
+                  }}
+                  className={cn(
+                    "w-full px-3.5 py-3 border rounded-lg text-sm bg-background outline-none transition-all font-mono",
+                    errors.dob
+                      ? "border-destructive focus:border-destructive"
+                      : "border-border focus:bg-card focus:border-border",
+                  )}
                 />
-                {dob && dobToAge(dob) != null && (
-                  <div className="text-[11px] text-muted-foreground mt-1.5 font-medium">
+                {errors.dob ? (
+                  <p
+                    role="alert"
+                    className="mt-1.5 text-[11px] font-medium text-destructive flex items-start gap-1.5">
+                    <span aria-hidden>⚠</span>
+                    <span>{errors.dob}</span>
+                  </p>
+                ) : dob && dobToAge(dob) !== null ? (
+                  <div className="mt-1.5 text-[11px] text-muted-foreground font-medium">
                     Age: {dobToAge(dob)} yrs
                   </div>
-                )}
+                ) : null}
               </div>
               <div>
                 <label
@@ -402,24 +654,26 @@ export default function OnboardingPage() {
                   htmlFor="ob-gender">
                   Gender
                 </label>
-                <div className="relative">
-                  <select
+                <Select
+                  value={gender}
+                  onValueChange={(v) => setGender(v as Gender)}>
+                  <SelectTrigger
                     id="ob-gender"
-                    className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all appearance-none cursor-pointer"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value as Gender)}>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
-                    <svg
-                      className="fill-current h-4 w-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20">
-                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                    </svg>
-                  </div>
-                </div>
+                    className={cn(
+                      "w-full px-3.5 py-5 text-sm bg-background outline-none transition-all rounded-lg border-border font-mono cursor-pointer",
+                      "focus:outline-none focus:bg-card focus:border-border transition-all items-center",
+                    )}>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    sideOffset={4}
+                    className="z-[60] min-w-[var(--radix-select-trigger-width)] p-1">
+                    {" "}
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -434,11 +688,27 @@ export default function OnboardingPage() {
                   type="number"
                   min="30"
                   max="700"
+                  aria-invalid={Boolean(errors.weight) || undefined}
                   placeholder={weightUnit === "kg" ? "70" : "154"}
-                  className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
+                  className={`w-full px-3.5 py-3 border rounded-lg text-sm bg-background focus:outline-none transition-all ${
+                    errors.weight
+                      ? "border-destructive focus:border-destructive"
+                      : "border-border focus:bg-card focus:border-border"
+                  }`}
                   value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
+                  onChange={(e) => {
+                    setWeight(e.target.value);
+                    if (errors.weight) setFieldError("weight", "");
+                  }}
                 />
+                {errors.weight && (
+                  <p
+                    role="alert"
+                    className="mt-1.5 text-[11px] font-medium text-destructive flex items-start gap-1.5">
+                    <span aria-hidden>⚠</span>
+                    <span>{errors.weight}</span>
+                  </p>
+                )}
               </div>
               <div>
                 {heightUnit === "metric" ? (
@@ -453,11 +723,27 @@ export default function OnboardingPage() {
                       type="number"
                       min="100"
                       max="250"
+                      aria-invalid={Boolean(errors.height) || undefined}
                       placeholder="175"
-                      className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
+                      className={`w-full px-3.5 py-3 border rounded-lg text-sm bg-background focus:outline-none transition-all ${
+                        errors.height
+                          ? "border-destructive focus:border-destructive"
+                          : "border-border focus:bg-card focus:border-border"
+                      }`}
                       value={height}
-                      onChange={(e) => setHeight(e.target.value)}
+                      onChange={(e) => {
+                        setHeight(e.target.value);
+                        if (errors.height) setFieldError("height", "");
+                      }}
                     />
+                    {errors.height && (
+                      <p
+                        role="alert"
+                        className="mt-1.5 text-[11px] font-medium text-destructive flex items-start gap-1.5">
+                        <span aria-hidden>⚠</span>
+                        <span>{errors.height}</span>
+                      </p>
+                    )}
                   </>
                 ) : (
                   <>
@@ -469,23 +755,47 @@ export default function OnboardingPage() {
                         type="number"
                         min="3"
                         max="8"
+                        aria-invalid={Boolean(errors.height) || undefined}
                         placeholder="5"
-                        className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
+                        className={`w-full px-3.5 py-3 border rounded-lg text-sm bg-background focus:outline-none transition-all ${
+                          errors.height
+                            ? "border-destructive focus:border-destructive"
+                            : "border-border focus:bg-card focus:border-border"
+                        }`}
                         value={feet}
-                        onChange={(e) => setFeet(e.target.value)}
+                        onChange={(e) => {
+                          setFeet(e.target.value);
+                          if (errors.height) setFieldError("height", "");
+                        }}
                         aria-label="Feet"
                       />
                       <input
                         type="number"
                         min="0"
                         max="11"
+                        aria-invalid={Boolean(errors.height) || undefined}
                         placeholder="9"
-                        className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
+                        className={`w-full px-3.5 py-3 border rounded-lg text-sm bg-background focus:outline-none transition-all ${
+                          errors.height
+                            ? "border-destructive focus:border-destructive"
+                            : "border-border focus:bg-card focus:border-border"
+                        }`}
                         value={inches}
-                        onChange={(e) => setInches(e.target.value)}
+                        onChange={(e) => {
+                          setInches(e.target.value);
+                          if (errors.height) setFieldError("height", "");
+                        }}
                         aria-label="Inches"
                       />
                     </div>
+                    {errors.height && (
+                      <p
+                        role="alert"
+                        className="mt-1.5 text-[11px] font-medium text-destructive flex items-start gap-1.5">
+                        <span aria-hidden>⚠</span>
+                        <span>{errors.height}</span>
+                      </p>
+                    )}
                   </>
                 )}
               </div>
@@ -525,12 +835,28 @@ export default function OnboardingPage() {
                 type="number"
                 min={0}
                 max={50000}
+                aria-invalid={Boolean(errors.steps) || undefined}
                 placeholder="7500"
-                className="w-full px-3.5 py-3 rounded-lg text-sm outline-none transition-all border border-border bg-background text-foreground focus:bg-background/50 focus:border-foreground/50"
+                className={`w-full px-3.5 py-3 rounded-lg text-sm outline-none transition-all border bg-background text-foreground ${
+                  errors.steps
+                    ? "border-destructive focus:border-destructive"
+                    : "border-border focus:bg-background/50 focus:border-foreground/50"
+                }`}
                 value={steps}
-                onChange={(e) => setSteps(e.target.value)}
+                onChange={(e) => {
+                  setSteps(e.target.value);
+                  if (errors.steps) setFieldError("steps", "");
+                }}
                 autoFocus
               />
+              {errors.steps && (
+                <p
+                  role="alert"
+                  className="mt-1.5 text-[11px] font-medium text-destructive flex items-start gap-1.5">
+                  <span aria-hidden>⚠</span>
+                  <span>{errors.steps}</span>
+                </p>
+              )}
             </div>
 
             <div className="mb-6">
@@ -575,6 +901,14 @@ export default function OnboardingPage() {
             <div className="text-sm text-muted-foreground mb-6 leading-relaxed">
               We'll adjust your calorie target accordingly.
             </div>
+            {errors.goal && (
+              <p
+                role="alert"
+                className="mb-3 text-[11px] font-medium text-destructive flex items-start gap-1.5">
+                <span aria-hidden>⚠</span>
+                <span>{errors.goal}</span>
+              </p>
+            )}
             <div className="grid grid-cols-3 gap-2.5 mb-6">
               {GOALS.map(
                 (g: {
@@ -618,56 +952,141 @@ export default function OnboardingPage() {
           </BlurFade>
         )}
 
-        {/* Step 5 — Intensity + TDEE Preview */}
-        {step === 5 && (
+        {/* Step 5 — Target Weight (skipped for "maintain") */}
+        {step === 5 && goal !== "maintain" && (
           <BlurFade>
             <div className="text-[26px] font-bold mb-1.5 text-foreground">
-              {goal === "maintain"
-                ? "⚖️ Maintenance"
-                : goal === "cut"
-                  ? "🔥 Cut Intensity"
-                  : "💪 Bulk Intensity"}
+              🎯 Target Weight
             </div>
-            <div className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              {goal === "maintain"
-                ? "You're maintaining — your calorie target matches your TDEE exactly."
-                : "How fast do you want to progress? Pick your intensity."}
+            <div className="text-sm text-muted-foreground mb-7 leading-relaxed">
+              Where do you want to land? We&apos;ve pre-filled a sensible
+              default based on your goal — edit it or leave it as is.
             </div>
 
-            {goal !== "maintain" && (
-              <div className="mb-6">
-                {INTENSITIES.map((i) => (
-                  <button
-                    key={i.key}
-                    onClick={() => setIntensity(i.key)}
-                    className={`w-full flex items-center gap-3 p-4 rounded-xl mb-2 border-2 text-left transition-all cursor-pointer duration-300 ease-in-out ${
-                      intensity === i.key
-                        ? "border-foreground bg-foreground text-background"
-                        : "border-border bg-background text-foreground hover:border-foreground/50"
-                    }`}>
-                    <div
-                      className={`w-[42px] h-[42px] rounded-full flex-shrink-0 flex items-center justify-center text-lg ${
-                        intensity === i.key ? "bg-background/20" : "bg-muted"
-                      }`}>
-                      {i.emoji}
+            <div className="mb-6">
+              <label
+                className="block text-[11px] font-bold tracking-wider uppercase text-muted-foreground mb-1.5"
+                htmlFor="ob-target">
+                Target Weight ({weightUnit})
+              </label>
+              <input
+                id="ob-target"
+                type="number"
+                step="0.1"
+                min="30"
+                max="700"
+                placeholder={weightUnit === "kg" ? "63" : "139"}
+                className="w-full px-3.5 py-3 border border-border rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all"
+                value={targetWeight}
+                onChange={(e) => setTargetWeight(e.target.value)}
+                autoFocus
+              />
+              <div className="text-[11px] text-muted-foreground mt-1.5 font-medium">
+                Shown on the Progress page so you can see the gap to your goal.
+              </div>
+            </div>
+
+            <button
+              onClick={next}
+              className="w-full py-3.5 bg-foreground text-background border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mb-2.5">
+              Continue
+            </button>
+            <button
+              onClick={() => setStep(4)}
+              className="w-full py-3 border border-border text-muted-foreground rounded-xl text-sm font-semibold hover:bg-muted active:scale-[0.99] transition-all cursor-pointer">
+              Back
+            </button>
+          </BlurFade>
+        )}
+
+        {/* Maintain skips Step 5 entirely — intensity is fixed at
+            TDEE exactly, so the only useful work left is the preview. */}
+        {step === 5 && goal === "maintain" && (
+          <BlurFade>
+            <div className="text-[26px] font-bold mb-1.5 text-foreground">
+              ⚖️ Maintenance
+            </div>
+            <div className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              You&apos;re maintaining — your calorie target matches your TDEE
+              exactly.
+            </div>
+
+            {/* TDEE Preview */}
+            {preview() && (
+              <div className="grid grid-cols-2 gap-2.5 p-5 bg-background rounded-[14px] mb-6">
+                {(
+                  [
+                    ["Calorie Target", `${preview()!.calTarget} kcal`],
+                    ["Protein", `${preview()!.protein}g`],
+                    ["Carbs", `${preview()!.carbs}g`],
+                    ["Fat", `${preview()!.fat}g`],
+                  ] as [string, string][]
+                ).map(([l, v]) => (
+                  <div key={l} className="text-center">
+                    <div className="font-mono text-xl font-medium">{v}</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5 font-semibold uppercase tracking-wider">
+                      {l}
                     </div>
-                    <div>
-                      <div className="font-bold text-[14px]">
-                        {getIntensityLabel(i.key, goal).label}
-                      </div>
-                      <div
-                        className={`text-[11px] mt-0.5 ${
-                          intensity === i.key
-                            ? "text-background/60"
-                            : "text-muted-foreground"
-                        }`}>
-                        {getIntensityLabel(i.key, goal).desc}
-                      </div>
-                    </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             )}
+
+            <button
+              onClick={finish}
+              className="w-full py-3.5 bg-foreground text-background border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mb-2.5">
+              Let&apos;s go 🚀
+            </button>
+            <button
+              onClick={() => setStep(4)}
+              className="w-full py-3 border border-border text-muted-foreground rounded-xl text-sm font-semibold hover:bg-muted active:scale-[0.99] transition-all cursor-pointer">
+              Back
+            </button>
+          </BlurFade>
+        )}
+
+        {/* Step 6 — Intensity + TDEE Preview */}
+        {step === 6 && (
+          <BlurFade>
+            <div className="text-[26px] font-bold mb-1.5 text-foreground">
+              {goal === "cut" ? "🔥 Cut Intensity" : "💪 Bulk Intensity"}
+            </div>
+            <div className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              How fast do you want to progress? Pick your intensity.
+            </div>
+
+            <div className="mb-6">
+              {INTENSITIES.map((i) => (
+                <button
+                  key={i.key}
+                  onClick={() => setIntensity(i.key)}
+                  className={`w-full flex items-center gap-3 p-4 rounded-xl mb-2 border-2 text-left transition-all cursor-pointer duration-300 ease-in-out ${
+                    intensity === i.key
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border bg-background text-foreground hover:border-foreground/50"
+                  }`}>
+                  <div
+                    className={`w-[42px] h-[42px] rounded-full flex-shrink-0 flex items-center justify-center text-lg ${
+                      intensity === i.key ? "bg-background/20" : "bg-muted"
+                    }`}>
+                    {i.emoji}
+                  </div>
+                  <div>
+                    <div className="font-bold text-[14px]">
+                      {getIntensityLabel(i.key, goal as GoalKey).label}
+                    </div>
+                    <div
+                      className={`text-[11px] mt-0.5 ${
+                        intensity === i.key
+                          ? "text-background/60"
+                          : "text-muted-foreground"
+                      }`}>
+                      {getIntensityLabel(i.key, goal as GoalKey).desc}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
 
             {/* TDEE Preview */}
             {pv && (
@@ -690,14 +1109,41 @@ export default function OnboardingPage() {
               </div>
             )}
 
+            {/* Banner-level submit error (Firestore refused, network
+                down, etc.). Stays at the top of the action area so
+                the user sees it before tapping "Let's go" again. */}
+            {submitError && (
+              <div
+                role="alert"
+                className="mb-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-start gap-2">
+                <span
+                  aria-hidden
+                  className="text-destructive text-base leading-none">
+                  ⚠
+                </span>
+                <div className="flex-1 text-[12px] text-destructive leading-relaxed">
+                  {submitError}
+                </div>
+              </div>
+            )}
+
             <button
               onClick={finish}
-              className="w-full py-3.5 bg-foreground text-background border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mb-2.5">
-              Let's go 🚀
+              disabled={submitting}
+              className="w-full py-3.5 bg-foreground text-background border-0 rounded-xl text-sm font-bold hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer mb-2.5 disabled:opacity-60 disabled:cursor-not-allowed">
+              {submitting ? "Saving…" : "Let's go 🚀"}
             </button>
+            {submitError && !submitting && (
+              <button
+                onClick={finish}
+                className="w-full py-2 text-destructive text-xs font-semibold hover:underline mb-1.5">
+                Retry
+              </button>
+            )}
             <button
-              onClick={() => setStep(4)}
-              className="w-full py-3 border border-border text-muted-foreground rounded-xl text-sm font-semibold hover:bg-muted active:scale-[0.99] transition-all cursor-pointer">
+              onClick={() => setStep(5)}
+              disabled={submitting}
+              className="w-full py-3 border border-border text-muted-foreground rounded-xl text-sm font-semibold hover:bg-muted active:scale-[0.99] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
               Back
             </button>
           </BlurFade>

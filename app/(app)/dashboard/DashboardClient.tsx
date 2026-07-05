@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import Link from "next/link";
-import Lenis from "lenis";
 import { useApp } from "@/app/context/AppContext";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
 import { useFastingTimer } from "@/app/hooks/useFastingTimer";
@@ -43,23 +42,6 @@ export default function DashboardPage() {
   const { selDate, meals, workouts, fastingSession, hydrationLog } = state;
   const fastingTimer = useFastingTimer(fastingSession);
   const hydration = useHydration(hydrationLog, profile?.volumeUnit ?? "ml");
-
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.1,
-      easing: (t) => 1 - Math.pow(1 - t, 4),
-    });
-    let rafId: number;
-    const raf = (time: number) => {
-      lenis.raf(time);
-      rafId = requestAnimationFrame(raf);
-    };
-    rafId = requestAnimationFrame(raf);
-    return () => {
-      cancelAnimationFrame(rafId);
-      lenis.destroy();
-    };
-  }, []);
 
   if (isLoading || !profile) return <Spinner variant="dashboard" />;
 

@@ -6,6 +6,7 @@ import PillNav from "@/app/components/PillNav";
 import BottomNav from "@/app/components/BottomNav";
 import FAB from "@/app/components/FAB";
 import { usePrefsStore } from "@/app/store/prefsStore";
+import { useUiStore } from "@/app/store/uiStore";
 import { usePathname } from "next/navigation";
 
 function MobilePageShell({ children }: { children: React.ReactNode }) {
@@ -56,14 +57,18 @@ export default function AppGroupLayout({
   children: React.ReactNode;
 }) {
   const navStyle = usePrefsStore((s) => s.navbarStyle);
+  const chromeHidden = useUiStore((s) => s.chromeHidden);
   const pathname = usePathname();
+  // `chromeHidden` is set by fullscreen overlays (e.g. the
+  // delete-account confirmation) so the sidebar / bottom nav /
+  // FAB can't sit above or beside the modal.
   const padLeft = navStyle === "floating" ? "lg:pl-[240px]" : "lg:pl-20";
   return (
     <>
       <div
         style={{ minHeight: "100dvh" }}
         className="bg-background ml-0 sm:ml-5">
-        <PillNav />
+        {!chromeHidden && <PillNav />}
         <main
           style={{ paddingBottom: "96px" }}
           className={`${padLeft} pb-0 min-h-screen transition-[padding] duration-300`}>
@@ -72,8 +77,8 @@ export default function AppGroupLayout({
           </div>
         </main>
       </div>
-      <BottomNav />
-      {pathname === "/dashboard" && <FAB />}
+      {!chromeHidden && <BottomNav />}
+      {!chromeHidden && pathname === "/dashboard" && <FAB />}
     </>
   );
 }

@@ -9,7 +9,7 @@ import BlurFade from "@/app/components/animations/BlurFade";
 import { kgToLbs, displayHeight } from "@/app/lib/units";
 import type { Profile } from "@/app/types";
 import { ApiKeyCard } from "./ApiKeyCard";
-import { Beef } from "lucide-react";
+import { MilkIcon } from "lucide-react";
 interface ProfileTabProps {
   user: User | null;
   profile: Profile | null | undefined;
@@ -129,43 +129,44 @@ export function ProfileTab({
             </button>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {[
-              {
-                label: "Age",
-                val: `${profile?.age ?? "—"} yrs`,
-                sub: "years old",
-              },
-              {
-                label: "Weight",
-                val:
-                  profile?.weightUnit === "lbs"
-                    ? `${kgToLbs(profile?.weight ?? 0)}`
-                    : `${Math.round(profile?.weight ?? 0)}`,
-                sub: profile?.weightUnit === "lbs" ? "lbs" : "kg",
-              },
-              {
-                label: "Height",
-                val: profile
-                  ? displayHeight(profile.height, profile.heightUnit)
-                  : "—",
-                sub: profile?.heightUnit === "imperial" ? "ft/in" : "cm",
-              },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="bg-muted/60 rounded-xl px-3 py-3 text-center">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
-                  {item.label}
-                </div>
-                <div className="font-bold text-base truncate leading-tight">
-                  {item.val}
-                </div>
-                <div className="text-[9px] text-muted-foreground mt-0.5">
-                  {item.sub}
-                </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+            <div className="bg-muted/60 rounded-xl px-3 py-3 text-center">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
+                Age
               </div>
-            ))}
+              <div className="font-bold text-base truncate leading-tight">
+                {`${profile?.age ?? "—"} yrs`}
+              </div>
+              <div className="text-[9px] text-muted-foreground mt-0.5">
+                years old
+              </div>
+            </div>
+            <div className="bg-muted/60 rounded-xl px-3 py-3 text-center">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
+                Weight
+              </div>
+              <div className="font-bold text-base truncate leading-tight">
+                {profile?.weightUnit === "lbs"
+                  ? `${kgToLbs(profile?.weight ?? 0)}`
+                  : `${Math.round(profile?.weight ?? 0)}`}
+              </div>
+              <div className="text-[9px] text-muted-foreground mt-0.5">
+                {profile?.weightUnit === "lbs" ? "lbs" : "kg"}
+              </div>
+            </div>
+            <div className="bg-muted/60 rounded-xl px-3 py-3 text-center">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
+                Height
+              </div>
+              <div className="font-bold text-base truncate leading-tight">
+                {profile
+                  ? displayHeight(profile.height, profile.heightUnit)
+                  : "—"}
+              </div>
+              <div className="text-[9px] text-muted-foreground mt-0.5">
+                {profile?.heightUnit === "imperial" ? "ft/in" : "cm"}
+              </div>
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -206,7 +207,7 @@ export function ProfileTab({
                 {
                   label: "Protein",
                   val: `${profile?.protein ?? 0}g`,
-                  icon: Beef,
+                  icon: MilkIcon,
                 },
                 { label: "Carbs", val: `${profile?.carbs ?? 0}g`, icon: Wheat },
                 { label: "Fat", val: `${profile?.fat ?? 0}g`, icon: Droplet },

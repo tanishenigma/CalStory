@@ -185,6 +185,25 @@ textarea {
   font-family: inherit;
 }
 
+/* Recolor the native browser date picker's calendar indicator
+ * (the small icon on the right side of <input type="date">) so
+ * it uses the foreground color in both light and dark mode.
+ * Chromium / Safari / Edge honor the ::-webkit pseudo-element;
+ * Firefox ignores it (and renders no indicator at all), so this
+ * is purely a progressive enhancement.
+ *
+ * On the onboarding DOB field specifically (id="ob-dob") we
+ * paint the indicator red-500 — matches the invalid-input
+ * border treatment so the error state reads as a unit.
+ */
+#ob-dob::-webkit-calendar-picker-indicator {
+  color: oklch(0.637 0.237 27.92); /* red-500 */
+  cursor: pointer;
+  opacity: 1;
+  filter: brightness(0) saturate(100%) invert(46%) sepia(85%) saturate(2476%)
+    hue-rotate(326deg) brightness(99%) contrast(96%);
+}
+
 /* ─── Lenis smooth scroll ─── */
 html.lenis,
 html.lenis body {

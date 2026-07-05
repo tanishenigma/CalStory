@@ -66,6 +66,19 @@ function SettingsPageContent() {
     String(initialWeightDisplay),
   );
 
+  // Target weight is the *goal* the user is working toward. Kept
+  // separate from `weight` (current weigh-in) so saving a new target
+  // doesn't silently shift TDEE math or write a bogus weigh-in.
+  // Default to the current weight so the field is pre-filled and
+  // "no change" → save still leaves the user's target intact.
+  const initialTargetDisplay =
+    state.profile?.weightUnit === "lbs"
+      ? kgToLbs(state.profile?.targetWeight ?? state.profile?.weight ?? 0)
+      : (state.profile?.targetWeight ?? state.profile?.weight ?? 0);
+  const [targetWeightInput, setTargetWeightInput] = useState<string>(
+    String(initialTargetDisplay),
+  );
+
   const [weightUnit, setWeightUnit] = useState<WeightUnit>(
     state.profile?.weightUnit || "kg",
   );
@@ -121,6 +134,8 @@ function SettingsPageContent() {
           setWorkoutsPerWeek={setWorkoutsPerWeek}
           weightInput={weightInput}
           setWeightInput={setWeightInput}
+          targetWeightInput={targetWeightInput}
+          setTargetWeightInput={setTargetWeightInput}
           weightUnit={weightUnit}
           setProfile={setProfile}
           logWeight={logWeight}

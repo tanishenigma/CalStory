@@ -6,6 +6,7 @@ import { AlertTriangle, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { deleteAccount, DeleteAccountError } from "@/app/lib/auth";
 import { useToast } from "@/app/components/ToastContainer";
+import { useUiStore } from "@/app/store/uiStore";
 
 interface DeleteAccountModalProps {
   open: boolean;
@@ -20,28 +21,46 @@ interface DeleteAccountModalProps {
  * trigger button shouldn't be enough to wipe months of data. The
  * modal is uncontrolled except for `open`/`onClose`; the rest of
  * the form state resets every time the modal is mounted.
+ *
+ * While open, the modal also suppresses the app chrome (`PillNav`,
+ * `BottomNav`, `FAB`) via the global `useUiStore`. That guarantees
+ * the destructive confirm is the *only* thing on screen and the
+ * sidebar can't sneak above the overlay. Cleanup runs on close
+ * AND on unmount, so the chrome always comes back.
  */
 export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
   const router = useRouter();
   const toast = useToast();
+  const setChromeHidden = useUiStore((s) => s.setChromeHidden);
   const [confirmText, setConfirmText] = useState<string>("");
   const [deleting, setDeleting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  // `errorCode` lets the JSX render a Retry button for popup-related
+  // failures (reauth-blocked, reauth-cancelled) so the user can pop
+  // the Google sign-in again without re-typing DELETE.
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Reset every time the modal re-opens so a stale "DELETE" string
   // from a previous attempt doesn't accidentally unlock the button.
+  // Same effect also toggles the chrome-hidden flag — the cleanup
+  // runs both on `open` going false AND on unmount, so the sidebar
+  // always returns no matter how the modal exits.
   useEffect(() => {
-    if (open) {
-      setConfirmText("");
-      setError(null);
-      setDeleting(false);
-      // Autofocus the confirm input on open.
-      // Use rAF to wait for the GSAPModal mount animation to start.
-      const id = requestAnimationFrame(() => inputRef.current?.focus());
-      return () => cancelAnimationFrame(id);
-    }
-  }, [open]);
+    if (!open) return;
+    setConfirmText("");
+    setError(null);
+    setErrorCode(null);
+    setDeleting(false);
+    setChromeHidden(true);
+    // Autofocus the confirm input on open. Use rAF to wait for the
+    // mount animation to start.
+    const id = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => {
+      cancelAnimationFrame(id);
+      setChromeHidden(false);
+    };
+  }, [open, setChromeHidden]);
 
   if (!open) return null;
 
@@ -50,20 +69,31 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
   async function handleDelete() {
     if (!canSubmit) return;
     setError(null);
+    setErrorCode(null);
     setDeleting(true);
     try {
       await deleteAccount();
-      // The auth listener will clear `useAuthStore.user`. Redirect
-      // to the landing page so the user lands somewhere sensible.
+      // Auth user is gone. The auth listener will clear
+      // `useAuthStore.user`; we bounce to `/` so the user lands
+      // somewhere sensible without a stale session hanging around.
       toast("Account deleted");
       onClose();
-      router.push("/");
+      // `replace` (not `push`) so the back button doesn't bring the
+      // user back into a dead auth context.
+      router.replace("/");
+      // Note: Firestore cleanup happens *inside* `deleteAccount()`
+      // (auth-first ordering — see `app/lib/auth.ts`). Once the auth
+      // user is gone, orphaned `/users/{uid}` documents are
+      // unreachable through the security rules, so a partial wipe
+      // is harmless.
     } catch (err) {
+      const code = err instanceof DeleteAccountError ? err.code : "unknown";
       const msg =
         err instanceof DeleteAccountError
           ? err.message
           : "Something went wrong while deleting your account. Please try again.";
       setError(msg);
+      setErrorCode(code);
       setDeleting(false);
     }
   }
@@ -80,7 +110,7 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
           // Click on backdrop closes, but only when not in-flight.
           if (e.target === e.currentTarget && !deleting) onClose();
         }}
-        className="fixed inset-0 z-100 flex items-end sm:items-center justify-center"
+        className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center"
         style={{
           background: "oklch(0.2272 0.0049 173.9454 / 0.55)",
           backdropFilter: "blur(8px)",
@@ -161,11 +191,28 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
           />
 
           {error && (
-            <p
+            <div
               role="alert"
-              className="mt-3 text-xs text-red-600 dark:text-red-400 leading-relaxed">
-              {error}
-            </p>
+              className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+              <p className="text-xs text-red-600 dark:text-red-400 leading-relaxed">
+                {error}
+              </p>
+              {/* Retry only on popup-related failures so the user can
+                  try the verification again without re-typing DELETE.
+                  Other errors (network, rate-limit) aren't retryable
+                  by clicking the same button — the user needs to fix
+                  the underlying issue first. */}
+              {(errorCode === "reauth-blocked" ||
+                errorCode === "reauth-cancelled") && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="mt-2 text-xs font-semibold text-destructive hover:underline disabled:opacity-50">
+                  Try again
+                </button>
+              )}
+            </div>
           )}
 
           <div className="mt-6 flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">

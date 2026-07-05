@@ -5,7 +5,6 @@ import {
   onAuthStateChanged,
   setPersistence,
   browserLocalPersistence,
-  GoogleAuthProvider,
   reauthenticateWithPopup,
 } from "firebase/auth";
 import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
@@ -36,19 +35,40 @@ export const onAuthChange = (cb: (user: User | null) => void): Unsubscribe =>
 
 // ── Account deletion ─────────────────────────────────────────────
 //
-// Self-serve account deletion for CalStory. Two phases:
+// Self-serve account deletion for CalStory.
 //
-//   1. Delete every Firestore document under `/users/{uid}`.
-//      The Firestore rules restrict reads/writes to the owning user,
-//      so we run this as the user themselves (currentUser must equal
-//      `uid` for the wildcard rule to allow writes).
-//   2. Delete the Firebase Auth account via `currentUser.delete()`.
+// Order matters here:
+//
+//   Phase 1 — `user.delete()` (with re-auth fallback).
+//     * Firebase requires a *recent* sign-in (~5 min). Anything
+//       older → `auth/requires-recent-login`. If that fires we
+//       re-authenticate with the same Google provider and retry
+//       once. Errors are surfaced as `DeleteAccountError`.
+//     * We delete the auth account FIRST so a partial failure
+//       (e.g. user closes the re-auth popup and never retries)
+//       still leaves the auth account intact — the user keeps
+//       access and no data is half-wiped. The previous order
+//       (Firestore first, auth second) meant the user could
+//       sit in a confusing "data gone, account still here"
+//       state for minutes while the Firestore wipe ran.
+//
+//   Phase 2 — `deleteUserData(uid)` (best-effort, fire and forget).
+//     * At this point the auth user is gone, so any orphaned
+//       documents under `/users/{uid}` are unreachable through
+//       the client SDK (the wildcard rule keys off `auth.uid`).
+//     * We deliberately don't await or block on Firestore. The
+//     * user-visible success is "account deleted + signed out"
+//     * which already happened in Phase 1.
+//     * Errors are logged but never propagated — losing
+//       orphaned data is preferable to keeping the user in a
+//       half-deleted state where they think the account is gone
+//       but it's actually still live.
 //
 // Firebase requires a *recent* sign-in for `user.delete()` — the
-// session is "fresh" for ~5 minutes after sign-in, after which the
-// SDK throws `auth/requires-recent-login`. When that happens we
-// re-authenticate with the same Google popup and retry once before
-// bubbling the error to the caller.
+// session is "fresh" for ~5 minutes after sign-in, after which
+// the SDK throws `auth/requires-recent-login`. When that happens
+// we re-authenticate with the same Google popup and retry once
+// before bubbling the error to the caller.
 
 /**
  * Delete every Firestore document rooted at `users/{uid}`.
@@ -126,17 +146,19 @@ async function deleteNestedSubcollections(
 }
 
 /**
- * Custom error class so the caller can distinguish "needs re-auth"
- * from generic failures (network, permissions, etc.) and surface a
- * tailored message / retry UI.
+ * Custom error class so the caller can distinguish "popup blocked"
+ * from "needs re-auth" from generic failures and surface a tailored
+ * message / retry UI.
  */
 export class DeleteAccountError extends Error {
   constructor(
     message: string,
     readonly code:
-      | "requires-recent-login"
       | "no-user"
+      | "reauth-blocked"
       | "reauth-cancelled"
+      | "requires-recent-login"
+      | "network"
       | "unknown" = "unknown",
   ) {
     super(message);
@@ -145,9 +167,70 @@ export class DeleteAccountError extends Error {
 }
 
 /**
- * Permanently delete the current user's account and all their
- * Firestore data, then sign them out. Resolves once the auth user
- * is gone; rejects with `DeleteAccountError` on failure.
+ * Map a Firebase Auth error code to a friendly message + DeleteAccountError.code.
+ * Kept here (not in the modal) so the same wiring can be reused from
+ * future entry points (e.g. an account-recovery flow).
+ */
+function describeAuthError(code: string | undefined): DeleteAccountError {
+  switch (code) {
+    case "auth/popup-blocked":
+    case "auth/cancelled-popup-request":
+      return new DeleteAccountError(
+        "Your browser blocked the sign-in popup. Please allow popups for this site and try again.",
+        "reauth-blocked",
+      );
+    case "auth/popup-closed-by-user":
+      return new DeleteAccountError(
+        "Sign-in popup was closed before we could verify it's you. Please try again.",
+        "reauth-cancelled",
+      );
+    case "auth/network-request-failed":
+      return new DeleteAccountError(
+        "Network error during verification. Check your connection and try again.",
+        "network",
+      );
+    case "auth/too-many-requests":
+      return new DeleteAccountError(
+        "Too many attempts. Please wait a moment and try again.",
+        "unknown",
+      );
+    case "auth/user-mismatch":
+      return new DeleteAccountError(
+        "You selected a different Google account. Please use the same account you signed in with.",
+        "reauth-cancelled",
+      );
+    case "auth/requires-recent-login":
+      return new DeleteAccountError(
+        "For security, please sign in again to verify it's you, then retry.",
+        "requires-recent-login",
+      );
+    default:
+      return new DeleteAccountError(
+        "Something went wrong while deleting your account. Please try again.",
+        "unknown",
+      );
+  }
+}
+
+/**
+ * Permanently delete the current user's account and (best-effort)
+ * their Firestore data.
+ *
+ * Order:
+ *   1. Try `user.delete()` directly. If Firebase says the session is
+ *      too old (`auth/requires-recent-login`), pop the Google re-auth
+ *      popup and retry once. ALL auth errors are surfaced as
+ *      `DeleteAccountError` with a typed `code` so the modal can
+ *      render tailored copy and offer a retry button for popup
+ *      failures.
+ *   2. ONLY after the auth user is gone, kick off the Firestore wipe
+ *      in the background. The user is already signed out at this
+ *      point, so we don't block the success notification on it.
+ *      Orphaned `/users/{uid}` documents are unreachable through
+ *      the security rules (which key off `auth.uid`).
+ *
+ * Resolves once the auth user is deleted; rejects with
+ * `DeleteAccountError` if the auth delete fails.
  */
 export async function deleteAccount(): Promise<void> {
   const user = auth.currentUser;
@@ -158,58 +241,61 @@ export async function deleteAccount(): Promise<void> {
     );
   }
 
-  // Phase 1: wipe Firestore. Best-effort — even if this throws,
-  // we still try to delete the auth user so the account doesn't
-  // exist in a half-deleted state.
-  try {
-    await deleteUserData(user.uid);
-  } catch (err) {
-    console.error("[auth] failed to delete Firestore user data:", err);
-  }
-
-  // Phase 2: delete the Firebase Auth user. May need a fresh
-  // session — if so, pop the Google re-auth once and retry.
+  // ── Phase 1: delete the Firebase Auth user ──────────────────────
+  // Why this comes first: by the time the auth delete fires, any
+  // subsequent failure is user-recoverable. If we'd wiped Firestore
+  // first and the auth delete silently stalled, the user would be
+  // stuck with their data gone but their account still live.
   try {
     await user.delete();
   } catch (err: unknown) {
     const code = (err as { code?: string } | null)?.code;
+
+    // `auth/no-current-user` is racing-style "already gone" — treat
+    // as success and skip straight to the Firestore wipe.
+    if (code === "auth/no-current-user") {
+      void deleteUserData(user.uid).catch((firestoreErr) => {
+        console.warn(
+          "[auth] Firestore cleanup after no-current-user failed:",
+          firestoreErr,
+        );
+      });
+      return;
+    }
+
+    // Most common case for stale sessions: the user's ID token is
+    // older than ~5 minutes. Re-auth and retry once.
     if (code === "auth/requires-recent-login") {
       try {
-        // Re-authenticate with the same Google provider the user
-        // originally signed in with. Fall back to a generic popup
-        // if the configured provider isn't available for some reason.
-        const provider = googleProvider ?? new GoogleAuthProvider();
-        await reauthenticateWithPopup(user, provider);
+        await reauthenticateWithPopup(user, googleProvider);
         await user.delete();
       } catch (reauthErr: unknown) {
         const rcode = (reauthErr as { code?: string } | null)?.code;
-        if (rcode === "auth/popup-closed-by-user") {
-          throw new DeleteAccountError(
-            "Sign-in popup was closed. Please try again to verify it's you.",
-            "reauth-cancelled",
-          );
-        }
-        throw new DeleteAccountError(
-          "Could not verify your identity. Please sign out and sign in again, then retry.",
-          "requires-recent-login",
+        console.error(
+          "[auth] re-auth attempt failed:",
+          rcode ?? "(no code)",
+          reauthErr,
         );
+        throw describeAuthError(rcode);
       }
-    } else if (code === "auth/no-current-user") {
-      // Race: the user was already cleared somehow — treat as success.
-      return;
     } else {
-      console.error("[auth] failed to delete Firebase Auth user:", err);
-      throw new DeleteAccountError(
-        "Something went wrong while deleting your account. Please try again.",
-        "unknown",
-      );
+      // Unknown / non-recoverable auth failure. Log the raw error so
+      // future debugging has the full Firebase code + message.
+      console.error("[auth] user.delete() failed:", code ?? "(no code)", err);
+      throw describeAuthError(code);
     }
   }
 
-  // Phase 3: make sure the local session is gone too. `user.delete()`
-  // doesn't automatically sign out — the in-memory user object is
-  // cleared, but we fire signOut() for symmetry and to flush any
-  // pending IndexedDB persistence.
+  // Auth user is gone. We can safely kick off the Firestore wipe
+  // without holding up the success notification — orphaned data is
+  // unreachable through the security rules.
+  void deleteUserData(user.uid).catch((err) => {
+    console.warn("[auth] Firestore cleanup after user.delete() failed:", err);
+  });
+
+  // Phase 3 (legacy): flush any pending IndexedDB persistence. If
+  // the auth listener hasn't cleared the local user object yet this
+  // makes sure sign-out is final on disk.
   try {
     await fbSignOut(auth);
   } catch {

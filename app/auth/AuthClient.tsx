@@ -56,18 +56,11 @@ export default function AuthPage() {
           className="inline-flex items-center gap-2 text-sm font-bold tracking-tight font-heading self-start">
           <span className="grid h-9 w-9 place-items-center rounded-full overflow-hidden bg-foreground">
             <img
-              src="/light.png"
-              alt="CalStory"
-              width={28}
-              height={28}
-              className="w-7 h-7 object-contain block dark:hidden"
-            />
-            <img
               src="/dark.png"
               alt="CalStory"
               width={28}
               height={28}
-              className="w-7 h-7 object-contain hidden dark:block"
+              className="w-7 h-7 object-contain  block"
             />
           </span>
           <span>CalStory</span>
@@ -133,7 +126,7 @@ export default function AuthPage() {
         {/* Back link at bottom */}
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 self-start text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
+          className="md:inline-flex hidden  items-center gap-1.5 self-start text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft size={14} />
           Back to home
         </Link>
@@ -150,29 +143,13 @@ export default function AuthPage() {
           }}
         />
 
-        {/* Light mode image — only when the user is in a non-forced,
-         * non-dark context. Auth is a forced-dark page so this stays
-         * hidden there; it surfaces only if someone somehow reaches
-         * `/auth` in a true light-mode build. */}
-        <Image
-          src="/screenshots/dashboard_light.png"
-          alt="CalStory — track your progress"
-          fill
-          quality={100}
-          priority
-          className="object-cover object-center dark:hidden forced-dark:hidden"
-        />
-
-        {/* Dark mode image — dimmed. Shown both for `.dark` (user
-         * picked dark/system-dark) and for `.forced-dark` (landing,
-         * auth — always dark regardless of stored preference). */}
         <Image
           src="/screenshots/dashboard_dark.png"
           alt="CalStory — track your progress"
           fill
           quality={100}
           priority
-          className="hidden dark:block forced-dark:block object-cover object-center brightness-[0.55]"
+          className="block forced-dark:block object-cover object-center brightness-[0.55]"
         />
 
         {/* Optional tagline over the image */}

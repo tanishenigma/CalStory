@@ -24,6 +24,11 @@ interface Props {
    */
   fromSavedRoutine?: boolean;
   dirty?: boolean;
+  /** When true, the user has already saved this workout. The Save
+   *  button becomes a non-clickable "Saved ✓" label so the user
+   *  can see the action is complete (and the meal card can still
+   *  be saved for mixed-intent turns). */
+  alreadySaved?: boolean;
 }
 
 /* ------------------------------------------------------------------
@@ -41,6 +46,7 @@ export default function WorkoutConfirmationCard({
   isLogging = false,
   fromSavedRoutine = false,
   dirty = false,
+  alreadySaved = false,
 }: Props) {
   const [saveTemplate, setSaveTemplate] = useState(false);
 
@@ -210,14 +216,14 @@ export default function WorkoutConfirmationCard({
       <div className="px-4 sm:px-5 pb-5 pt-1 flex flex-col sm:flex-row gap-2">
         <button
           onClick={() => onConfirm(saveTemplate)}
-          disabled={isLogging}
+          disabled={isLogging || alreadySaved}
           className={cn(
             "flex-1 py-2.5 rounded-xl font-bold text-sm",
             "bg-white text-primary",
             "hover:bg-white/90 transition-colors",
             "disabled:opacity-60 disabled:cursor-not-allowed",
           )}>
-          {isLogging ? "Logging…" : "Save"}
+          {alreadySaved ? "Saved ✓" : isLogging ? "Logging…" : "Save"}
         </button>
         <button
           onClick={onEdit}

@@ -134,7 +134,7 @@ export default function AIChatLogger({
                 handleSend();
               }
             }}
-            placeholder="e.g. 2 scrambled eggs and toast…"
+            placeholder="e.g. 8oz Milk & Avocado toast…"
             disabled={isLoading}
             className={cn(
               "flex-1 bg-subtle border border-border rounded-xl",

@@ -369,6 +369,13 @@ export interface Profile {
   age: number;
   gender: Gender;
   weight: number; // always stored in kg
+  /**
+   * User's *goal* / target weight, in kg. Optional — absent means
+   * the user hasn't set one yet, so the Progress page falls back to
+   * the legacy ±10% heuristic instead. Distinct from `weight`, which
+   * is always "current" and drives calorie math.
+   */
+  targetWeight?: number;
   height: number; // always stored in cm
   steps: number; // average steps per day
   workoutsPerWeek: number; // resistance/cardio sessions per week
