@@ -12,7 +12,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { RefObject } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useAuthStore } from "@/app/store/authStore";
 import { useProfileStore } from "@/app/store/profileStore";
 
@@ -99,29 +99,14 @@ export function Navbar({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Auto-detect sign-in. The Firebase auth listener is null while
-  // warming up and resolves in the same tick on a hard refresh
-  // (IndexedDB persistence). `hasProfile` comes from the global
-  // profile store so returning users with a cached "true" see the
-  // right CTA copy on the very first paint.
   const user = useAuthStore((s) => s.user);
   const authLoading = useAuthStore((s) => s.loading);
   const hasProfile = useProfileStore((s) => s.hasProfile);
-  // Treat the auth-warming window as "signed out" for the nav so a
-  // signed-in user on a hard refresh doesn't briefly see a "Get
-  // Started" button before the listener resolves. The flip is
-  // sub-frame because Firebase's IndexedDB persistence resolves the
-  // listener synchronously.
+
   const isSignedIn = !!user && !authLoading;
-  // Keep `user` referenced so the selector subscription isn't
-  // tree-shaken; the value itself is consumed via `isSignedIn`.
+
   void user;
 
-  // Where the signed-in CTA goes. Cached `hasProfile` (from
-  // localStorage) is good enough to route here; if we guessed wrong
-  // and the profile is actually missing, the auth guard will bounce
-  // them to /onboarding instead. Routing first paints the right
-  // shape and we don't block the navbar on Firestore.
   const signedInHref = hasProfile ? "/dashboard" : "/onboarding";
 
   const tokens = useNavbarTokens();
@@ -130,11 +115,6 @@ export function Navbar({
     const href = event.currentTarget.getAttribute("href");
     if (!href) return;
 
-    // Accept both `#features` and `/#features` as hash links. For
-    // `/#foo` we resolve the in-page section via the parent-provided
-    // ref map (preferred — works regardless of mount order or
-    // virtualisation) and fall back to `document.getElementById` if
-    // the parent didn't supply a ref for that target.
     if (href.startsWith("/#")) {
       const targetId = href.slice(2);
       const refTarget = targets?.[targetId as keyof NavbarTargets]?.current;
@@ -208,9 +188,6 @@ export function Navbar({
     easeConfig,
   );
 
-  // Opacity is higher in light mode so the glass actually blocks
-  // out the bright page background; in dark mode a lighter veil
-  // reads as a subtle scrim without crushing the page beneath.
   const bgOpacity = useTransform(smoothScroll, [0, 80], [0, 0.45], easeConfig);
 
   const backgroundColor = useMotionTemplate`rgba(${bgR}, ${bgG}, ${bgB}, ${bgOpacity})`;
@@ -266,8 +243,6 @@ export function Navbar({
   );
   const textColor = useMotionTemplate`rgb(${textR}, ${textG}, ${textB})`;
 
-  // The chip background inverts to whatever the current text color
-  // is, so the flame icon always sits on a contrast pill.
   const chipBg = textColor;
   const iconR = useTransform(
     smoothScroll,
