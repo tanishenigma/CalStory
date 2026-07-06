@@ -34,27 +34,27 @@ export type FabIntent = "food" | "workout";
 
 export type FabMessage =
   | {
-      id: string;
-      role: "user";
-      text: string;
-      intents?: FabIntent[]; // set after classification round-trip; > 1 means mixed
-      timestamp: number;
-    }
+    id: string;
+    role: "user";
+    text: string;
+    intents?: FabIntent[]; // set after classification round-trip; > 1 means mixed
+    timestamp: number;
+  }
   | {
-      id: string;
-      role: "model";
-      text: string;
-      intent: FabIntent;
-      meal?: PendingMeal | null;
-      workout?: PendingWorkout | null;
-      askSaveTemplate?: boolean;
-      suggestions?: string[];
-      timestamp: number;
-      /** When true, the model reply is a transient informational note
-       *  (e.g. "Hmm, I couldn't reach the AI"). It does not block
-       *  the next send and shouldn't be considered for confirmation. */
-      transient?: boolean;
-    };
+    id: string;
+    role: "model";
+    text: string;
+    intent: FabIntent;
+    meal?: PendingMeal | null;
+    workout?: PendingWorkout | null;
+    askSaveTemplate?: boolean;
+    suggestions?: string[];
+    timestamp: number;
+    /** When true, the model reply is a transient informational note
+     *  (e.g. "Hmm, I couldn't reach the AI"). It does not block
+     *  the next send and shouldn't be considered for confirmation. */
+    transient?: boolean;
+  };
 
 function uid2() {
   return uid();
@@ -77,7 +77,7 @@ export function useAIFabChat({
       text: "Hey! Tell me what you ate or how you trained — I'll figure out which log to use. 🥗💪",
       intent: "food", // initial intent slot (no payload yet)
       suggestions: [
-        "2 scrambled eggs and toast",
+        "Greek yogurt with granola and berries",
         "Pull-ups 3×12",
         "Protein shake",
         "5km run 25 min",
@@ -495,66 +495,66 @@ export function useAIFabChat({
         const headers = await buildHeaders();
         const foodPromise = intents.includes("food")
           ? (async () => {
-              const res = await fetch("/api/ai-log-food", {
-                method: "POST",
-                headers,
-                body: JSON.stringify({
-                  message: trimmed,
-                  conversationHistory: toFoodHistory(snapshot),
-                  userId,
-                  date,
-                }),
-              });
-              const data = (await res.json()) as {
-                message: string;
-                meal: PendingMeal | null;
-                suggestions?: string[];
-              };
-              const modelMsg: FabMessage = {
-                id: uid2(),
-                role: "model",
-                text: data.message,
-                intent: "food",
-                meal: data.meal,
-                suggestions: data.suggestions ?? [],
-                timestamp: Date.now(),
-              };
-              setMessages((prev) => [...prev, modelMsg]);
-              if (data.meal) setPendingIntent("food");
-            })()
+            const res = await fetch("/api/ai-log-food", {
+              method: "POST",
+              headers,
+              body: JSON.stringify({
+                message: trimmed,
+                conversationHistory: toFoodHistory(snapshot),
+                userId,
+                date,
+              }),
+            });
+            const data = (await res.json()) as {
+              message: string;
+              meal: PendingMeal | null;
+              suggestions?: string[];
+            };
+            const modelMsg: FabMessage = {
+              id: uid2(),
+              role: "model",
+              text: data.message,
+              intent: "food",
+              meal: data.meal,
+              suggestions: data.suggestions ?? [],
+              timestamp: Date.now(),
+            };
+            setMessages((prev) => [...prev, modelMsg]);
+            if (data.meal) setPendingIntent("food");
+          })()
           : Promise.resolve();
 
         const workoutPromise = intents.includes("workout")
           ? (async () => {
-              const res = await fetch("/api/ai-log-workout", {
-                method: "POST",
-                headers,
-                body: JSON.stringify({
-                  message: trimmed,
-                  conversationHistory: toWorkoutHistory(snapshot),
-                  userId,
-                  date,
-                }),
-              });
-              const data = (await res.json()) as {
-                message: string;
-                workout: PendingWorkout | null;
-                askSaveTemplate?: boolean;
-                suggestions?: string[];
-              };
-              const modelMsg: FabMessage = {
-                id: uid2(),
-                role: "model",
-                text: data.message,
-                intent: "workout",
-                workout: data.workout,
-                askSaveTemplate: data.askSaveTemplate ?? false,
-                suggestions: data.suggestions ?? [],
-                timestamp: Date.now(),
-              };
-              setMessages((prev) => [...prev, modelMsg]);
-              if (data.workout) setPendingIntent("workout");
-            })()
+            const res = await fetch("/api/ai-log-workout", {
+              method: "POST",
+              headers,
+              body: JSON.stringify({
+                message: trimmed,
+                conversationHistory: toWorkoutHistory(snapshot),
+                userId,
+                date,
+              }),
+            });
+            const data = (await res.json()) as {
+              message: string;
+              workout: PendingWorkout | null;
+              askSaveTemplate?: boolean;
+              suggestions?: string[];
+            };
+            const modelMsg: FabMessage = {
+              id: uid2(),
+              role: "model",
+              text: data.message,
+              intent: "workout",
+              workout: data.workout,
+              askSaveTemplate: data.askSaveTemplate ?? false,
+              suggestions: data.suggestions ?? [],
+              timestamp: Date.now(),
+            };
+            setMessages((prev) => [...prev, modelMsg]);
+            if (data.workout) setPendingIntent("workout");
+          })()
           : Promise.resolve();
 
         await Promise.all([foodPromise, workoutPromise]);
@@ -761,7 +761,7 @@ export function useAIFabChat({
         text: "Hey! Tell me what you ate or how you trained — I'll figure out which log to use. 🥗💪",
         intent: "food",
         suggestions: [
-          "2 scrambled eggs and toast",
+          "Greek yogurt with granola and berries",
           "Pull-ups 3×12",
           "Protein shake",
           "5km run 25 min",

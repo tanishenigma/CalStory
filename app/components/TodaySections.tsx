@@ -101,10 +101,10 @@ export function TodaySections({
     visibleMeals.length * cardHeight + (visibleMeals.length - 1) * gap;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
       {/* Today's Workout */}
       <section>
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 ">
           <span className="text-[17px] font-bold text-foreground">
             Today's Workout
           </span>
@@ -116,8 +116,8 @@ export function TodaySections({
         </div>
 
         {todayWorkouts.length === 0 ? (
-          <Link href="/workouts" className="block">
-            <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px] hover:bg-gray-50 transition-colors ">
+          <Link href="/workouts" className="block ">
+            <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px] hover:opacity-90 transition-opacity">
               <div className="text-3xl mb-1" aria-hidden="true">
                 🏋️
               </div>
@@ -131,11 +131,10 @@ export function TodaySections({
           </Link>
         ) : (
           <div
-            className={`relative ${
-              workoutStack.isFast
-                ? "transition-[height] duration-150 ease-out"
-                : "transition-[height] duration-300 ease-out"
-            }`}
+            className={`relative ${workoutStack.isFast
+              ? "transition-[height] duration-150 ease-out"
+              : "transition-[height] duration-300 ease-out"
+              }`}
             style={{
               height: workoutStack.isExpanded
                 ? workoutExpandedHeight
@@ -145,11 +144,10 @@ export function TodaySections({
             {visibleWorkouts.map((w, i) => (
               <Card
                 key={w.id}
-                className={`absolute inset-x-0 top-0 flex items-center gap-4 p-4 origin-top ${
-                  workoutStack.isFast
-                    ? "transition-all duration-150 ease-out"
-                    : "transition-all duration-300 ease-out"
-                }`}
+                className={`absolute inset-x-0 top-0 flex items-center gap-4 p-4 origin-top ${workoutStack.isFast
+                  ? "transition-all duration-150 ease-out"
+                  : "transition-all duration-300 ease-out"
+                  }`}
                 style={stackedStyle(
                   i,
                   workoutStack.isExpanded,
@@ -158,7 +156,7 @@ export function TodaySections({
                   maxVisible,
                 )}>
                 <div
-                  className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0"
+                  className="w-12 h-12 rounded-full bg-red-50/50 flex items-center justify-center text-xl flex-shrink-0"
                   aria-hidden="true">
                   💪
                 </div>
@@ -203,11 +201,10 @@ export function TodaySections({
           </Card>
         ) : (
           <div
-            className={`relative  ${
-              mealStack.isFast
-                ? "transition-[height] duration-150 ease-out"
-                : "transition-[height] duration-300 ease-out"
-            }`}
+            className={`relative   ${mealStack.isFast
+              ? "transition-[height]  duration-150 ease-out"
+              : "transition-[height]  duration-300 ease-out"
+              }`}
             style={{
               height: mealStack.isExpanded
                 ? mealExpandedHeight
@@ -219,11 +216,10 @@ export function TodaySections({
               return (
                 <Card
                   key={m.id}
-                  className={`absolute inset-x-0 top-0 flex items-center gap-4 p-4 origin-top ${
-                    mealStack.isFast
-                      ? "transition-all duration-150 ease-out"
-                      : "transition-all duration-300 ease-out"
-                  }`}
+                  className={`absolute inset-x-0 top-0 flex items-center gap-4 p-4 origin-top ${mealStack.isFast
+                    ? "transition-all duration-150 ease-out"
+                    : "transition-all duration-300 ease-out"
+                    }`}
                   style={stackedStyle(
                     i,
                     mealStack.isExpanded,
@@ -231,7 +227,7 @@ export function TodaySections({
                     gap,
                     maxVisible,
                   )}>
-                  <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-emerald-50/50 flex items-center justify-center text-xl flex-shrink-0">
                     <Icon size={20} className="text-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">

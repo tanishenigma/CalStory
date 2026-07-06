@@ -19,8 +19,8 @@ import {
 } from "@/app/lib/use-ai-fab-chat";
 import { cn } from "@/app/lib/utils";
 import { todayLocalKey } from "@/app/context/AppContext";
+import { usePrefsStore } from "@/app/store/prefsStore";
 import { useAuthStore } from "@/app/store/authStore";
-import BorderGlow from "@/app/components/BorderGlow";
 
 /* ------------------------------------------------------------------
  * AIFabChat — the panel that opens when the user taps the global FAB.
@@ -123,142 +123,132 @@ export default function AIFabChat({ onClose }: Props) {
   }
 
   return (
-    <BorderGlow
-      className="mb-4 w-[min(92vw,360px)] animate-in slide-in-from-bottom-4 fade-in duration-300"
-      borderRadius={16}
-      glowColor="76 175 80"
-      colors={[
-        "var(--color-primary)",
-        "oklch(0.7540 0.1770 145)",
-        "oklch(0.8353 0.1870 145)",
-      ]}
-      glowRadius={28}
-      glowIntensity={1.2}
-      edgeSensitivity={25}
-      animated>
-      <div
-        className={cn(
-          "rounded-md border border-primary/20 dark:border-primary/30",
-          "bg-card/95 backdrop-blur-xl",
-          "shadow-2xl shadow-black/20",
-          "overflow-hidden",
-        )}>
-        {/* ── Header ───────────────────────────────────────────── */}
-        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border/60">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-white shrink-0">
-              <ForkKnife size={15} />
+    <div
+      className={cn(
+        "w-[min(92vw,350px)]",
+        "rounded-md border border-border",
+        "bg-card",
+        "shadow-[0_2px_8px_oklch(0_0_0/_0.05),0_12px_24px_oklch(0_0_0/_0.06)]",
+        "hover:shadow-[0_4px_12px_oklch(0_0_0/_0.08),0_20px_40px_oklch(0_0_0/_0.10)]",
+        "transition-shadow duration-200",
+        "overflow-hidden",
+      )}
+    >
+      {/* ── Header ───────────────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border/60">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-white shrink-0">
+            <ForkKnife size={15} />
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-bold font-heading leading-tight">
+              Quick Log
             </div>
-            <div className="min-w-0">
-              <div className="text-sm font-bold font-heading leading-tight">
-                Quick Log
-              </div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
-                AI detects food &amp; workouts
-              </div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+              AI detects food &amp; workouts
             </div>
           </div>
-        </div>
-
-        {/* ── Message thread ──────────────────────────────────── */}
-        <div
-          ref={scrollRef}
-          className="h-[340px] overflow-y-auto px-3.5 py-3 space-y-3"
-          data-lenis-prevent>
-          {messages.map((m) => (
-            <FabMessageBubble
-              key={m.id}
-              message={m}
-              onConfirmFood={() => handleConfirm("food")}
-              onConfirmWorkout={(saveAsTemplate) =>
-                handleConfirm("workout", saveAsTemplate)
-              }
-              onEditFood={() => handleEditIntent("food")}
-              onEditWorkout={() => handleEditIntent("workout")}
-              onDiscardFood={() => discardPending("food")}
-              onDiscardWorkout={() => discardPending("workout")}
-              isLogging={isLogging}
-              alreadySaved={
-                m.role === "model" && m.intent
-                  ? confirmedIntents.has(m.intent)
-                  : false
-              }
-            />
-          ))}
-
-          {isLoading && (
-            <div className="flex items-start">
-              <div className="flex gap-1 px-4 py-3 bg-subtle border border-border rounded-xl rounded-tl-sm">
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:0ms]" />
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:150ms]" />
-                <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:300ms]" />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── Suggestion chips ────────────────────────────────── */}
-        {pendingSuggestions.length > 0 && !isLoading && (
-          <div className="px-3.5 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
-            {pendingSuggestions.map((chip) => (
-              <button
-                key={chip}
-                onClick={() => handleSend(chip)}
-                className="flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/10 bg-primary/5 text-foreground/70 hover:border-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-all duration-200 whitespace-nowrap">
-                {chip}
-              </button>
-            ))}
-          </div>
-        )}
-        {/* ── Input row ───────────────────────────────────────── */}
-        <div className="px-3.5 py-3 border-t border-border flex gap-2 items-center">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder={
-              pendingWorkout
-                ? "Adjust the workout or log it →"
-                : pendingMeal
-                  ? "Adjust the meal or log it →"
-                  : "What did you eat or train?"
-            }
-            disabled={isLoading}
-            className={cn(
-              "flex-1 bg-subtle border border-border rounded-xl",
-              "py-2.5 px-3 text-sm font-medium",
-              "outline-none focus:border-primary/40",
-              "disabled:opacity-50 disabled:cursor-not-allowed transition-colors",
-            )}
-            aria-label="Describe a meal or workout"
-          />
-          <button
-            disabled
-            aria-label="Voice input (coming soon)"
-            className="p-2.5 rounded-xl border border-border text-muted-foreground opacity-40 cursor-not-allowed">
-            <Mic size={16} />
-          </button>
-          <button
-            onClick={() => handleSend()}
-            disabled={!inputValue.trim() || isLoading}
-            aria-label="Send message"
-            className={cn(
-              "p-2.5 rounded-xl font-bold transition-all",
-              "bg-gradient-to-br from-primary to-primary/70 text-white",
-              "hover:opacity-90 active:scale-95",
-              "disabled:opacity-40 disabled:cursor-not-allowed",
-            )}>
-            <ArrowUp size={16} />
-          </button>
         </div>
       </div>
-    </BorderGlow>
+
+      {/* ── Message thread ──────────────────────────────────── */}
+      <div
+        ref={scrollRef}
+        className="h-[340px] overflow-y-auto px-3.5 py-3 space-y-3"
+        data-lenis-prevent>
+        {messages.map((m) => (
+          <FabMessageBubble
+            key={m.id}
+            message={m}
+            onConfirmFood={() => handleConfirm("food")}
+            onConfirmWorkout={(saveAsTemplate) =>
+              handleConfirm("workout", saveAsTemplate)
+            }
+            onEditFood={() => handleEditIntent("food")}
+            onEditWorkout={() => handleEditIntent("workout")}
+            onDiscardFood={() => discardPending("food")}
+            onDiscardWorkout={() => discardPending("workout")}
+            isLogging={isLogging}
+            alreadySaved={
+              m.role === "model" && m.intent
+                ? confirmedIntents.has(m.intent)
+                : false
+            }
+          />
+        ))}
+
+        {isLoading && (
+          <div className="flex items-start">
+            <div className="flex gap-1 px-4 py-3 bg-subtle border border-border rounded-xl rounded-tl-sm">
+              <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:0ms]" />
+              <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:150ms]" />
+              <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:300ms]" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Suggestion chips ────────────────────────────────── */}
+      {pendingSuggestions.length > 0 && !isLoading && (
+        <div className="px-3.5 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
+          {pendingSuggestions.map((chip) => (
+            <button
+              key={chip}
+              onClick={() => handleSend(chip)}
+              className="flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded-full border border-primary/10 bg-primary/5 text-foreground/70 hover:border-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-all duration-200 whitespace-nowrap">
+              {chip}
+            </button>
+          ))}
+        </div>
+      )}
+      {/* ── Input row ───────────────────────────────────────── */}
+      <div className="px-3.5 py-3 border-t border-border flex gap-2 items-center">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+          placeholder={
+            pendingWorkout
+              ? "Adjust the workout or log it →"
+              : pendingMeal
+                ? "Adjust the meal or log it →"
+                : "What did you eat or train?"
+          }
+          disabled={isLoading}
+          className={cn(
+            "flex-1 bg-subtle border border-border rounded-xl",
+            "py-2.5 px-3 text-sm font-medium",
+            "outline-none focus:border-primary/40",
+            "disabled:opacity-50 disabled:cursor-not-allowed transition-colors",
+          )}
+          aria-label="Describe a meal or workout"
+        />
+        <button
+          disabled
+          aria-label="Voice input (coming soon)"
+          className="p-2.5 rounded-xl border border-border text-muted-foreground opacity-40 cursor-not-allowed">
+          <Mic size={16} />
+        </button>
+        <button
+          onClick={() => handleSend()}
+          disabled={!inputValue.trim() || isLoading}
+          aria-label="Send message"
+          className={cn(
+            "p-2.5 rounded-xl font-bold transition-all",
+            "bg-gradient-to-br from-primary to-primary/70 text-white",
+            "hover:opacity-90 active:scale-95",
+            "disabled:opacity-40 disabled:cursor-not-allowed",
+          )}>
+          <ArrowUp size={16} />
+        </button>
+      </div>
+    </div>
   );
 }
 

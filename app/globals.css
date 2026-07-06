@@ -65,6 +65,20 @@
 /* ─── Primary RGB (for rgba() usage in inline styles) ─── */
 :root {
   --primary-rgb: 48, 158, 134;
+
+  /* ── Canonical easing tokens ──────────────────────────────────────
+   * Use these throughout the app instead of duplicating cubic-bezier
+   * values. Each name maps to its behaviour:
+   *   ease-out-*  → enter/exit animations (user-initiated interactions)
+   *   ease-in-out-* → elements already on screen that move or morph
+   * ──────────────────────────────────────────────────────────────── */
+  --ease-out-quad:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-out-cubic:  cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-out-quart:  cubic-bezier(0.165, 0.84, 0.44, 1);
+  --ease-out-quint:  cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-out-expo:   cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 /* ─── Custom font utilities (Tailwind v4 requires explicit @utility) ─── */
@@ -363,12 +377,14 @@ html.lenis body {
 }
 
 /* ─── Ring arc & progress bar transitions ─── */
+/* ease-out-cubic: fast start, gentle settle — correct for progress
+ * bars and rings that are revealing their final fill value. */
 .ring-arc {
-  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 .mbar-fill {
-  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.7s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 /* ─── CSS custom properties: Light mode ─── */
@@ -615,6 +631,17 @@ html.lenis body {
   color: var(--color-ink);
 }
 
+/* Frosted glass variant — same border/radius as .card but with a
+ * semi-transparent background + backdrop-blur so the page gradient
+ * bleeds through. Combine with .card: <Card className="card-glass …"> */
+.card-glass {
+  background-color: var(--color-card, oklch(0.1972 0.005 145 / 0.65));
+  background-color: oklch(from var(--color-card) l c h / 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-color: rgb(255 255 255 / 0.08);
+}
+
 .card-interactive {
   transition:
     box-shadow 200ms ease,
@@ -836,6 +863,12 @@ input[type="number"] {
   animation: fullbleedBreath 6s ease-in-out infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .fullbleed-gradient {
+    animation: none;
+  }
+}
+
 /* Dark mode: silvery tones, soft glow for separation. */
 .dark .fullbleed-gradient {
   background-image: linear-gradient(
@@ -851,20 +884,20 @@ input[type="number"] {
 .step-item {
   opacity: 0.45;
   transition:
-    opacity 0.5s ease,
-    transform 0.5s ease;
+    opacity 0.35s ease,
+    transform 0.35s ease;
 }
 
 .step-item .step-badge {
   transition:
-    background-color 0.5s ease,
-    color 0.5s ease,
-    box-shadow 0.5s ease;
+    background-color 0.35s ease,
+    color 0.35s ease,
+    box-shadow 0.35s ease;
 }
 
 .step-item .step-title,
 .step-item .step-desc {
-  transition: color 0.5s ease;
+  transition: color 0.35s ease;
 }
 
 .step-item.step-active {

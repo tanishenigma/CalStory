@@ -194,15 +194,15 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.18 }}
+        transition={{ duration: 0.18, ease: "easeOut" }}
         onClick={handleOverlayClick}
         className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
         <motion.div
           key="dialog"
-          initial={{ opacity: 0, scale: 0.95, y: 8 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 8 }}
-          transition={{ type: "spring", stiffness: 320, damping: 28 }}
+          initial={{ opacity: 0, y: 40, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 40, scale: 0.97 }}
+          transition={{ type: "spring", stiffness: 280, damping: 28 }}
           className="w-full max-w-md">
           <Card className="p-6">
             <div className="flex items-center justify-between mb-5">

@@ -40,7 +40,15 @@ function MobilePageShell({ children }: { children: React.ReactNode }) {
 
   return (
     <AnimatePresence mode="wait" initial={false}>
-      <motion.div className="w-full will-change-transform">
+      {/* key={pathname} ensures AnimatePresence re-mounts the div
+          on each navigation, triggering the exit → enter sequence. */}
+      <motion.div
+        key={pathname}
+        className="w-full will-change-transform"
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2, ease: [0.165, 0.84, 0.44, 1] }}>
         {children}
       </motion.div>
     </AnimatePresence>

@@ -18,7 +18,7 @@ function makeGreeting(): ChatMessage {
     content:
       "Hey! Tell me what you ate and I'll estimate the calories and macros for you. 🥗",
     meal: null,
-    suggestions: ["2 scrambled eggs", "Chicken rice bowl", "Protein shake"],
+    suggestions: ["Greek yogurt with granola and berries", "Veggie burrito bowl", "Protein shake"],
     timestamp: Date.now(),
   };
 }

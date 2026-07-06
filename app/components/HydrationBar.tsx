@@ -122,7 +122,7 @@ export default function HydrationBar({
           aria-valuemax={100}
           aria-label={`Hydration: ${fillPct}% of daily goal`}>
           <div
-            className="h-full rounded-full transition-all duration-700 ease-out"
+            className="h-full rounded-full transition-[width] duration-700 ease-out"
             style={{
               width: `${fillPct}%`,
               backgroundColor: HYDRATION_FILL_COLOR,

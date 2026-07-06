@@ -6,7 +6,6 @@ import WorkoutConfirmationCard from "@/app/components/nutrition/workout-confirma
 import { useWorkoutChat } from "@/app/lib/use-workout-chat";
 import { cn } from "@/app/lib/utils";
 import type { WorkoutChatMessage, PendingWorkout } from "@/app/types";
-import BorderGlow from "@/app/components/BorderGlow";
 
 interface Props {
   onClose: () => void;
@@ -78,24 +77,7 @@ export default function AIWorkoutLogger({
   }
 
   return (
-    <BorderGlow
-      className="mb-8 animate-in slide-in-from-top-4 duration-300"
-      borderRadius={16}
-      glowColor="76 175 80"
-      colors={[
-        "var(--color-primary)",
-        "oklch(0.7540 0.1770 145)",
-        "oklch(0.8353 0.1870 145)",
-      ]}
-      glowRadius={35}
-      glowIntensity={1.2}
-      edgeSensitivity={25}
-      animated>
-      <div
-        className={cn(
-          "rounded-md border border-primary/20 dark:border-primary/30",
-          " bg-transparent shadow-sm overflow-hidden",
-        )}>
+    <div className="mb-8 rounded-md border border-border/50 bg-card/60 backdrop-blur-xl overflow-hidden" style={{ color: "var(--color-ink)" }}>
         {/* ── Message thread ──────────────────────────────────── */}
         <div
           ref={messagesScrollRef}
@@ -191,7 +173,6 @@ export default function AIWorkoutLogger({
           </div>
         </div>
       </div>
-    </BorderGlow>
   );
 }
 

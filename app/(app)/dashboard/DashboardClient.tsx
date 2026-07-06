@@ -84,6 +84,7 @@ export default function DashboardPage() {
           recentWorkouts={recentWorkouts}
           recentMeals={recentMeals}
           mealIcons={MEAL_ICONS}
+
         />
         {/* Third Row: Fasting & Hydration */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

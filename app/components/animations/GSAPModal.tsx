@@ -12,7 +12,13 @@ export default function GSAPModal({ children, onClose }: GSAPModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   useEffect(() => {
+    if (prefersReducedMotion) return;
+
     gsap.fromTo(
       overlayRef.current,
       { opacity: 0 },
@@ -21,22 +27,30 @@ export default function GSAPModal({ children, onClose }: GSAPModalProps) {
     gsap.fromTo(
       sheetRef.current,
       { y: 60, opacity: 0.4, scale: 0.97 },
-      { y: 0, opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.4)" },
+      { y: 0, opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.4)" },
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleClose() {
+    if (prefersReducedMotion) {
+      onClose();
+      return;
+    }
+
+    // Exit animations: ease-out feels snappy and responsive.
+    // Entrances can be dramatic; exits should be quick and clean.
     gsap.to(sheetRef.current, {
-      y: 60,
+      y: 48,
       opacity: 0,
-      scale: 0.96,
-      duration: 0.2,
-      ease: "power2.in",
+      scale: 0.97,
+      duration: 0.18,
+      ease: "power2.out",
     });
     gsap.to(overlayRef.current, {
       opacity: 0,
-      duration: 0.2,
-      ease: "power2.in",
+      duration: 0.18,
+      ease: "power2.out",
       onComplete: onClose,
     });
   }
