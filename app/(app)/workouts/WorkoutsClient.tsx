@@ -6,7 +6,6 @@ import { useAuthStore } from "@/app/store/authStore";
 import { useToast } from "@/app/components/ToastContainer";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
 import WeekStrip from "@/app/components/WeekStrip";
-import BlurFade from "@/app/components/animations/BlurFade";
 import { Card } from "@/app/components/ui/card";
 import WorkoutForm from "@/app/components/WorkoutForm";
 import AIWorkoutLogger from "@/app/components/nutrition/ai-workout-logger";
@@ -160,60 +159,58 @@ export default function WorkoutsPage() {
   return (
     <>
       <WeekStrip />
-      <BlurFade delay={0.05}>
-        <div className="flex flex-col sm:flex-row sm:items-center  justify-between gap-4 mb-6">
-          <div className="flex flex-col">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <h1 className="my-4 sm:my-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
-                Workouts
-              </h1>{" "}
-              {state.savedWorkouts?.length > 0 && (
-                <button
-                  onClick={() => setShowTemplates(!showTemplates)}
-                  className="self-start sm:self-auto px-4 h-10 py-2.5 bg-primary-foreground  dark:bg-muted text-foreground dark:text-foreground border border-border rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-background transition-colors active:scale-[0.98]">
-                  Saved Routines
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="flex flex-col sm:items-end gap-3">
-            <div className="text-xs font-semibold text-muted-foreground">
-              {fmtDate(selDate)}
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              {/* Log with AI — blue accent, left of primary Log Workout button */}
-              {user && (
-                <button
-                  id="btn-log-workout-ai"
-                  onClick={() => {
-                    setShowAIChat((v) => {
-                      if (!v) {
-                        setShowForm(false);
-                        setShowTemplates(false);
-                      }
-                      return !v;
-                    });
-                  }}
-                  className="px-4 py-2.5 bg-card text-ink dark:text-foreground  rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors active:scale-[0.98] flex items-center justify-center gap-1.5">
-                  <Sparkles size={14} className="text-primary" />
-                  {showAIChat ? "Cancel" : "Log with AI"}
-                </button>
-              )}
+      <div className="flex flex-col sm:flex-row sm:items-center  justify-between gap-4 mb-6">
+        <div className="flex flex-col">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <h1 className="my-4 sm:my-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
+              Workouts
+            </h1>{" "}
+            {state.savedWorkouts?.length > 0 && (
               <button
-                onClick={() => {
-                  setEditingWorkout(null);
-                  setFormMode("new");
-                  setShowForm(true);
-                  setShowTemplates(false);
-                  setShowAIChat(false);
-                }}
-                className="px-4 py-2.5 bg-foreground text-background rounded-xl text-xs md:text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
-                Log Workout
+                onClick={() => setShowTemplates(!showTemplates)}
+                className="self-start sm:self-auto px-4 h-10 py-2.5 bg-primary-foreground  dark:bg-muted text-foreground dark:text-foreground border border-border rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-background transition-colors active:scale-[0.98]">
+                Saved Routines
               </button>
-            </div>
+            )}
           </div>
         </div>
-      </BlurFade>{" "}
+        <div className="flex flex-col sm:items-end gap-3">
+          <div className="text-xs font-semibold text-muted-foreground">
+            {fmtDate(selDate)}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            {/* Log with AI — blue accent, left of primary Log Workout button */}
+            {user && (
+              <button
+                id="btn-log-workout-ai"
+                onClick={() => {
+                  setShowAIChat((v) => {
+                    if (!v) {
+                      setShowForm(false);
+                      setShowTemplates(false);
+                    }
+                    return !v;
+                  });
+                }}
+                className="px-4 py-2.5 bg-card text-ink dark:text-foreground  rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors active:scale-[0.98] flex items-center justify-center gap-1.5">
+                <Sparkles size={14} className="text-primary" />
+                {showAIChat ? "Cancel" : "Log with AI"}
+              </button>
+            )}
+            <button
+              onClick={() => {
+                setEditingWorkout(null);
+                setFormMode("new");
+                setShowForm(true);
+                setShowTemplates(false);
+                setShowAIChat(false);
+              }}
+              className="px-4 py-2.5 bg-foreground text-background rounded-xl text-xs md:text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
+              Log Workout
+            </button>
+          </div>
+        </div>
+      </div>
       {showTemplates && !showForm && (
         <div className="mb-4 p-4 sm:p-6 bg-card dark:bg-card rounded-[24px] shadow-sm border border-border dark:border-border animate-in slide-in-from-top-4 duration-300">
           <div className="flex justify-between items-center mb-4 sm:mb-6 gap-3">
@@ -343,19 +340,15 @@ export default function WorkoutsPage() {
         </div>
       )}
       {dayWorkouts.length === 0 ? (
-        <BlurFade delay={0.15}>
-          <Card className="flex flex-col items-center justify-center py-12 text-center gap-2">
-            <div className="text-4xl mb-2">💤</div>
-            <div className="font-bold text-[15px] text-foreground">
-              Rest Day
-            </div>
-            <div className="text-[13px] text-muted-foreground max-w-[200px]">
-              No workouts logged for this day. Enjoy your recovery!
-            </div>
-          </Card>
-        </BlurFade>
+        <Card className="flex flex-col items-center justify-center py-12 text-center gap-2">
+          <div className="text-4xl mb-2">💤</div>
+          <div className="font-bold text-[15px] text-foreground">Rest Day</div>
+          <div className="text-[13px] text-muted-foreground max-w-[200px]">
+            No workouts logged for this day. Enjoy your recovery!
+          </div>
+        </Card>
       ) : (
-        <BlurFade delay={0.15} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           {dayWorkouts.map((w) => (
             <Card key={w.id} className="p-4">
               <div className="flex justify-between items-start mb-2 gap-2">
@@ -425,7 +418,7 @@ export default function WorkoutsPage() {
               )}
             </Card>
           ))}
-        </BlurFade>
+        </div>
       )}
     </>
   );

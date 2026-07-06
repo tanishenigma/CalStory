@@ -40,17 +40,9 @@ export default function WeekStrip() {
     setWeekOffset(0);
   }, [state.selDate]);
 
-  // Scroll the day strip to the rightmost end on mount and whenever
-  // the selected date or week changes, so the latest dates (today)
-  // are always in view instead of being clipped off the right edge.
-  // The scroll container is the OUTER flex wrapper (the one with
-  // `overflow-x-auto` and a width constraint); the inner day div
-  // has `shrink-0` so its children force its natural width, which
-  // makes the outer container scrollable.
   useEffect(() => {
     const el = stripRef.current;
     if (!el) return;
-    // Defer to next frame so layout (and `days` length) is settled.
     const raf = requestAnimationFrame(() => {
       if (stripRef.current) {
         stripRef.current.scrollLeft = stripRef.current.scrollWidth;
@@ -280,7 +272,6 @@ export default function WeekStrip() {
           </div>
         </div>
       </div>
-
       {showPicker && <DatePicker onClose={() => setShowPicker(false)} />}
     </>
   );

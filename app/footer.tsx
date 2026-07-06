@@ -30,6 +30,10 @@ const resourceLinks = [
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
   {
+    label: "Calorie Calculator",
+    href: "/tools/calorie-calculator",
+  },
+  {
     label: "Calorie Tracking for Beginners",
     href: "/blog/calorie-tracking-for-beginners",
   },
@@ -97,15 +101,15 @@ const Footer = () => {
             </p>
 
             <div className="mt-6">
-              <h3 className="font-semibold text-sm font-heading">Contact</h3>
+              {" "}
               <Link
                 href="/contact"
                 className="mt-2 inline-block text-sm text-muted-foreground/80 hover:text-foreground transition-colors">
-                Get in touch
+                <h3 className="font-semibold text-sm font-heading">Contact</h3>
               </Link>
               <a
                 href="mailto:support@calstory.app"
-                className="mt-1 inline-block text-xs text-muted-foreground/60 hover:text-foreground/80 transition-colors break-all">
+                className="mt-1 ml-1 inline-block text-xs text-muted-foreground/60 hover:text-foreground/80 transition-colors break-all">
                 support@calstory.app
               </a>
             </div>

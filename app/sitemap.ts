@@ -50,14 +50,21 @@ async function mtimeOf(relPath: string): Promise<Date> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [landingMtime, aboutMtime, blogMtime, privacyMtime, termsMtime] =
-    await Promise.all([
-      mtimeOf("./app/page.tsx"),
-      mtimeOf("./app/about/page.tsx"),
-      mtimeOf("./app/blog/page.tsx"),
-      mtimeOf("./app/privacy/page.tsx"),
-      mtimeOf("./app/terms/page.tsx"),
-    ]);
+  const [
+    landingMtime,
+    aboutMtime,
+    blogMtime,
+    privacyMtime,
+    termsMtime,
+    calorieCalculatorMtime,
+  ] = await Promise.all([
+    mtimeOf("./app/page.tsx"),
+    mtimeOf("./app/about/page.tsx"),
+    mtimeOf("./app/blog/page.tsx"),
+    mtimeOf("./app/privacy/page.tsx"),
+    mtimeOf("./app/terms/page.tsx"),
+    mtimeOf("./app/tools/calorie-calculator/page.tsx"),
+  ]);
 
   // Shared OG image reused as the entry-level image so Google Images
   // has a thumbnail for every route.
@@ -82,6 +89,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${SITE_URL}/blog`,
       lastModified: blogMtime,
       changeFrequency: "weekly",
+      priority: 0.8,
+      images: [ogImageUrl],
+    },
+    {
+      url: `${SITE_URL}/tools/calorie-calculator`,
+      lastModified: calorieCalculatorMtime,
+      changeFrequency: "monthly",
       priority: 0.8,
       images: [ogImageUrl],
     },

@@ -172,189 +172,173 @@ export default function FitnessClient() {
 
   return (
     <div className="flex flex-col gap-6 pb-20">
-      <BlurFade>
-        <div className="pt-2">
-          <h1 className="text-3xl font-bold mb-2">Fitness Sync</h1>
-          <p className="text-sm text-muted-foreground">
-            Pull steps, calories, and workouts from Google Fit
-          </p>
-        </div>
-      </BlurFade>
+      <div className="pt-2">
+        <h1 className="text-3xl font-bold mb-2">Fitness Sync</h1>
+        <p className="text-sm text-muted-foreground">
+          Pull steps, calories, and workouts from Google Fit
+        </p>
+      </div>
 
       {/* ── Desktop unsupported notice ── */}
       {!isMobileWeb && (
-        <BlurFade delay={0.05}>
-          <Card className="p-6 border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-950/30">
-            <div className="flex gap-3">
-              <Smartphone
-                size={20}
-                className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"
-              />
-              <div>
-                <p className="font-semibold text-amber-900 dark:text-amber-200 text-sm mb-1">
-                  Mobile browser required
-                </p>
-                <p className="text-amber-700 dark:text-amber-300 text-sm">
-                  Fitness sync is optimised for mobile browsers (Android Chrome,
-                  iOS Safari) where Google Fit integration works best. On
-                  desktop you can still view previously synced data.
-                </p>
-              </div>
+        <Card className="p-6 border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-950/30">
+          <div className="flex gap-3">
+            <Smartphone
+              size={20}
+              className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"
+            />
+            <div>
+              <p className="font-semibold text-amber-900 dark:text-amber-200 text-sm mb-1">
+                Mobile browser required
+              </p>
+              <p className="text-amber-700 dark:text-amber-300 text-sm">
+                Fitness sync is optimised for mobile browsers (Android Chrome,
+                iOS Safari) where Google Fit integration works best. On desktop
+                you can still view previously synced data.
+              </p>
             </div>
-          </Card>
-        </BlurFade>
+          </div>
+        </Card>
       )}
 
       {/* ── No client ID ── */}
       {status === "no_client_id" && (
-        <BlurFade delay={0.05}>
-          <Card className="p-6 border-border">
-            <div className="flex gap-3">
-              <Info
-                size={20}
-                className="text-muted-foreground flex-shrink-0 mt-0.5"
-              />
-              <p className="text-sm text-muted-foreground">
-                Google Fit is not configured for this instance. Set{" "}
-                <code className="font-mono bg-muted px-1 rounded">
-                  NEXT_PUBLIC_GOOGLE_FIT_CLIENT_ID
-                </code>{" "}
-                to enable fitness sync.
-              </p>
-            </div>
-          </Card>
-        </BlurFade>
+        <Card className="p-6 border-border">
+          <div className="flex gap-3">
+            <Info
+              size={20}
+              className="text-muted-foreground flex-shrink-0 mt-0.5"
+            />
+            <p className="text-sm text-muted-foreground">
+              Google Fit is not configured for this instance. Set{" "}
+              <code className="font-mono bg-muted px-1 rounded">
+                NEXT_PUBLIC_GOOGLE_FIT_CLIENT_ID
+              </code>{" "}
+              to enable fitness sync.
+            </p>
+          </div>
+        </Card>
       )}
 
       {/* ── Error / revoked states ── */}
       {useFitnessStore.getState().errorMessage && (
-        <BlurFade delay={0.05}>
-          <Card className="p-4 border-red-200 dark:border-red-800/40 bg-red-50 dark:bg-red-950/30">
-            <div className="flex gap-3">
-              <AlertCircle
-                size={18}
-                className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5"
-              />
-              <p className="text-sm text-red-700 dark:text-red-300">
-                {useFitnessStore.getState().errorMessage}
-              </p>
-            </div>
-          </Card>
-        </BlurFade>
+        <Card className="p-4 border-red-200 dark:border-red-800/40 bg-red-50 dark:bg-red-950/30">
+          <div className="flex gap-3">
+            <AlertCircle
+              size={18}
+              className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5"
+            />
+            <p className="text-sm text-red-700 dark:text-red-300">
+              {useFitnessStore.getState().errorMessage}
+            </p>
+          </div>
+        </Card>
       )}
 
       {/* ── Connect / Status card ── */}
-      <BlurFade delay={0.1}>
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Activity size={18} className="text-primary" />
-              <span className="font-semibold text-sm">Google Fit</span>
-            </div>
-            {isConnected ? (
-              <span className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-semibold">
-                <CheckCircle2 size={13} />
-                Connected
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold">
-                <WifiOff size={13} />
-                Not connected
-              </span>
-            )}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Activity size={18} className="text-primary" />
+            <span className="font-semibold text-sm">Google Fit</span>
           </div>
-
-          <p className="text-xs text-muted-foreground mb-4">
-            Last synced:{" "}
-            <span className="font-semibold text-foreground">
-              {lastSyncedAt
-                ? formatSyncTime(lastSyncedAt)
-                : todayLog
-                  ? `last known: ${new Date(todayLog.syncedAt).toLocaleDateString()}`
-                  : "Never"}
+          {isConnected ? (
+            <span className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 font-semibold">
+              <CheckCircle2 size={13} />
+              Connected
             </span>
-          </p>
+          ) : (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold">
+              <WifiOff size={13} />
+              Not connected
+            </span>
+          )}
+        </div>
 
-          <div className="flex gap-2">
-            {isConnected ? (
-              <>
-                <button
-                  onClick={handleSync}
-                  disabled={status === "syncing"}
-                  id="fitness-sync-now"
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-foreground text-background text-sm font-bold hover:opacity-85 transition-opacity disabled:opacity-50">
-                  <RefreshCw
-                    size={14}
-                    className={status === "syncing" ? "animate-spin" : ""}
-                  />
-                  {status === "syncing" ? "Syncing…" : "Sync now"}
-                </button>
-                <button
-                  onClick={handleDisconnect}
-                  id="fitness-disconnect"
-                  className="px-4 py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
-                  Disconnect
-                </button>
-              </>
-            ) : (
+        <p className="text-xs text-muted-foreground mb-4">
+          Last synced:{" "}
+          <span className="font-semibold text-foreground">
+            {lastSyncedAt
+              ? formatSyncTime(lastSyncedAt)
+              : todayLog
+                ? `last known: ${new Date(todayLog.syncedAt).toLocaleDateString()}`
+                : "Never"}
+          </span>
+        </p>
+
+        <div className="flex gap-2">
+          {isConnected ? (
+            <>
               <button
-                onClick={handleConnect}
-                id="fitness-connect-google-fit"
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-foreground text-background text-sm font-bold hover:opacity-85 transition-opacity">
-                <Wifi size={14} />
-                Connect Google Fit
+                onClick={handleSync}
+                disabled={status === "syncing"}
+                id="fitness-sync-now"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-foreground text-background text-sm font-bold hover:opacity-85 transition-opacity disabled:opacity-50">
+                <RefreshCw
+                  size={14}
+                  className={status === "syncing" ? "animate-spin" : ""}
+                />
+                {status === "syncing" ? "Syncing…" : "Sync now"}
               </button>
-            )}
-          </div>
-        </Card>
-      </BlurFade>
+              <button
+                onClick={handleDisconnect}
+                id="fitness-disconnect"
+                className="px-4 py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
+                Disconnect
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={handleConnect}
+              id="fitness-connect-google-fit"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-foreground text-background text-sm font-bold hover:opacity-85 transition-opacity">
+              <Wifi size={14} />
+              Connect Google Fit
+            </button>
+          )}
+        </div>
+      </Card>
 
       {/* ── Fitness data cards ── */}
       {(todayLog || status === "success") && (
-        <BlurFade delay={0.15}>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <FitnessMetricCard
-              label="Steps"
-              value={todayLog?.steps.toLocaleString() ?? "—"}
-              icon="👟"
-              note={
-                status === "revoked" || status === "error"
-                  ? `last known: ${todayLog ? new Date(todayLog.syncedAt).toLocaleDateString() : "—"}`
-                  : undefined
-              }
-            />
-            <FitnessMetricCard
-              label="Active Cal"
-              value={
-                todayLog?.activeCalories
-                  ? `${todayLog.activeCalories} kcal`
-                  : "—"
-              }
-              icon="🔥"
-            />
-            <FitnessMetricCard
-              label="Basal Cal"
-              value={
-                todayLog?.basalCalories ? `${todayLog.basalCalories} kcal` : "—"
-              }
-              icon="💤"
-            />
-          </div>
-        </BlurFade>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <FitnessMetricCard
+            label="Steps"
+            value={todayLog?.steps.toLocaleString() ?? "—"}
+            icon="👟"
+            note={
+              status === "revoked" || status === "error"
+                ? `last known: ${todayLog ? new Date(todayLog.syncedAt).toLocaleDateString() : "—"}`
+                : undefined
+            }
+          />
+          <FitnessMetricCard
+            label="Active Cal"
+            value={
+              todayLog?.activeCalories ? `${todayLog.activeCalories} kcal` : "—"
+            }
+            icon="🔥"
+          />
+          <FitnessMetricCard
+            label="Basal Cal"
+            value={
+              todayLog?.basalCalories ? `${todayLog.basalCalories} kcal` : "—"
+            }
+            icon="💤"
+          />
+        </div>
       )}
 
       {/* ── No data + no token state ── */}
       {!isConnected && !todayLog && status === "idle" && isMobileWeb && (
-        <BlurFade delay={0.15}>
-          <Card className="flex flex-col items-center justify-center py-16 text-center gap-2">
-            <span className="text-4xl mb-2">📊</span>
-            <p className="font-bold text-[15px]">No fitness data yet</p>
-            <p className="text-sm text-muted-foreground max-w-xs">
-              Connect Google Fit above to start pulling your steps and calorie
-              data automatically.
-            </p>
-          </Card>
-        </BlurFade>
+        <Card className="flex flex-col items-center justify-center py-16 text-center gap-2">
+          <span className="text-4xl mb-2">📊</span>
+          <p className="font-bold text-[15px]">No fitness data yet</p>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            Connect Google Fit above to start pulling your steps and calorie
+            data automatically.
+          </p>
+        </Card>
       )}
     </div>
   );

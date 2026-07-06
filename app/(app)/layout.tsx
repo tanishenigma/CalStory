@@ -30,21 +30,17 @@ function MobilePageShell({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Desktop, or user prefers reduced motion → render plainly.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   if (!isMobile || reducedMotion) {
     return <div className="w-full">{children}</div>;
   }
 
   return (
     <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        initial={{ x: 24, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: -16, opacity: 0 }}
-        // Sub-300ms so a fast tap between tabs doesn't feel laggy.
-        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-        className="w-full will-change-transform">
+      <motion.div className="w-full will-change-transform">
         {children}
       </motion.div>
     </AnimatePresence>
@@ -59,9 +55,6 @@ export default function AppGroupLayout({
   const navStyle = usePrefsStore((s) => s.navbarStyle);
   const chromeHidden = useUiStore((s) => s.chromeHidden);
   const pathname = usePathname();
-  // `chromeHidden` is set by fullscreen overlays (e.g. the
-  // delete-account confirmation) so the sidebar / bottom nav /
-  // FAB can't sit above or beside the modal.
   const padLeft = navStyle === "floating" ? "lg:pl-[240px]" : "lg:pl-20";
   return (
     <>

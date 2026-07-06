@@ -98,18 +98,14 @@ function SettingsPageContent() {
 
   return (
     <div className="flex flex-col gap-10">
-      <BlurFade>
-        <div className="pt-2">
-          <h1 className="text-3xl font-bold ">Settings</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your profile, goals and preferences
-          </p>
-        </div>
-      </BlurFade>
+      <div className="pt-2">
+        <h1 className="text-3xl font-bold ">Settings</h1>
+        <p className="text-sm text-muted-foreground">
+          Manage your profile, goals and preferences
+        </p>
+      </div>
 
-      <BlurFade delay={0.05}>
-        <SettingsTabs active={tab} onChange={setTab} tabs={TABS} />
-      </BlurFade>
+      <SettingsTabs active={tab} onChange={setTab} tabs={TABS} />
 
       {tab === "profile" && (
         <ProfileTab

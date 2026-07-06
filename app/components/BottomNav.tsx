@@ -50,8 +50,25 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   if (pathname === "/") return null;
+
+  const activeIndex = TABS.findIndex(
+    ({ href }) => pathname === href || pathname.startsWith(href + "/"),
+  );
+
+  const slotWidth = 100 / TABS.length;
+
   return (
     <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 lg:hidden z-[200] w-[calc(100vw-24px)] max-w-md mx-auto h-[72px] flex items-center justify-around px-2 bg-background/95 dark:bg-background backdrop-blur-xl border border-border rounded-3xl shadow-[0_10px_30px_oklch(0_0_0/_0.12)]">
+      {/* top bar — positioned mathematically, no layout measurement */}
+      {activeIndex !== -1 && (
+        <motion.div
+          animate={{ left: `${slotWidth * activeIndex + slotWidth / 2}%` }}
+          initial={false}
+          transition={{ type: "spring", stiffness: 320, damping: 28 }}
+          className="absolute top-0 w-8 h-[3px] rounded-full bg-foreground -translate-x-1/2"
+        />
+      )}
+
       {TABS.map(({ href, label, icon }) => {
         const active = pathname === href || pathname.startsWith(href + "/");
 
@@ -76,14 +93,6 @@ export default function BottomNav() {
               }`}>
               {label}
             </span>
-
-            {active && (
-              <motion.div
-                layoutId="active-bottom-tab"
-                transition={{ type: "spring", stiffness: 320, damping: 28 }}
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-full bg-foreground"
-              />
-            )}
           </Link>
         );
       })}

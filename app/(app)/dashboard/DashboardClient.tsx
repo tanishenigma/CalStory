@@ -9,12 +9,12 @@ import { useHydration } from "@/app/hooks/useHydration";
 import WeekStrip from "@/app/components/WeekStrip";
 import CalorieHero from "@/app/components/CalorieHero";
 import MacroPills from "@/app/components/MacroPills";
-import FastingRing from "@/app/components/FastingRing";
 import HydrationBar from "@/app/components/HydrationBar";
 import BlurFade from "@/app/components/animations/BlurFade";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { MEAL_ICONS } from "@/app/lib/constants";
 import { Utensils } from "lucide-react";
+import { TodaySections } from "@/app/components/TodaySections";
 
 const DEFAULT_CAL_TARGET = 2000;
 const PROTEIN_CAL_RATIO = 0.3;
@@ -73,133 +73,18 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-6 mt-4 sm:mt-8">
         {/* Top Row: Hero & Macros */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <BlurFade delay={0.1} className="h-full">
-            <CalorieHero eaten={totals.cal} target={targetKcal} />
-          </BlurFade>
+          <CalorieHero eaten={totals.cal} target={targetKcal} />
 
-          <BlurFade delay={0.15} className="h-full">
-            <MacroPills macros={totals} target={targetMacros} />
-          </BlurFade>
+          <MacroPills macros={totals} target={targetMacros} />
         </div>
-
         {/* Bottom Row: Workout & Meals */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <BlurFade delay={0.2}>
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[17px] font-bold text-foreground">
-                  Today's Workout
-                </span>
-                <Link
-                  href="/workouts"
-                  className="text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-colors dark:hover:text-foreground">
-                  See all →
-                </Link>
-              </div>
-
-              {todayWorkouts.length === 0 ? (
-                <Link href="/workouts" className="block">
-                  <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px] hover:bg-gray-50 transition-colors cursor-pointer ">
-                    <div className="text-3xl mb-1" aria-hidden="true">
-                      🏋️
-                    </div>
-                    <div className="font-bold text-[14px] text-foreground">
-                      No workout yet
-                    </div>
-                    <div className="text-[12px] text-muted-foreground">
-                      Tap to go to Workouts page to log a session
-                    </div>
-                  </Card>
-                </Link>
-              ) : (
-                <Card className="flex flex-col gap-2 ">
-                  {recentWorkouts.map((w) => (
-                    <CardContent
-                      key={w.id}
-                      className="flex flex-col divide-y divide-border p-2  ">
-                      <div className="flex items-center gap-4 p-4 hover:bg-subtle transition-colors rounded-xl">
-                        <div
-                          className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0"
-                          aria-hidden="true">
-                          💪
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text-[15px] text-foreground truncate">
-                            {w.name}
-                          </div>
-                          <div className="text-xs text-muted-foreground capitalize">
-                            {w.duration} min • {w.type}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  ))}
-                </Card>
-              )}
-            </section>
-          </BlurFade>
-
-          <BlurFade delay={0.25}>
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[17px] font-bold text-foreground">
-                  Today's Meals
-                </span>
-                <Link
-                  href="/nutrition"
-                  className="text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-colors dark:hover:text-foreground">
-                  See all →
-                </Link>
-              </div>
-
-              {todayMeals.length === 0 ? (
-                <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px]">
-                  <div className="text-3xl mb-1" aria-hidden="true">
-                    🍽️
-                  </div>
-                  <div className="font-bold text-[14px] text-foreground">
-                    No meals logged
-                  </div>
-                  <div className="text-[12px] text-muted-foreground">
-                    Tap + below to add a meal
-                  </div>
-                </Card>
-              ) : (
-                <Card className="flex flex-col">
-                  {recentMeals.map((m) => {
-                    const Icon = MEAL_ICONS[m.time] || Utensils;
-                    return (
-                      <CardContent
-                        key={m.id}
-                        className="flex items-center gap-4 p-4 m-2 hover:bg-subtle hover:rounded-xl transition-colors ">
-                        <div className="w-12 h-12 rounded-2xl bg-background flex items-center justify-center text-xl flex-shrink-0">
-                          <Icon size={20} className="text-foreground" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text-[15px] text-foreground truncate">
-                            {m.name}
-                          </div>
-                          <div className="text-xs text-muted-foreground capitalize">
-                            {m.time}
-                          </div>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <div className="font-bold text-lg text-foreground tabular-nums">
-                            {m.cal}
-                          </div>
-                          <div className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">
-                            kcal
-                          </div>
-                        </div>
-                      </CardContent>
-                    );
-                  })}
-                </Card>
-              )}
-            </section>
-          </BlurFade>
-        </div>
-
+        <TodaySections
+          todayWorkouts={todayWorkouts}
+          todayMeals={todayMeals}
+          recentWorkouts={recentWorkouts}
+          recentMeals={recentMeals}
+          mealIcons={MEAL_ICONS}
+        />
         {/* Third Row: Fasting & Hydration */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Fasting card */}
@@ -238,36 +123,33 @@ export default function DashboardPage() {
               </Card>
             </section>
           </BlurFade> */}
-
-          {/* Hydration card */}
-          <BlurFade delay={0.35}>
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[17px] font-bold text-foreground">
-                  Hydration
-                </span>
-                <span className="text-[13px] font-semibold text-muted-foreground">
-                  {hydration.pct >= 1
-                    ? "Goal reached! 💧"
-                    : `${Math.round(hydration.pct * 100)}%`}
-                </span>
-              </div>
-              <Card className="p-5">
-                <HydrationBar
-                  totalMl={hydration.totalMl}
-                  goalMl={hydration.goalMl}
-                  pct={hydration.pct}
-                  entries={hydration.entries}
-                  volumeUnit={profile?.volumeUnit ?? "ml"}
-                  onAdd={addHydration}
-                  onRemove={removeHydration}
-                  onSetGoal={setHydrationGoal}
-                  goalReached={hydration.goalReached}
-                />
-              </Card>
-            </section>
-          </BlurFade>
-        </div>
+        </div>{" "}
+        {/* Hydration card */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[17px] font-bold text-foreground">
+              Hydration
+            </span>
+            <span className="text-[13px] font-semibold text-muted-foreground">
+              {hydration.pct >= 1
+                ? "Goal reached! 💧"
+                : `${Math.round(hydration.pct * 100)}%`}
+            </span>
+          </div>
+          <Card className="p-5">
+            <HydrationBar
+              totalMl={hydration.totalMl}
+              goalMl={hydration.goalMl}
+              pct={hydration.pct}
+              entries={hydration.entries}
+              volumeUnit={profile?.volumeUnit ?? "ml"}
+              onAdd={addHydration}
+              onRemove={removeHydration}
+              onSetGoal={setHydrationGoal}
+              goalReached={hydration.goalReached}
+            />
+          </Card>
+        </section>
       </div>
     </div>
   );

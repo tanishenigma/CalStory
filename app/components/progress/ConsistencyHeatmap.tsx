@@ -202,11 +202,11 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
   return (
     <Card
       ref={containerRef}
-      className="flex p-4 items-center justify-center overflow-hidden h-full ">
-      <div className="relative z-10">
-        <CardHeader className="px-5 py-4 border-b border-border">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0 m-1">
-            <div className="flex items-center gap-2 min-w-0">
+      className="flex p-4  items-center justify-center overflow-hidden  h-full ">
+      <div className="relative z-10 md:w-full ">
+        <CardHeader className="px-5 py-4 border-b border-border ">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0 m-1 w-full">
+            <div className="flex items-center gap-2 min-w-0 ">
               <div
                 className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 ${accentSoft}`}>
                 {mode === "workouts" ? (

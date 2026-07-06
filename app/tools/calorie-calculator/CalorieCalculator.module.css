@@ -1,0 +1,424 @@
+/* CalorieCalculator layout — uses CalStory's existing dark theme
+ * tokens (referenced via Tailwind utility classes in the TSX).
+ * CSS module is only needed for the few custom layout choices
+ * (grid columns, result list rows) that aren't expressible as a
+ * one-liner Tailwind class without bloating the TSX. */
+
+.wrapper {
+  /* Override the default .card padding (the calculator wants
+   * less internal padding so the 2-column grid has room). */
+  padding: 0;
+  overflow: hidden;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+}
+
+/* ─── Inputs column ─────────────────────────────────────── */
+
+.inputs {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@media (min-width: 900px) {
+  .inputs {
+    padding: 28px;
+  }
+}
+
+.header {
+  margin-bottom: 4px;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Number input ───────────────────────────────────────── */
+
+.numberInput {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--color-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.numberInput:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / 0.18);
+}
+
+.numberInputEl {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--color-foreground);
+  /* Hide the default number-input spinner — looks noisy on a
+   * calculator card and we provide our own step behaviour via
+   * the suffix / row layout. */
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.numberInputEl::-webkit-outer-spin-button,
+.numberInputEl::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.numberInputSuffix {
+  padding-right: 12px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--color-muted-foreground);
+}
+
+.impHeight {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+/* ─── Native select (activity) ───────────────────────────── */
+
+.select {
+  width: 100%;
+  background: var(--color-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--color-foreground);
+  outline: 0;
+  appearance: none;
+  /* Simple chevron — uses the foreground color via mask so it
+   * respects dark/light automatically. */
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-muted-foreground) 50%),
+    linear-gradient(135deg, var(--color-muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+}
+.select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / 0.18);
+}
+
+/* ─── Age select (custom dropdown) ──────────────────────── */
+
+.ageSelect {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ageSelectEl {
+  width: 100%;
+  background: var(--color-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 36px 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--color-foreground);
+  outline: 0;
+  appearance: none;
+  cursor: pointer;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-muted-foreground) 50%),
+    linear-gradient(135deg, var(--color-muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+}
+
+.ageSelectEl:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / 0.18);
+}
+
+/* ─── Segmented (radio-style) toggle ────────────────────── */
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--color-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.segmentedBtn {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 8px;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  /* Long labels (e.g. "Revised Harris-Benedict") would otherwise
+   * wrap awkwardly — clip with ellipsis and let the title
+   * attribute provide the full text on hover. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.segmentedBtn:hover:not(.segmentedBtnActive) {
+  color: var(--color-foreground);
+}
+
+.segmentedBtnActive {
+  background: var(--color-foreground);
+  color: var(--color-background);
+}
+
+/* ─── Body-fat (Katch) input row ────────────────────────── */
+
+.bodyFatRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.bodyFatInputWrap {
+  width: 100%;
+}
+
+.helper {
+  font-size: 11px;
+  color: var(--color-muted-foreground);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* ─── Results column ───────────────────────────────────── */
+
+.results {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--primary-rgb) / 0.05) 0%,
+    transparent 100%
+  );
+  border-top: 1px solid var(--color-border);
+  padding: 24px;
+}
+
+@media (min-width: 900px) {
+  .results {
+    border-top: 0;
+    border-left: 1px solid var(--color-border);
+    padding: 28px;
+  }
+}
+
+.resultsInner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.resultsHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ─── Summary (BMR + TDEE) ─────────────────────────────── */
+
+.summaryRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.summaryCard {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+}
+
+.summaryAccent {
+  background: rgb(var(--primary-rgb) / 0.12);
+  border-color: rgb(var(--primary-rgb) / 0.35);
+}
+
+.summaryLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+
+.summaryValue {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-foreground);
+  margin-top: 4px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+.summarySub {
+  font-size: 11px;
+  color: var(--color-muted-foreground);
+  margin-top: 4px;
+}
+
+/* ─── Target list ──────────────────────────────────────── */
+
+.targetList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.targetRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.targetLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-foreground);
+  line-height: 1.1;
+}
+
+.targetSub {
+  font-size: 11px;
+  color: var(--color-muted-foreground);
+  margin-top: 2px;
+}
+
+.targetValue {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+/* Tone variants — colored stripe / label */
+.tone_cut .targetValue,
+.tone_cut.targetValue {
+  color: oklch(0.66 0.2 25); /* red */
+}
+.tone_cut .targetLabel,
+.tone_cut.targetLabel {
+  color: oklch(0.66 0.2 25);
+}
+
+.tone_bulk .targetValue,
+.tone_bulk.targetValue {
+  color: oklch(0.72 0.19 149); /* primary green */
+}
+.tone_bulk .targetLabel,
+.tone_bulk.targetLabel {
+  color: oklch(0.72 0.19 149);
+}
+
+.tone_maintain .targetValue,
+.tone_maintain.targetValue {
+  color: var(--color-foreground);
+}
+.tone_maintain .targetLabel,
+.tone_maintain.targetLabel {
+  color: var(--color-foreground);
+}
+
+/* ─── CTA subtle ───────────────────────────────────────── */
+
+.ctaSubtle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+  margin-top: 4px;
+}
+
+.ctaLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.ctaLink:hover {
+  color: var(--color-primary) / 80;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

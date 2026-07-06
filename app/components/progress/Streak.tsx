@@ -58,7 +58,7 @@ export function Streak() {
   });
 
   return (
-    <div className="mb-6 bg-card">
+    <div className="mb-6 ">
       <Card className="p-4 w-full overflow-hidden bg-card">
         <CardContent className="p-0 flex flex-col justify-between h-full min-w-0 bg-card">
           <div className="relative flex flex-col h-full min-w-0 ">
