@@ -12,7 +12,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight, CircleQuestionMark } from "lucide-react";
 import Footer from "./footer";
 import CTASection from "@/app/cta";
-import SeoFaq from "@/app/components/landing/SeoFaq";
+import FAQSection from "@/app/components/landing/FAQSection";
 import HeroScrollSection from "@/app/components/landing/HeroScrollSection";
 import { Navbar } from "@/app/components/landing/Navbar";
 import { StructuredData } from "@/app/components/seo/StructuredData";
@@ -109,68 +109,70 @@ export default function LandingPage() {
           }}
         />
         <StructuredData data={landingJsonLd} />
-        <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-30  min-h-[85vh] w-full overflow-hidden">
-          <BackgroundGrid scopedToHero />
-          <BlurFade delay={0.2} className="w-full max-w-5xl mx-auto px-4">
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] mb-6 font-heading">
-              Your calorie <br />
-              <span className="text-primary ">story.</span>
-            </h1>
-          </BlurFade>
+        <div className="flex flex-col gap-24 md:gap-32">
+          <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-30  min-h-[85vh] w-full overflow-hidden">
+            <BackgroundGrid scopedToHero />
+            <BlurFade delay={0.2} className="w-full max-w-5xl mx-auto px-4">
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] mb-6 font-heading">
+                Your calorie <br />
+                <span className="text-primary ">story.</span>
+              </h1>
+            </BlurFade>
 
-          <BlurFade delay={0.3} className="w-full max-w-xl mx-auto px-4">
-            <p className="text-muted-foreground text-lg md:text-xl leading-relaxed mb-10">
-              Log what you eat. Track how you train. Build the story of your
-              best self.
-            </p>
-          </BlurFade>
+            <BlurFade delay={0.3} className="w-full max-w-xl mx-auto px-4">
+              <p className="text-muted-foreground text-lg md:text-xl leading-relaxed mb-10">
+                Log what you eat. Track how you train. Build the story of your
+                best self.
+              </p>
+            </BlurFade>
 
-          <BlurFade
-            delay={0.4}
-            className="flex flex-wrap items-center justify-center gap-4">
-            {!isSignedIn ? (
-              <>
+            <BlurFade
+              delay={0.4}
+              className="flex flex-wrap items-center justify-center gap-4">
+              {!isSignedIn ? (
+                <>
+                  <button
+                    onClick={handleSignIn}
+                    className="h-12 px-8 rounded-2xl bg-foreground text-background text-base font-bold hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center gap-3 shadow-xl shadow-black/10 whitespace-nowrap">
+                    Start Tracking
+                    <ArrowRight size={18} />
+                  </button>
+                  <Link
+                    href="#features"
+                    className="inline-flex h-12 items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap gap-2 border-2 px-12 py-2 md:p-4 rounded-2xl">
+                    Learn more <CircleQuestionMark />
+                  </Link>
+                </>
+              ) : (
                 <button
-                  onClick={handleSignIn}
-                  className="h-12 px-8 rounded-2xl bg-foreground text-background text-base font-bold hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center gap-3 shadow-xl shadow-black/10 whitespace-nowrap">
-                  Start Tracking
+                  onClick={() => router.push("/dashboard")}
+                  className="h-14 px-10 rounded-2xl bg-foreground text-background text-base font-bold hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center gap-3 shadow-xl shadow-black/10 whitespace-nowrap">
+                  Enter Dashboard
                   <ArrowRight size={18} />
                 </button>
-                <Link
-                  href="#features"
-                  className="inline-flex h-12 items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap gap-2 border-2 px-12 py-2 md:p-4 rounded-2xl">
-                  Learn more <CircleQuestionMark />
-                </Link>
-              </>
-            ) : (
-              <button
-                onClick={() => router.push("/dashboard")}
-                className="h-14 px-10 rounded-2xl bg-foreground text-background text-base font-bold hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center justify-center gap-3 shadow-xl shadow-black/10 whitespace-nowrap">
-                Enter Dashboard
-                <ArrowRight size={18} />
-              </button>
-            )}
-          </BlurFade>
+              )}
+            </BlurFade>
 
-          <HeroScrollSection />
-        </section>
-        <MethodSection ref={methodRef} />
-        <FeatureGrid ref={featuresRef} />
-        <SeoContent />
-        <SeoFaq />
-        <div className="relative w-full min-h-screen isolate">
-          <div className="absolute inset-0 2xl:-top-80 -top-40 md:-top-20 z-0 pointer-events-none">
-            <CurvedLoop
-              marqueeText="✦ CalStory"
-              speed={1}
-              curveAmount={180}
-              direction="right"
-              className="w-screen h-screen opacity-50 dark:opacity-20 font-heading"
-            />
-          </div>
-          {/* Foreground — interactive content above the curve */}
-          <div className="relative z-10">
-            <CTASection handleSignIn={handleSignIn} />
+            <HeroScrollSection />
+          </section>
+          <MethodSection ref={methodRef} />
+          <FeatureGrid ref={featuresRef} />
+          <SeoContent />
+          <FAQSection />
+          <div className="relative w-full min-h-screen isolate">
+            <div className="absolute inset-0 2xl:-top-80 -top-40 md:-top-20 z-0 pointer-events-none">
+              <CurvedLoop
+                marqueeText="✦ CalStory"
+                speed={1}
+                curveAmount={180}
+                direction="right"
+                className="w-screen h-screen opacity-50 dark:opacity-20 font-heading"
+              />
+            </div>
+            {/* Foreground — interactive content above the curve */}
+            <div className="relative z-10">
+              <CTASection handleSignIn={handleSignIn} />
+            </div>
           </div>
         </div>
         <Footer />

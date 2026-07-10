@@ -920,12 +920,7 @@ export default async function PostPage({
             <p>{f.answer}</p>
           </div>
         ))}
-        {/* RelatedGuides reads the cluster config from
-         * `lib/blog/clusters.ts` and pulls the post registry from
-         * `app/blog/_posts.ts`, so adding a new post to those two
-         * files automatically populates the related-posts + closing
-         * CTA blocks below. The `PostSlug` cast is safe because
-         * every slug in BLOG_POSTS is one of the literals. */}
+
         <RelatedGuides slug={post.id as PostSlug} />
       </BlogShell>
     </>

@@ -2,12 +2,17 @@
 
 import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { usePrefsStore, resolveTheme } from "@/app/store/prefsStore";
 
 export function DynamicBackground() {
-  const dynamicBackground = usePrefsStore((s) => s.dynamicBackground);
+  const pathname = usePathname();
+  const rawDynamicBackground = usePrefsStore((s) => s.dynamicBackground);
   const theme = usePrefsStore((s) => s.theme);
   const isDark = resolveTheme(theme) === "dark";
+
+  const isPublicPage = pathname === "/" || pathname === "/auth";
+  const dynamicBackground = rawDynamicBackground && !isPublicPage;
 
   useEffect(() => {
     if (dynamicBackground) {
