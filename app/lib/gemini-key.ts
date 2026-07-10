@@ -29,12 +29,30 @@ export function maskKey(key: string): string {
 
 const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/databases/(default)/documents`;
 
+/**
+ * Allowed origins for server-side fetch calls in this module.
+ *
+ * @security Prevents SSRF by ensuring fetch calls only go to known
+ * Google API endpoints, never to attacker-controlled hosts.
+ */
+const ALLOWED_ORIGINS = new Set(["https://firestore.googleapis.com"]);
+
+function assertAllowedOrigin(url: string): void {
+  const parsed = new URL(url);
+  if (!ALLOWED_ORIGINS.has(parsed.origin)) {
+    throw new Error(
+      `[gemini-key] Blocked fetch to disallowed origin: ${parsed.origin}`,
+    );
+  }
+}
+
 async function fetchApiKeyFromFirestore(
   uid: string,
   idToken: string,
 ): Promise<string | null> {
   const url = `${FIRESTORE_BASE}/users/${uid}/settings/api_keys`;
   try {
+    assertAllowedOrigin(url); // ship-safe-ignore: SSRF_USER_URL_FETCH — URL built from env-driven FIRESTORE_BASE + uid
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${idToken}` },
     });
@@ -66,6 +84,7 @@ export async function saveApiKeyToFirestore(
 ): Promise<boolean> {
   const url = `${FIRESTORE_BASE}/users/${uid}/settings/api_keys?updateMask.fieldPaths=geminiApiKey`;
   try {
+    assertAllowedOrigin(url); // ship-safe-ignore: SSRF_USER_URL_FETCH — URL built from env-driven FIRESTORE_BASE + uid
     const encrypted = encryptApiKey(plaintextKey);
     const res = await fetch(url, {
       method: "PATCH",
@@ -93,6 +112,7 @@ export async function deleteApiKeyFromFirestore(
   // Same URL pattern as save — updateMask scopes the write to only geminiApiKey
   const url = `${FIRESTORE_BASE}/users/${uid}/settings/api_keys?updateMask.fieldPaths=geminiApiKey`;
   try {
+    assertAllowedOrigin(url); // ship-safe-ignore: SSRF_USER_URL_FETCH — URL built from env-driven FIRESTORE_BASE + uid
     const res = await fetch(url, {
       method: "PATCH",
       headers: {

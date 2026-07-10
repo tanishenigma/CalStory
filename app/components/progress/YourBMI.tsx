@@ -243,6 +243,7 @@ export function YourBMI() {
                   style={{ backgroundColor: c.color }}
                 />
                 <span
+                  // ship-safe-ignore: SQL_INJECTION_TEMPLATE_LITERAL — this is a JSX className, not SQL
                   className={`truncate ${
                     isCurrent
                       ? "font-bold text-foreground"

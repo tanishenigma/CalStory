@@ -1,13 +1,52 @@
-const CLIENT_ID =
-  process.env.FATSECRET_CLIENT_ID || "72e3be5c0b6c420b80958a9097fc2647";
-const CLIENT_SECRET =
-  process.env.FATSECRET_CLIENT_SECRET || "9975c0298b8b4241bd78f28e6c83e7c1";
+/**
+ * fatsecret.ts — SERVER ONLY
+ *
+ * FatSecret API client for food search and details.
+ * Credentials MUST be provided via environment variables.
+ *
+ * @security All fetch URLs are constructed from hardcoded base origins
+ * with user input only in query parameters (via URLSearchParams),
+ * never in the hostname or path. The origin is validated before each
+ * fetch call to prevent SSRF.
+ */
+
 import { logApiRequest } from "./logger.server";
+
+const CLIENT_ID = process.env.FATSECRET_CLIENT_ID;
+const CLIENT_SECRET = process.env.FATSECRET_CLIENT_SECRET;
+
+/** Allowed origins for FatSecret API requests. */
+const ALLOWED_ORIGINS = new Set([
+  "https://oauth.fatsecret.com",
+  "https://platform.fatsecret.com",
+]);
+
+/**
+ * Validate that a URL's origin is in the allow-list.
+ * @throws {Error} if the origin is not allowed.
+ *
+ * @security Prevents SSRF by ensuring fetch calls only go to known
+ * FatSecret API endpoints, never to attacker-controlled hosts.
+ */
+function assertAllowedOrigin(url: string): void {
+  const parsed = new URL(url);
+  if (!ALLOWED_ORIGINS.has(parsed.origin)) {
+    throw new Error(
+      `[fatsecret] Blocked fetch to disallowed origin: ${parsed.origin}`,
+    );
+  }
+}
 
 let cachedToken: string | null = null;
 let tokenExpiryTime: number = 0;
 
 async function getAccessToken(): Promise<string> {
+  if (!CLIENT_ID || !CLIENT_SECRET) {
+    throw new Error(
+      "[fatsecret] FATSECRET_CLIENT_ID and FATSECRET_CLIENT_SECRET environment variables are required.",
+    );
+  }
+
   const now = Date.now();
   // Buffer by 5 minutes to avoid edge cases
   if (cachedToken && now < tokenExpiryTime - 5 * 60 * 1000) {
@@ -22,7 +61,10 @@ async function getAccessToken(): Promise<string> {
   params.append("grant_type", "client_credentials");
   params.append("scope", "basic");
 
-  const res = await fetch("https://oauth.fatsecret.com/connect/token", {
+  const tokenUrl = "https://oauth.fatsecret.com/connect/token";
+  assertAllowedOrigin(tokenUrl); // ship-safe-ignore: SSRF_USER_URL_FETCH — URL is hardcoded, not user-supplied
+
+  const res = await fetch(tokenUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -52,7 +94,10 @@ export async function searchFoods(query: string) {
   url.searchParams.append("format", "json");
   url.searchParams.append("max_results", "50");
 
-  const res = await fetch(url.toString(), {
+  const fetchUrl = url.toString();
+  assertAllowedOrigin(fetchUrl); // ship-safe-ignore: SSRF_USER_URL_FETCH — base is hardcoded; only query params come from user input
+
+  const res = await fetch(fetchUrl, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -74,7 +119,10 @@ export async function getFoodDetails(foodId: string) {
   url.searchParams.append("food_id", foodId);
   url.searchParams.append("format", "json");
 
-  const res = await fetch(url.toString(), {
+  const fetchUrl = url.toString();
+  assertAllowedOrigin(fetchUrl); // ship-safe-ignore: SSRF_USER_URL_FETCH — base is hardcoded; only food_id param from caller
+
+  const res = await fetch(fetchUrl, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

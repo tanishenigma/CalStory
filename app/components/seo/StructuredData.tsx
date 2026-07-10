@@ -13,7 +13,7 @@ export function StructuredData({ data }: { data: JsonLd | JsonLd[] }) {
         <script
           key={i}
           type="application/ld+json"
-          // The payload is generated server-side from typed data; safe.
+          // ship-safe-ignore: XSS_DANGEROUS_HTML — payload is typed server-side data, not user input
           dangerouslySetInnerHTML={{ __html: JSON.stringify(d) }}
         />
       ))}

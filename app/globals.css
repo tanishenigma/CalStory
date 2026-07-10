@@ -66,19 +66,24 @@
 :root {
   --primary-rgb: 48, 158, 134;
 
-  /* ── Canonical easing tokens ──────────────────────────────────────
-   * Use these throughout the app instead of duplicating cubic-bezier
-   * values. Each name maps to its behaviour:
-   *   ease-out-*  → enter/exit animations (user-initiated interactions)
-   *   ease-in-out-* → elements already on screen that move or morph
-   * ──────────────────────────────────────────────────────────────── */
-  --ease-out-quad:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --ease-out-cubic:  cubic-bezier(0.215, 0.61, 0.355, 1);
-  --ease-out-quart:  cubic-bezier(0.165, 0.84, 0.44, 1);
-  --ease-out-quint:  cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-out-expo:   cubic-bezier(0.19, 1, 0.22, 1);
+  /* Custom easing curves — the built-in CSS keywords (ease, ease-in-out…)
+   * are too weak/linear-feeling for UI work, so every timing function in
+   * this file should reference one of these instead of a bare keyword. */
+  --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
   --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
   --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* "Energetic" variants — snappier than the smooth ones above.
+   * Use -out for anything entering/exiting the screen (fast start,
+   * gentle settle = feels responsive). Use -in-out for anything
+   * already on screen that needs to move (accelerate/decelerate,
+   * like a car — feels natural rather than mechanical). */
+  --ease-out-energetic: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-energetic: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 /* ─── Custom font utilities (Tailwind v4 requires explicit @utility) ─── */
@@ -152,6 +157,28 @@
 
 @utility bg-subtle {
   background-color: var(--color-subtle);
+}
+
+/* Appropriate touch target size (Apple/WCAG minimum 44×44px) without
+ * affecting visual layout — expands the hit area via a pseudo-element
+ * instead of padding, so a visually small icon button stays easy to
+ * tap on touch devices. */
+@utility touch-hitbox {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    display: block;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    min-height: 44px;
+    min-width: 44px;
+    z-index: 9999;
+  }
 }
 
 /* ─── Base reset ─── */
@@ -644,13 +671,18 @@ html.lenis body {
 
 .card-interactive {
   transition:
-    box-shadow 200ms ease,
-    transform 200ms ease,
-    border-color 200ms ease;
+    box-shadow 200ms var(--ease-out-quad),
+    transform 200ms var(--ease-out-quad),
+    border-color 200ms var(--ease-out-quad);
 }
-.card-interactive:hover {
-  box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.08);
-  border-color: rgba(26, 25, 22, 0.12);
+/* Disable hover effects on touch devices — there's no such thing as a
+ * "hover" on a touchscreen; without this, an accidental finger-drag
+ * over the card would trigger and then get stuck in the hover state. */
+@media (hover: hover) and (pointer: fine) {
+  .card-interactive:hover {
+    box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.08);
+    border-color: rgba(26, 25, 22, 0.12);
+  }
 }
 
 .card-padded {
@@ -914,4 +946,158 @@ input[type="number"] {
 
 .step-item.step-active .step-title {
   color: var(--color-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ * PRACTICAL ANIMATION UTILITIES
+ * (animations.dev — "Practical Animation Tips" reference sheet)
+ *
+ * Reusable primitives so every animation added later in the app
+ * automatically follows the same set of rules-of-thumb instead of
+ * reinventing them ad hoc:
+ *   - fast (<300ms), GPU-stable, correctly-eased transitions
+ *   - no scale(0) pop-ins, no flicker, no keyboard-triggered anims
+ *   - origin-aware popovers, blur-assisted crossfades, 44px hit targets
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Fix shaky animations ───
+ * transform-animated elements can jitter 1px at start/end in some
+ * browsers as rendering swaps between CPU/GPU. Hinting will-change
+ * lets the browser commit the element to the GPU up front. Apply to
+ * any element right before/while it animates via transform. */
+.gpu-optimized,
+.will-animate {
+  will-change: transform;
+}
+
+/* ─── Scale your buttons ───
+ * Give instant feedback on press so the UI feels like it's listening.
+ * Apply directly to interactive elements: <button className="btn-press"> */
+.btn-press {
+  transition: transform 120ms var(--ease-out-quad);
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* ─── Don't animate from scale(0) ───
+ * Elements entering the screen should start at 0.9+, never 0 — a
+ * higher initial scale reads as "already had a shape," which feels
+ * more natural than materializing from nothing. */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-scale-in {
+  animation: scaleIn 180ms var(--ease-out-energetic);
+}
+
+/* ─── Skip delay/animation on subsequent tooltips ───
+ * Once one tooltip/menu in a group is open, switching to a sibling
+ * should be instant — no re-delay, no re-animate. Toggle this data
+ * attribute from JS once the first item has opened. */
+[data-instant] {
+  transition-duration: 0ms !important;
+  animation-duration: 0ms !important;
+}
+
+/* ─── Make popovers origin-aware ───
+ * transform-origin defaults to `center`, which almost never matches
+ * where the popover's trigger actually is. Set `--transform-origin`
+ * from JS (e.g. based on trigger position) and apply this class, or
+ * wire directly to Radix/Base UI's own origin variables. */
+.origin-aware {
+  transform-origin: var(--transform-origin, center);
+}
+
+/* ─── Keep animations fast ───
+ * UI animations should generally stay under 300ms; use these instead
+ * of ad hoc duration values scattered through components. */
+.duration-fast {
+  transition-duration: 120ms;
+}
+.duration-base {
+  transition-duration: 180ms;
+}
+.duration-slow {
+  transition-duration: 280ms;
+}
+
+/* ─── Don't animate keyboard interactions ───
+ * Arrow-key navigation in menus/lists/command palettes fires many
+ * times a second — animating it makes input feel laggy. Toggle this
+ * on while keyboard nav is active to strip transitions entirely. */
+.no-anim-on-keyboard {
+  transition: none !important;
+}
+
+/* ─── Be careful with frequently-used elements ───
+ * A neutral marker for elements interacted with dozens of times a
+ * day (list rows, frequently-clicked icons). Default to no motion;
+ * only opt specific elements back in once you're sure it helps. */
+.no-motion {
+  transition: none;
+  animation: none;
+}
+
+/* ─── Fix hover flicker ───
+ * Never move the element the pointer is hovering — animate an inner
+ * child instead, so the parent's hit box stays put and the hover
+ * state can't flicker on/off.
+ *   <div class="hover-parent"><div class="hover-inner">…</div></div> */
+.hover-inner {
+  transition: transform 200ms var(--ease-out-quad);
+}
+@media (hover: hover) and (pointer: fine) {
+  .hover-parent:hover .hover-inner {
+    transform: translateY(-20%);
+  }
+}
+
+/* ─── Disable hover on touch devices ───
+ * Tailwind v4's `hover:` variant already scopes to devices that
+ * support real hover; use this media query directly in raw CSS for
+ * the same guarantee outside of Tailwind utilities. */
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    transition: transform 200ms var(--ease-out-quad);
+  }
+}
+
+/* ─── Use ease-out for enter/exit ───
+ * Fast start, gentle settle — reads as responsive. Apply to anything
+ * mounting/unmounting (dropdowns, modals, toasts, tooltips). */
+.anim-enter,
+.anim-exit {
+  transition-timing-function: var(--ease-out-energetic);
+}
+
+/* ─── Use ease-in-out for on-screen movement ───
+ * Elements that are already visible and need to move (drag reorder,
+ * a sliding tab indicator, a timeline scrub) should accelerate then
+ * decelerate, like a car — not snap in with an enter/exit curve. */
+.anim-move {
+  transition-timing-function: var(--ease-in-out-energetic);
+}
+
+/* ─── Use blur when nothing else works ───
+ * When two states are crossfading and still look like two distinct
+ * objects no matter the easing/duration, a couple px of blur bridges
+ * the visual gap and tricks the eye into seeing one smooth motion.
+ * Toggle `data-state="hidden"` from JS to drive the transition. */
+.blur-crossfade {
+  transition:
+    opacity 200ms var(--ease-out-quad),
+    filter 200ms var(--ease-out-quad);
+}
+.blur-crossfade[data-state="hidden"] {
+  opacity: 0;
+  filter: blur(2px);
 }

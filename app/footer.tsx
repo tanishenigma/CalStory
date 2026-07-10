@@ -55,6 +55,7 @@ const Footer = () => {
       role="contentinfo"
       className="relative z-10 pt-16 pb-8 backdrop-blur-sm border-t border-border/30">
       {/* Structured data: entity signal for search engines, unrelated to the visible layout */}
+      {/* ship-safe-ignore: XSS_DANGEROUS_HTML — JSON-LD payload is developer-controlled static data, not user input */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

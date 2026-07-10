@@ -1,6 +1,10 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+  sanitizeMessage,
+  sanitizeHistory,
+} from "@/app/lib/sanitize-input";
 
 /* ------------------------------------------------------------------
  * /api/ai-classify
@@ -67,8 +71,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { message, conversationHistory } = body;
-  if (!message?.trim()) {
+  const { message: rawMessage, conversationHistory } = body;
+  const message = sanitizeMessage(rawMessage ?? "");
+  if (!message) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
   }
 
@@ -122,15 +127,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // last few user/model turns before deciding. We cap to the last 6
     // turns (3 exchanges) to keep the token cost trivial — older
     // context almost never changes the routing decision.
-    const safeHistory = conversationHistory || [];
+    const safeHistory = sanitizeHistory(conversationHistory);
     const recentHistory = safeHistory
-      .slice(-6)
-      .filter(
-        (m) =>
-          (m.role === "user" || m.role === "model") &&
-          typeof m.content === "string" &&
-          m.content.trim().length > 0,
-      );
+      .slice(-6);
 
     const contents: Array<{
       role: "user" | "model";

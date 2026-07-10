@@ -181,6 +181,7 @@ export default function RootLayout({
         geist.variable,
       )}>
       <head>
+        {/* ship-safe-ignore: XSS_DANGEROUS_HTML — theme-init script is developer-authored static code, not user input */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{

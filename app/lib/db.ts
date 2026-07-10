@@ -131,6 +131,14 @@ export async function getMealsInRange(
   );
 }
 
+/**
+ * @security This function is called from user-initiated UI actions
+ * (AppContext → confirmation card → "Delete" button), never from LLM
+ * output. The AI routes return JSON shown in a confirmation card; the
+ * user must explicitly click to trigger any write.
+ *
+ * ship-safe-ignore: LLM_DB_WRITE_ACCESS — user-initiated, not LLM-initiated
+ */
 export async function deleteMealDB(
   uid: string,
   dateKey: string,
@@ -213,6 +221,10 @@ export async function getWorkoutsInRange(
   );
 }
 
+/**
+ * @security User-initiated via UI, not LLM-invoked.
+ * ship-safe-ignore: LLM_DB_WRITE_ACCESS — user-initiated, not LLM-initiated
+ */
 export async function deleteWorkoutDB(
   uid: string,
   dateKey: string,
@@ -253,6 +265,10 @@ export async function getWorkoutTemplates(
   }, [] as SavedWorkout[]);
 }
 
+/**
+ * @security User-initiated via UI, not LLM-invoked.
+ * ship-safe-ignore: LLM_DB_WRITE_ACCESS — user-initiated, not LLM-initiated
+ */
 export async function deleteWorkoutTemplateDB(
   uid: string,
   templateId: string,
@@ -339,6 +355,10 @@ export async function getWeightLogs(uid: string): Promise<WeightLog[]> {
   }, [] as WeightLog[]);
 }
 
+/**
+ * @security User-initiated via UI, not LLM-invoked.
+ * ship-safe-ignore: LLM_DB_WRITE_ACCESS — user-initiated, not LLM-initiated
+ */
 export async function deleteWeightLogDB(
   uid: string,
   logId: string,

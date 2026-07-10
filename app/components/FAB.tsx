@@ -20,10 +20,7 @@ export default function FAB() {
     function onPointerDown(e: PointerEvent) {
       if (!rootRef.current) return;
       const target = e.target as Node;
-      // Ignore clicks that originated inside the FAB panel
       if (rootRef.current.contains(target)) return;
-      // Ignore clicks inside Radix portals (Select dropdowns, popovers, etc.)
-      // which are rendered into document.body and live outside rootRef.
       if (target instanceof Element) {
         const inPortal = target.closest(
           '[data-radix-popper-content-wrapper], [data-slot="select-content"], [data-slot="popover-content"], [data-slot="dropdown-menu-content"], [role="dialog"]',
@@ -71,24 +68,22 @@ export default function FAB() {
       <button
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close quick log" : "Open quick log"}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-foreground text-background shadow-[0_8px_24px_oklch(0.2272_0.0049_173.9454/_0.28)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2">
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-foreground text-background shadow-[0_8px_24px_oklch(0.2272_0.0049_173.9454/_0.28)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-none ">
         <div className="relative w-6 h-6">
-          {/* Icon crossfade: 200ms is fast enough to feel responsive
-              since users tap the FAB frequently. */}
           <Sparkles
             size={22}
             className={`absolute inset-0 m-auto transition-all duration-200 ${
               open
-                ? "opacity-0 scale-75 rotate-90"
-                : "opacity-100 scale-100 rotate-0"
+                ? "opacity-0 scale-75 rotate-90 blur-md"
+                : "opacity-100 scale-100 rotate-0 blur-0"
             }`}
           />
           <X
             size={22}
             className={`absolute inset-0 m-auto transition-all duration-200 ${
               open
-                ? "opacity-100 scale-100 rotate-0"
-                : "opacity-0 scale-75 -rotate-90"
+                ? "opacity-100 scale-100 rotate-0 blur-0"
+                : "opacity-0 scale-75 -rotate-90 blur-md"
             }`}
           />
         </div>

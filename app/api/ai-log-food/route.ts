@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { AIResponse, ChatMessage } from "@/app/types";
 import { resolveGeminiKey } from "@/app/lib/gemini-key";
+import {
+  sanitizeMessage,
+  sanitizeHistory,
+} from "@/app/lib/sanitize-input";
 
 /* ------------------------------------------------------------------
  * System prompt — instructs Gemini to always return strict JSON.
@@ -55,9 +59,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { message, conversationHistory = [], userId, date } = body;
+  const { message: rawMessage, conversationHistory: rawHistory = [], userId, date } = body;
 
-  if (!message?.trim()) {
+  const message = sanitizeMessage(rawMessage ?? "");
+  if (!message) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
   }
   if (!userId?.trim()) {
@@ -89,8 +94,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // ── 2. Build Gemini conversation contents ──────────────────────
   // Map our ChatMessage history to Gemini's { role, parts } format.
   // Skip model messages that carry embedded meal cards (they're UI-only).
-  const priorContents = conversationHistory
-    .filter((m) => m.role === "user" || m.role === "model")
+  const sanitizedHistory = sanitizeHistory(
+    rawHistory as Array<{ role: string; content: string }>,
+  );
+  const priorContents = sanitizedHistory
     .map((m) => ({
       role: m.role === "model" ? ("model" as const) : ("user" as const),
       parts: [{ text: m.content }],

@@ -71,6 +71,7 @@ export function SiteJsonLd() {
         <script
           key={i}
           type="application/ld+json"
+          // ship-safe-ignore: XSS_DANGEROUS_HTML — JSON-LD is developer-controlled static data
           dangerouslySetInnerHTML={{ __html: JSON.stringify(d) }}
         />
       ))}

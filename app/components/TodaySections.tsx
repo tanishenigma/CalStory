@@ -117,7 +117,7 @@ export function TodaySections({
 
         {todayWorkouts.length === 0 ? (
           <Link href="/workouts" className="block ">
-            <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px] hover:opacity-90 transition-opacity">
+            <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px] transition-opacity">
               <div className="text-3xl mb-1" aria-hidden="true">
                 🏋️
               </div>
@@ -131,10 +131,11 @@ export function TodaySections({
           </Link>
         ) : (
           <div
-            className={`relative ${workoutStack.isFast
-              ? "transition-[height] duration-150 ease-out"
-              : "transition-[height] duration-300 ease-out"
-              }`}
+            className={`relative ${
+              workoutStack.isFast
+                ? "transition-[height] duration-150 ease-out"
+                : "transition-[height] duration-300 ease-out"
+            }`}
             style={{
               height: workoutStack.isExpanded
                 ? workoutExpandedHeight
@@ -144,10 +145,11 @@ export function TodaySections({
             {visibleWorkouts.map((w, i) => (
               <Card
                 key={w.id}
-                className={`absolute inset-x-0 top-0 flex items-center gap-4 p-4 origin-top ${workoutStack.isFast
-                  ? "transition-all duration-150 ease-out"
-                  : "transition-all duration-300 ease-out"
-                  }`}
+                className={`absolute inset-x-0 top-0 flex items-center gap-4 p-4 origin-top ${
+                  workoutStack.isFast
+                    ? "transition-all duration-150 ease-out"
+                    : "transition-all duration-300 ease-out"
+                }`}
                 style={stackedStyle(
                   i,
                   workoutStack.isExpanded,
@@ -201,10 +203,11 @@ export function TodaySections({
           </Card>
         ) : (
           <div
-            className={`relative   ${mealStack.isFast
-              ? "transition-[height]  duration-150 ease-out"
-              : "transition-[height]  duration-300 ease-out"
-              }`}
+            className={`relative   ${
+              mealStack.isFast
+                ? "transition-[height]  duration-150 ease-out"
+                : "transition-[height]  duration-300 ease-out"
+            }`}
             style={{
               height: mealStack.isExpanded
                 ? mealExpandedHeight
@@ -216,10 +219,11 @@ export function TodaySections({
               return (
                 <Card
                   key={m.id}
-                  className={`absolute inset-x-0 top-0 flex items-center gap-4 p-4 origin-top ${mealStack.isFast
-                    ? "transition-all duration-150 ease-out"
-                    : "transition-all duration-300 ease-out"
-                    }`}
+                  className={`absolute inset-x-0 top-0 flex items-center gap-4 p-4 origin-top ${
+                    mealStack.isFast
+                      ? "transition-all duration-150 ease-out"
+                      : "transition-all duration-300 ease-out"
+                  }`}
                   style={stackedStyle(
                     i,
                     mealStack.isExpanded,

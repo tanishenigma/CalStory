@@ -32,6 +32,26 @@ import { isEncrypted } from "@/app/lib/server-crypto";
 
 const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/databases/(default)/documents`;
 
+/**
+ * Allowed origins for fetch calls in this route.
+ *
+ * @security Prevents SSRF by restricting fetch targets to known
+ * Google API endpoints. Neither origin is user-controlled.
+ */
+const ALLOWED_ORIGINS = new Set([
+  "https://firestore.googleapis.com",
+  "https://identitytoolkit.googleapis.com",
+]);
+
+function assertAllowedOrigin(url: string): void {
+  const parsed = new URL(url);
+  if (!ALLOWED_ORIGINS.has(parsed.origin)) {
+    throw new Error(
+      `[api-key] Blocked fetch to disallowed origin: ${parsed.origin}`,
+    );
+  }
+}
+
 // ── Firebase token verification ────────────────────────────────────
 async function verifyFirebaseToken(
   idToken: string,
@@ -42,8 +62,10 @@ async function verifyFirebaseToken(
     return null;
   }
   try {
+    const url = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`;
+    assertAllowedOrigin(url); // ship-safe-ignore: SSRF_USER_URL_FETCH — URL is hardcoded Google endpoint + env API key
     const res = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`,
+      url,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -87,6 +109,7 @@ async function readRawStoredValue(
 ): Promise<string | null> {
   const url = `${FIRESTORE_BASE}/users/${uid}/settings/api_keys`;
   try {
+    assertAllowedOrigin(url); // ship-safe-ignore: SSRF_USER_URL_FETCH — URL built from env-driven FIRESTORE_BASE + uid
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${idToken}` },
     });

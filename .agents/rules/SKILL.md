@@ -1,4 +1,3 @@
-@AGENTS.md
 ---
 name: security-skill-catalog
 description: Reference taxonomy and workflow for security-related work. Use this skill whenever the user is (1) organizing, finding, or adding a cybersecurity skill to a README or skill marketplace and needs to know which category it belongs in — Penetration Testing, Code Auditing, or Threat Hunting — and where that maps to in a README's sections, or (2) asking for a general security review of their own codebase, e.g. "audit my app for security issues," "check my Firebase rules," "is my Next.js app secure," "give this a baseline security pass," even if they don't name a specific vulnerability class. This skill is defensive and organizational only — it never performs exploitation, scanning of third-party systems, or attacks. Trigger even on casual phrasing like "where should this pentesting skill go in the readme" or "can you sanity check my app's security before I ship it."

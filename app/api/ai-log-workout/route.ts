@@ -4,6 +4,10 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { Tool } from "@google/generative-ai";
 import type { WorkoutAIResponse, WorkoutChatMessage } from "@/app/types";
 import { resolveGeminiKey } from "@/app/lib/gemini-key";
+import {
+  sanitizeMessage,
+  sanitizeHistory,
+} from "@/app/lib/sanitize-input";
 
 /* ------------------------------------------------------------------
  * System prompt — parses free-form workout descriptions into JSON.
@@ -67,9 +71,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { message, conversationHistory = [], userId, date } = body;
+  const { message: rawMessage, conversationHistory: rawHistory = [], userId, date } = body;
 
-  if (!message?.trim()) {
+  const message = sanitizeMessage(rawMessage ?? "");
+  if (!message) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
   }
   if (!userId?.trim()) {
@@ -102,8 +107,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   // ── 2. Build Gemini conversation ───────────────────────────────
-  const priorContents = conversationHistory
-    .filter((m) => m.role === "user" || m.role === "model")
+  const sanitizedHistory = sanitizeHistory(
+    rawHistory as Array<{ role: string; content: string }>,
+  );
+  const priorContents = sanitizedHistory
     .map((m) => ({
       role: m.role === "model" ? ("model" as const) : ("user" as const),
       parts: [{ text: m.content }],
