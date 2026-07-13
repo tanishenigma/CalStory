@@ -56,6 +56,61 @@ export type FabMessage =
     transient?: boolean;
   };
 
+/** A persisted chat thread stored in localStorage. */
+export interface ChatSession {
+  id: string;
+  /** Auto-generated label: first user message or "Chat on <date>". */
+  label: string;
+  messages: FabMessage[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+const MAX_SESSIONS = 20;
+const SESSION_GREETING: FabMessage = {
+  id: "greeting",
+  role: "model",
+  text: "Hey! Tell me what you ate or how you trained — I'll figure out which log to use. 🥗💪",
+  intent: "food",
+  suggestions: [
+    "Greek yogurt with granola and berries",
+    "Pull-ups 3×12",
+    "Protein shake",
+    "5km run 25 min",
+  ],
+  timestamp: Date.now(),
+};
+
+function makeGreeting(): FabMessage {
+  return { ...SESSION_GREETING, id: uid(), timestamp: Date.now() };
+}
+
+function sessionsKey(userId: string) {
+  return `ql_sessions_${userId}`;
+}
+
+function loadSessions(userId: string): ChatSession[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(sessionsKey(userId));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed as ChatSession[];
+  } catch {
+    // Corrupt data — ignore.
+  }
+  return [];
+}
+
+function saveSessions(userId: string, sessions: ChatSession[]) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(sessionsKey(userId), JSON.stringify(sessions));
+  } catch {
+    // Quota exceeded or privacy mode — ignore.
+  }
+}
+
 function uid2() {
   return uid();
 }
@@ -70,42 +125,60 @@ export function useAIFabChat({
   const { addMeal, addWorkout, saveTemplate } = useApp();
   const { user } = useAuthStore();
 
-  const [messages, setMessages] = useState<FabMessage[]>(() => [
-    {
-      id: uid2(),
-      role: "model",
-      text: "Hey! Tell me what you ate or how you trained — I'll figure out which log to use. 🥗💪",
-      intent: "food", // initial intent slot (no payload yet)
-      suggestions: [
-        "Greek yogurt with granola and berries",
-        "Pull-ups 3×12",
-        "Protein shake",
-        "5km run 25 min",
-      ],
-      timestamp: Date.now(),
-    },
-  ]);
+  // ── Session management ────────────────────────────────────────────
+  const [sessions, setSessions] = useState<ChatSession[]>(() =>
+    loadSessions(userId),
+  );
+  const [currentSessionId, setCurrentSessionId] = useState<string>(() => {
+    const existing = loadSessions(userId);
+    return existing[0]?.id ?? uid2();
+  });
+
+  // Persist sessions to localStorage whenever they change.
+  useEffect(() => {
+    saveSessions(userId, sessions);
+  }, [sessions, userId]);
+
+  // ── Active thread ─────────────────────────────────────────────────
+  const [messages, setMessages] = useState<FabMessage[]>(() => {
+    const existing = loadSessions(userId);
+    const active = existing.find((s) => s.id === existing[0]?.id);
+    return active?.messages ?? [makeGreeting()];
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // The most recent confirmed intent a model reply produced a
-  // structured payload for. confirmLog() targets this so we always
-  // log the thing the user just confirmed, even if the thread mixes
-  // food and workout turns.
   const [pendingIntent, setPendingIntent] = useState<FabIntent | null>(null);
 
-  // Intents that the user has already confirmed and saved. The UI
-  // reads this to know whether the corresponding confirmation card
-  // should still be active. Important for mixed-intent messages
-  // where both a meal AND a workout are pending — without this, the
-  // second confirm might re-save the first one or, worse, the loop
-  // in confirmLog() might pick the wrong intent based on message
-  // order.
   const [confirmedIntents, setConfirmedIntents] = useState<Set<FabIntent>>(
     () => new Set(),
   );
 
-  // Pending payload — what confirmLog() will save.
+  // Keep current session in sync with the sessions list whenever
+  // messages change (so archives contain up-to-date threads).
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+
+  // Save the active thread into the sessions list on every message change.
+  useEffect(() => {
+    if (messages.length <= 1) return; // Don't archive bare greeting-only threads
+    setSessions((prev) => {
+      const label = deriveLabel(messages);
+      const existing = prev.find((s) => s.id === currentSessionId);
+      const updated: ChatSession = {
+        id: currentSessionId,
+        label,
+        messages,
+        createdAt: existing?.createdAt ?? Date.now(),
+        updatedAt: Date.now(),
+      };
+      const rest = prev.filter((s) => s.id !== currentSessionId);
+      return [updated, ...rest].slice(0, MAX_SESSIONS);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
+
+  /** Pending payload — what confirmLog() will save. */
   const pendingMeal = useMemo<PendingMeal | null>(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       const m = messages[i];
@@ -246,7 +319,7 @@ export function useAIFabChat({
     // alongside so we don't false-positive on food descriptions
     // like "3x protein shakes a day".
     const setNotation =
-      /\b\d+\s*[x×@]\s*\d+(\s*(?:kg|lb|lbs|rpe|reps?))?\b/i.test(t);
+      /\b\d+\s*[x×@]\s*\d+(\s*(?:kg|lb|lbs|rpe|reps?))?\\b/i.test(t);
     const hasWorkoutKeyword = WORKOUT_KEYWORDS.some(
       (k) => t.includes(k) && k.length >= 4,
     );
@@ -587,23 +660,9 @@ export function useAIFabChat({
 
   /**
    * Confirm and persist the pending payload for the given intent.
-   *
-   * Caller MUST pass the explicit intent (`food` or `workout`) —
-   * we no longer guess from message order, because mixed-intent
-   * sends produce two pending payloads and the wrong one could win
-   * a race. Each model's confirmation card passes its own intent
-   * in via onConfirmFood / onConfirmWorkout.
-   *
-   * For mixed-intent turns, the user can save each side separately:
-   * tap "Save meal" → confirmLog("food") → food saved.
-   * Then tap "Save workout" → confirmLog("workout") → workout saved.
-   * Both invocations are independent and idempotent (already-saved
-   * intents are no-ops).
    */
   const confirmLog = useCallback(
     async (intent: FabIntent, saveAsTemplate = false) => {
-      // Idempotency: if the user (or a stale callback) double-taps,
-      // the second call is a no-op.
       if (confirmedIntents.has(intent)) {
         return;
       }
@@ -633,9 +692,6 @@ export function useAIFabChat({
         setConfirmedIntents((prev) => {
           const next = new Set(prev);
           next.add("food");
-          // Only clear pendingMeal once both intents (if both were
-          // pending) are confirmed. We track the previous value
-          // via the snapshot argument passed in below.
           return next;
         });
         return;
@@ -682,9 +738,6 @@ export function useAIFabChat({
         return;
       }
 
-      // Nothing pending for this intent — surface a soft hint rather
-      // than throwing. (We only error if NEITHER intent has a
-      // pending payload.)
       if (!pendingMeal && !pendingWorkout) {
         toast.error("Nothing to log yet — describe a meal or workout first.");
       }
@@ -700,10 +753,7 @@ export function useAIFabChat({
   );
 
   /**
-   * Mark a pending payload as "edit mode": focuses the chat input
-   * and prefills it with a refinement prefix so the user can type
-   * their correction. The pending payload stays on screen until the
-   * user either confirms it or sends a replacement message.
+   * Mark a pending payload as "edit mode".
    */
   const editPending = useCallback(
     (intent: FabIntent, requestEdit: (prefill: string) => void) => {
@@ -711,28 +761,16 @@ export function useAIFabChat({
         requestEdit(`Adjust the meal "${pendingMeal.name}" — `);
       } else if (intent === "workout" && pendingWorkout) {
         requestEdit(`Adjust the workout "${pendingWorkout.name}" — `);
-      } else {
-        // Nothing pending to edit — ignore silently. The UI button
-        // is only shown when a payload exists, so this is just
-        // belt-and-suspenders.
       }
     },
     [pendingMeal, pendingWorkout],
   );
 
   /**
-   * Discard a pending payload without saving. Removes the model
-   * message containing that payload so the confirmation card goes
-   * away. Marks the intent as "confirmed" so the dual-save state
-   * machine doesn't try to re-render it (idempotent no-op from now
-   * on).
+   * Discard a pending payload without saving.
    */
   const discardPending = useCallback((intent: FabIntent) => {
     setMessages((prev) => {
-      // Walk from the end and drop the FIRST model message that
-      // carries a payload of the matching intent. We only drop one
-      // message so other cards (the other intent for mixed turns,
-      // or earlier cards) are unaffected.
       for (let i = prev.length - 1; i >= 0; i--) {
         const m = prev[i];
         if (m.role !== "model") continue;
@@ -745,39 +783,93 @@ export function useAIFabChat({
       }
       return prev;
     });
-    // Marking as "confirmed" makes the card disappear from the UI
-    // (the bubble reads `confirmedIntents.has(m.intent)` to decide
-    // whether to show "Saved ✓"), and prevents any stale callback
-    // from re-saving the now-orphaned payload.
     setConfirmedIntents((prev) => new Set(prev).add(intent));
     setPendingIntent(null);
   }, []);
 
+  /**
+   * Archive the current thread (if it has user messages) and start a
+   * fresh session. The archived session is accessible via `sessions`.
+   */
   const reset = useCallback(() => {
-    setMessages([
-      {
-        id: uid2(),
-        role: "model",
-        text: "Hey! Tell me what you ate or how you trained — I'll figure out which log to use. 🥗💪",
-        intent: "food",
-        suggestions: [
-          "Greek yogurt with granola and berries",
-          "Pull-ups 3×12",
-          "Protein shake",
-          "5km run 25 min",
-        ],
-        timestamp: Date.now(),
-      },
-    ]);
+    // Archive current thread only if it has at least one user message.
+    const current = messagesRef.current;
+    const hasUserMsg = current.some((m) => m.role === "user");
+    if (hasUserMsg) {
+      const label = deriveLabel(current);
+      const archived: ChatSession = {
+        id: currentSessionId,
+        label,
+        messages: current,
+        createdAt:
+          current[0]?.timestamp ?? Date.now(),
+        updatedAt: Date.now(),
+      };
+      setSessions((prev) => {
+        const rest = prev.filter((s) => s.id !== currentSessionId);
+        return [archived, ...rest].slice(0, MAX_SESSIONS);
+      });
+    }
+
+    // Start a fresh session.
+    const newId = uid2();
+    setCurrentSessionId(newId);
+    setMessages([makeGreeting()]);
     setError(null);
     setIsLoading(false);
     setPendingIntent(null);
     setConfirmedIntents(new Set());
-  }, []);
+  }, [currentSessionId]);
 
-  // Auto-scroll the message thread (the panel component passes us a
-  // ref-less scroll behavior; this hook just exposes the data). The
-  // panel itself owns the auto-scroll effect via messages.length.
+  /**
+   * Switch to a past session by id — restores its messages into the
+   * active thread. The session is removed from the history list to
+   * avoid duplicates.
+   */
+  const switchSession = useCallback((sessionId: string) => {
+    setSessions((prev) => {
+      const target = prev.find((s) => s.id === sessionId);
+      if (!target) return prev;
+
+      // Archive current thread if it has user messages.
+      const current = messagesRef.current;
+      const hasUserMsg = current.some((m) => m.role === "user");
+      const updated = prev.filter((s) => s.id !== sessionId);
+
+      if (hasUserMsg) {
+        const label = deriveLabel(current);
+        const archived: ChatSession = {
+          id: currentSessionId,
+          label,
+          messages: current,
+          createdAt: current[0]?.timestamp ?? Date.now(),
+          updatedAt: Date.now(),
+        };
+        // Re-insert archived thread but exclude the one we're switching to.
+        const withArchive = [
+          archived,
+          ...updated.filter((s) => s.id !== currentSessionId),
+        ].slice(0, MAX_SESSIONS);
+        setCurrentSessionId(sessionId);
+        setMessages(target.messages);
+        setError(null);
+        setIsLoading(false);
+        setPendingIntent(null);
+        setConfirmedIntents(new Set());
+        return withArchive;
+      }
+
+      setCurrentSessionId(sessionId);
+      setMessages(target.messages);
+      setError(null);
+      setIsLoading(false);
+      setPendingIntent(null);
+      setConfirmedIntents(new Set());
+      return updated;
+    });
+  }, [currentSessionId]);
+
+  // Auto-scroll the message thread.
   const lastMessageIdRef = useRef<string | null>(null);
   useEffect(() => {
     const last = messages[messages.length - 1];
@@ -793,10 +885,25 @@ export function useAIFabChat({
     pendingIntent,
     pendingSuggestions,
     confirmedIntents,
+    sessions,
+    currentSessionId,
     sendMessage,
     confirmLog,
     editPending,
     discardPending,
     reset,
+    switchSession,
   };
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────
+
+/** Derive a human-readable session label from its messages. */
+function deriveLabel(messages: FabMessage[]): string {
+  const firstUser = messages.find((m) => m.role === "user");
+  if (firstUser) {
+    const t = firstUser.text;
+    return t.length > 40 ? t.slice(0, 40) + "…" : t;
+  }
+  return `Chat on ${new Date().toLocaleDateString()}`;
 }

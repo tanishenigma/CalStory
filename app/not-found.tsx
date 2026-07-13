@@ -66,7 +66,7 @@ export default function NotFound() {
 
           <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
             <Link
-              href="/"
+              href="/dashboard"
               className="h-12 px-6 rounded-2xl bg-foreground text-background text-base font-bold hover:scale-[1.02] active:scale-[0.98] transition-all inline-flex items-center gap-2 shadow-lg shadow-foreground/10">
               <ArrowLeft size={16} />
               Back to home

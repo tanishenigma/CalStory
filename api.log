@@ -84,3 +84,9 @@
 [2026-06-21T15:55:07.234Z] ENDPOINT: foods.search | PARAMS: {"query":"asfas","max_results":50} | STATUS: 200
 [2026-06-21T15:56:04.656Z] ENDPOINT: foods.search | PARAMS: {"query":"apple","max_results":50} | STATUS: 200
 [2026-06-22T07:48:02.974Z] ENDPOINT: foods.search | PARAMS: {"query":"paneer","max_results":50} | STATUS: 200
+[2026-07-13T17:52:22.699Z] ENDPOINT: edamam.parser | PARAMS: {"query":"apple"} | STATUS: 401
+[2026-07-13T17:53:22.302Z] ENDPOINT: edamam.parser | PARAMS: {"query":"apple"} | STATUS: 401
+[2026-07-13T17:57:03.999Z] ENDPOINT: openfoodfacts.search | PARAMS: {"query":"apple"} | STATUS: 200
+[2026-07-13T17:57:43.008Z] ENDPOINT: openfoodfacts.search | PARAMS: {"query":"apple"} | STATUS: 503
+[2026-07-13T17:58:06.043Z] ENDPOINT: openfoodfacts.search | PARAMS: {"query":"apple"} | STATUS: 200
+[2026-07-13T17:59:57.051Z] ENDPOINT: openfoodfacts.search | PARAMS: {"query":"apple fruit"} | STATUS: 503

@@ -86,7 +86,7 @@ export default function GlobalError({
               Try again
             </button>
             <Link
-              href="/"
+              href="/dashboard"
               className="h-12 px-6 rounded-2xl border-2 font-bold hover:bg-foreground/5 transition-colors inline-flex items-center gap-2">
               <ArrowLeft size={16} />
               Back to home

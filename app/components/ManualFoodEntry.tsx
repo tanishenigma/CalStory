@@ -20,10 +20,10 @@ import type {
   DetailedNutrients,
 } from "@/app/types";
 
-interface FatSecretFood {
-  food_id: string;
-  food_name: string;
-  food_description: string;
+import type { USDAFood } from "@/app/lib/usda";
+
+function n(value: number | undefined): number {
+  return typeof value === "number" && isFinite(value) ? value : 0;
 }
 
 interface FoodData {
@@ -64,7 +64,7 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
 
   // ── Search-mode state ────────────────────────────────────────────────
   const [query, setQuery] = useState(initialMeal?.name ?? "");
-  const [results, setResults] = useState<FatSecretFood[]>([]);
+  const [results, setResults] = useState<USDAFood[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedFoodData, setSelectedFoodData] = useState<FoodData | null>(
     null,
@@ -109,138 +109,114 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
   }, [query, mode, selectedFoodData]);
 
   // ── Fetch food details and build serving picker ──────────────────────
-  async function handleSelectFood(foodId: string, foodName: string) {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/food/details?id=${foodId}`);
-      const data = await res.json();
+  function handleSelectFood(food: USDAFood) {
+    const getNutrient = (num: string) => {
+      const n = food.foodNutrients.find(x => x.nutrientNumber === num);
+      return n ? n.value : 0;
+    };
 
-      const food = data?.food;
-      if (!food || !food.servings || !food.servings.serving) {
-        toast.warning("Nutritional data unavailable");
-        return;
-      }
+    /* USDA returns per 100g by default. */
+    const per100g = {
+      cal: getNutrient("208"),
+      p: getNutrient("203"),
+      c: getNutrient("205"),
+      f: getNutrient("204"),
+      fiber: getNutrient("291"),
+      sugar: getNutrient("269"),
+      sodium: getNutrient("307"),
+      potassium: getNutrient("306"),
+      calcium: getNutrient("301"),
+      iron: getNutrient("303"),
+      saturatedFat: getNutrient("606"),
+      polyFat: getNutrient("646"),
+      monoFat: getNutrient("645"),
+      transFat: getNutrient("605"),
+      cholesterol: getNutrient("601"),
+      vitaminA: getNutrient("318"),
+      vitaminBComplex: 0,
+      vitaminC: getNutrient("401"),
+      vitaminD: getNutrient("328"),
+      vitaminE: getNutrient("323"),
+      vitaminK: getNutrient("430"),
+      magnesium: getNutrient("304"),
+      zinc: getNutrient("309"),
+      phosphorus: getNutrient("305"),
+      selenium: getNutrient("317"),
+      addedSugar: getNutrient("539"),
+      leucine: 0,
+      bcaas: 0,
+      aminoAcidProfile: 0,
+    };
+    
+    const perGram = Object.fromEntries(
+      Object.entries(per100g).map(([k, v]) => [k, v / 100]),
+    ) as Record<string, number>;
 
-      const servings = Array.isArray(food.servings.serving)
-        ? food.servings.serving
-        : [food.servings.serving];
-
-      let baseServing =
-        servings.find(
-          (s: any) => s.metric_serving_unit === "g" && s.metric_serving_amount,
-        ) || servings[0];
-      let baseGrams = parseFloat(baseServing.metric_serving_amount || "100");
-      if (isNaN(baseGrams) || baseGrams <= 0) baseGrams = 100;
-
-      const perGram = {
-        cal: parseFloat(baseServing.calories || "0") / baseGrams,
-        p: parseFloat(baseServing.protein || "0") / baseGrams,
-        c: parseFloat(baseServing.carbohydrate || "0") / baseGrams,
-        f: parseFloat(baseServing.fat || "0") / baseGrams,
-        fiber: parseFloat(baseServing.fiber || "0") / baseGrams,
-        sugar: parseFloat(baseServing.sugar || "0") / baseGrams,
-        sodium: parseFloat(baseServing.sodium || "0") / baseGrams,
-        potassium: parseFloat(baseServing.potassium || "0") / baseGrams,
-        saturatedFat: parseFloat(baseServing.saturated_fat || "0") / baseGrams,
-        polyFat: parseFloat(baseServing.polyunsaturated_fat || "0") / baseGrams,
-        monoFat: parseFloat(baseServing.monounsaturated_fat || "0") / baseGrams,
-        transFat: parseFloat(baseServing.trans_fat || "0") / baseGrams,
-        cholesterol: parseFloat(baseServing.cholesterol || "0") / baseGrams,
-        vitaminA: parseFloat(baseServing.vitamin_a || "0") / baseGrams,
-        vitaminBComplex: 0,
-        vitaminC: parseFloat(baseServing.vitamin_c || "0") / baseGrams,
-        vitaminD: parseFloat(baseServing.vitamin_d || "0") / baseGrams,
-        vitaminE: 0,
-        vitaminK: 0,
-        calcium: parseFloat(baseServing.calcium || "0") / baseGrams,
-        iron: parseFloat(baseServing.iron || "0") / baseGrams,
-        magnesium: parseFloat(baseServing.magnesium || "0") / baseGrams,
-        zinc: parseFloat(baseServing.zinc || "0") / baseGrams,
-        phosphorus: parseFloat(baseServing.phosphorus || "0") / baseGrams,
-        selenium: 0,
-        addedSugar: parseFloat(baseServing.added_sugars || "0") / baseGrams,
-        leucine: 0,
-        bcaas: 0,
-        aminoAcidProfile: 0,
-      };
-
-      const lowerName = foodName.toLowerCase();
-      let portions = [];
-
-      if (
-        lowerName.includes("roti") ||
-        lowerName.includes("chapati") ||
-        lowerName.includes("naan") ||
-        lowerName.includes("paratha")
-      ) {
-        portions.push({
-          label: "Roti / Chapati / Paratha",
-          value: "roti",
-          factor: baseGrams,
-        });
-      } else if (
-        lowerName.includes("slice") ||
-        lowerName.includes("bread") ||
-        lowerName.includes("pizza") ||
-        lowerName.includes("cake") ||
-        lowerName.includes("cheese")
-      ) {
-        portions.push({ label: "Slice", value: "slice", factor: baseGrams });
-      } else if (
-        lowerName.includes("protein") ||
-        lowerName.includes("whey") ||
-        lowerName.includes("powder") ||
-        lowerName.includes("scoop")
-      ) {
-        portions.push({ label: "Scoop", value: "scoop", factor: baseGrams });
-      } else {
-        portions.push({ label: "Piece", value: "piece", factor: baseGrams });
-      }
-
-      portions.unshift({
-        label: `Serving (${Math.round(baseGrams)}g)`,
-        value: "serving",
-        factor: baseGrams,
-      });
-
-      const optionsGroups = [
-        {
-          group: "Weight (Accurate)",
-          options: [
-            { label: "Grams (g)", value: "g", factor: 1 },
-            { label: "Kilograms (kg)", value: "kg", factor: 1000 },
-            { label: "Ounces (oz)", value: "oz", factor: 28.3495 },
-            { label: "Pounds (lb)", value: "lb", factor: 453.592 },
-          ],
-        },
-        {
-          group: "Volume & Household",
-          options: [
-            { label: "Cup", value: "cup", factor: 240 },
-            { label: "Tablespoon (tbsp)", value: "tbsp", factor: 15 },
-            { label: "Teaspoon (tsp)", value: "tsp", factor: 5 },
-            { label: "Glass", value: "glass", factor: 240 },
-            { label: "Bowl / Katori", value: "bowl", factor: 150 },
-            { label: "Ladle", value: "ladle", factor: 30 },
-          ],
-        },
-        { group: "Count & Portions", options: portions },
-      ];
-
-      setSelectedFoodData({
-        food_id: foodId,
-        food_name: foodName,
-        perGram,
-        optionsGroups,
-      });
-      setSelectedUnit("g");
-      setQuantity("100");
-    } catch (err) {
-      console.error("Fetch food details error", err);
-      toast.error("Failed to fetch food details");
-    } finally {
-      setLoading(false);
+    const labelStr = food.description || "Food";
+    const lowerName = labelStr.toLowerCase();
+    let portionLabel = "Piece";
+    if (lowerName.includes("roti") || lowerName.includes("chapati") || lowerName.includes("naan") || lowerName.includes("paratha")) {
+      portionLabel = "Roti / Chapati";
+    } else if (lowerName.includes("slice") || lowerName.includes("bread") || lowerName.includes("pizza") || lowerName.includes("cake")) {
+      portionLabel = "Slice";
+    } else if (lowerName.includes("scoop") || lowerName.includes("protein") || lowerName.includes("whey")) {
+      portionLabel = "Scoop";
+    } else if (lowerName.includes("egg")) {
+      portionLabel = "Egg";
     }
+    
+    let optionsGroups = [];
+    
+    if (food.servingSize && food.servingSizeUnit) {
+      optionsGroups.push({
+        group: "Standard Measures",
+        options: [
+          {
+            label: food.householdServingFullText ? food.householdServingFullText : `1 Serving (${food.servingSize}${food.servingSizeUnit})`,
+            value: "serving",
+            factor: food.servingSizeUnit.toLowerCase() === "g" || food.servingSizeUnit.toLowerCase() === "ml" ? food.servingSize : 100
+          }
+        ]
+      });
+    }
+
+    optionsGroups.push(
+      {
+        group: "Weight (Accurate)",
+        options: [
+          { label: "Grams (g)", value: "g", factor: 1 },
+          { label: "Kilograms (kg)", value: "kg", factor: 1000 },
+          { label: "Ounces (oz)", value: "oz", factor: 28.3495 },
+          { label: "Pounds (lb)", value: "lb", factor: 453.592 },
+        ],
+      },
+      {
+        group: "Volume & Household",
+        options: [
+          { label: "Cup", value: "cup", factor: 240 },
+          { label: "Tablespoon (tbsp)", value: "tbsp", factor: 15 },
+          { label: "Teaspoon (tsp)", value: "tsp", factor: 5 },
+          { label: "Glass", value: "glass", factor: 240 },
+          { label: "Bowl / Katori", value: "bowl", factor: 150 },
+          { label: "Ladle", value: "ladle", factor: 30 },
+        ],
+      },
+      {
+        group: "Count & Portions",
+        options: [
+          { label: portionLabel, value: "portion", factor: 80 },
+        ],
+      }
+    );
+
+    setSelectedFoodData({
+      food_id: food.fdcId.toString(),
+      food_name: labelStr,
+      perGram,
+      optionsGroups,
+    });
+    setSelectedUnit("g");
+    setQuantity("100");
   }
 
   // ── Compute live macros for search mode ──────────────────────────────
@@ -444,27 +420,38 @@ export default function ManualFoodEntry({ onClose, initialMeal }: Props) {
 
         {/* API Results list */}
         {results.length > 0 && !selectedFoodData && (
-          <div className="mb-3 divide-y divide-border dark:divide-foreground border border-border rounded-xl overflow-hidden bg-foreground dark:bg-foreground">
-            {results.map((food) => (
+          <div className="mb-3 divide-y divide-border border border-border rounded-xl overflow-hidden">
+            {results.map((food, idx) => {
+              const getNutrient = (num: string) => {
+                const n = food.foodNutrients.find(x => x.nutrientNumber === num);
+                return n ? n.value : 0;
+              };
+              const cal = Math.round(getNutrient("208"));
+              const p = Math.round(getNutrient("203"));
+              const c = Math.round(getNutrient("205"));
+              const f = Math.round(getNutrient("204"));
+              const brandInfo = food.brandOwner ? ` · ${food.brandOwner}` : "";
+              const description = `${cal} kcal · P${p}g C${c}g F${f}g per 100g${brandInfo}`;
+              return (
               <div
-                key={food.food_id}
-                className="p-3 hover:bg-subtle transition-colors flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-foreground text-sm">
-                    {food.food_name}
+                key={`${food.fdcId}-${idx}`}
+                className="p-3 hover:bg-subtle transition-colors flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="font-bold text-foreground text-sm truncate">
+                    {food.description || "Unknown Food"}
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {food.food_description}
+                  <div className="text-xs text-muted-foreground truncate">
+                    {description}
                   </div>
                 </div>
                 <button
-                  onClick={() => handleSelectFood(food.food_id, food.food_name)}
+                  onClick={() => handleSelectFood(food)}
                   disabled={loading}
-                  className="w-8 h-8 flex items-center justify-center bg-subtle hover:bg-muted dark:bg-foreground dark:hover:bg-muted rounded-full text-foreground shrink-0">
+                  className="w-8 h-8 flex items-center justify-center bg-subtle hover:bg-muted rounded-full text-foreground shrink-0 border border-border">
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
-            ))}
+            )})}
           </div>
         )}
 
