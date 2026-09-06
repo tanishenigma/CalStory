@@ -72,19 +72,19 @@ const QUICK_ACTIONS: {
   icon: typeof Utensils;
   prefill: string;
 }[] = [
-  {
-    label: "Greek yogurt with granola and berries",
-    icon: Utensils,
-    prefill: "Greek yogurt with granola and berries",
-  },
-  {
-    label: "Pull-ups 3×12",
-    icon: Dumbbell,
-    prefill: "Pull-ups 3×12",
-  },
-  { label: "Protein shake", icon: Coffee, prefill: "Protein shake" },
-  { label: "5km run 25 min", icon: Flame, prefill: "5km run 25 min" },
-];
+    {
+      label: "Greek yogurt with granola and berries",
+      icon: Utensils,
+      prefill: "Greek yogurt with granola and berries",
+    },
+    {
+      label: "Pull-ups 3×12",
+      icon: Dumbbell,
+      prefill: "Pull-ups 3×12",
+    },
+    { label: "Protein shake", icon: Coffee, prefill: "Protein shake" },
+    { label: "5km run 25 min", icon: Flame, prefill: "5km run 25 min" },
+  ];
 
 type DrawerType = "history" | "template" | "sessions" | null;
 

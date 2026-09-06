@@ -10,39 +10,33 @@ import {
   Dumbbell,
   TrendingUp,
   Settings,
-  Activity,
 } from "lucide-react";
 
 const TABS: { href: string; label: string; icon: React.ReactNode }[] = [
   {
     href: "/dashboard",
     label: "Home",
-    icon: <Home size={22} />,
+    icon: <Home size={21} />,
   },
   {
     href: "/nutrition",
     label: "Nutrition",
-    icon: <UtensilsCrossed size={22} />,
+    icon: <UtensilsCrossed size={21} />,
   },
   {
     href: "/workouts",
     label: "Workouts",
-    icon: <Dumbbell size={22} />,
-  },
-  {
-    href: "/fitness",
-    label: "Fitness",
-    icon: <Activity size={22} />,
+    icon: <Dumbbell size={21} />,
   },
   {
     href: "/progress",
     label: "Progress",
-    icon: <TrendingUp size={22} />,
+    icon: <TrendingUp size={21} />,
   },
   {
     href: "/settings",
     label: "Settings",
-    icon: <Settings size={22} />,
+    icon: <Settings size={21} />,
   },
 ];
 

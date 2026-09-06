@@ -34,9 +34,6 @@ import {
   deleteWeightLogDB,
   saveFitnessLog,
   getFitnessLogs,
-  saveFastingSession,
-  getFastingSession,
-  clearFastingSessionDB,
   saveHydrationLog,
   getHydrationLog,
 } from "@/app/lib/db";
@@ -51,7 +48,6 @@ import type {
   WeightLog,
   WeightUnit,
   FitnessLog,
-  FastingSession,
   HydrationLog,
   HydrationEntry,
 } from "@/app/types";
@@ -93,8 +89,6 @@ type Action =
   | { type: "SET_WEIGHT_LOGS"; payload: WeightLog[] }
   // Fitness
   | { type: "SET_FITNESS_LOG"; payload: FitnessLog }
-  // Fasting
-  | { type: "SET_FASTING_SESSION"; payload: FastingSession | null }
   // Hydration
   | { type: "SET_HYDRATION_LOG"; payload: HydrationLog | null }
   | { type: "ADD_HYDRATION_ENTRY"; payload: HydrationEntry }
@@ -110,7 +104,6 @@ const initial: AppState = {
   weightLogs: [],
   selDate: todayLocalKey(),
   fitnessLogs: {},
-  fastingSession: null,
   hydrationLog: null,
 };
 
@@ -225,8 +218,6 @@ function reducer(state: AppState, action: Action): AppState {
           [action.payload.date]: action.payload,
         },
       };
-    case "SET_FASTING_SESSION":
-      return { ...state, fastingSession: action.payload };
     case "SET_HYDRATION_LOG":
       return { ...state, hydrationLog: action.payload };
     case "ADD_HYDRATION_ENTRY": {
@@ -415,18 +406,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading]);
 
-  // Secondary hydration: meals/workouts/recents/templates/fasting/hydration.
+  // Secondary hydration: meals/workouts/recents/templates/hydration.
   // Runs in the background after the profile is known.
   const hydrateSecondary = useCallback(async (uid: string): Promise<void> => {
     try {
-      const [recents, templates, weightLogs, fastingSession, hydrationLog] =
-        await Promise.all([
-          getRecentMeals(uid),
-          getWorkoutTemplates(uid),
-          getWeightLogs(uid),
-          getFastingSession(uid),
-          getHydrationLog(uid, todayLocalKey()),
-        ]);
+      const [recents, templates, weightLogs, hydrationLog] = await Promise.all([
+        getRecentMeals(uid),
+        getWorkoutTemplates(uid),
+        getWeightLogs(uid),
+        getHydrationLog(uid, todayLocalKey()),
+      ]);
       const today = todayLocalKey();
       const dateKeys: string[] = [];
       const base = new Date();
@@ -450,7 +439,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           savedWorkouts: templates,
           recents,
           weightLogs,
-          fastingSession: fastingSession ?? null,
           hydrationLog: hydrationLog ?? null,
         },
       });
@@ -778,22 +766,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [user, state.profile],
   );
 
-  // ── Fasting actions ───────────────────────────────────────
-  const setFastingSession = useCallback(
-    async (session: FastingSession): Promise<void> => {
-      dispatch({ type: "SET_FASTING_SESSION", payload: session });
-      if (!user) return;
-      await saveFastingSession(user.uid, session);
-    },
-    [user],
-  );
-
-  const clearFastingSession = useCallback(async (): Promise<void> => {
-    dispatch({ type: "SET_FASTING_SESSION", payload: null });
-    if (!user) return;
-    await clearFastingSessionDB(user.uid);
-  }, [user]);
-
   // ── Hydration actions ─────────────────────────────────────
   const addHydration = useCallback(
     async (ml: number): Promise<void> => {
@@ -869,8 +841,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         logWeight,
         deleteWeightLog,
         saveFitnessLog: saveFitnessLogAction,
-        setFastingSession,
-        clearFastingSession,
         addHydration,
         removeHydration,
         setHydrationGoal,

@@ -144,12 +144,12 @@ export default function AuthPage() {
         />
 
         <Image
-          src="/screenshots/dashboard_dark.png"
+          src="/screenshots/dashboard_light.png"
           alt="CalStory — track your progress"
           fill
           quality={100}
           priority
-          className="block forced-dark:block object-cover object-center brightness-[0.55]"
+          className="object-cover object-center"
         />
 
         {/* Optional tagline over the image */}

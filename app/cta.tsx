@@ -21,7 +21,7 @@ const CTASection = ({ handleSignIn }: CtaSectionProps) => {
   return (
     <section className="relative z-10 px-6  w-full  overflow-hidden  ">
       <div className="flex justify-center ">
-        <div className="relative w-full max-w-5xl overflow-hidden  px-4 sm:px-6 lg:px-8 py-12 lg:py-24 text-center group mx-auto rounded-2xl  backdrop-blur-md! dark:backdrop-blur-md! border border-white/10   z-0">
+        <div className="relative w-full max-w-5xl overflow-hidden  px-4 sm:px-6 lg:px-8 py-12 lg:py-24 text-center group mx-auto rounded-2xl  backdrop-blur-md! dark:backdrop-blur-md! border border-border z-0">
           <CardContent className="relative  space-y-8 w-full p-0 z-20 ">
             <h2 className="text-4xl md:text-7xl font-bold tracking-tight leading-[1.05] text-balance mx-auto font-heading ">
               {hasProfile ? "Continue your" : "Ready to hit your"} <br />

@@ -63,12 +63,10 @@ export default function AppGroupLayout({
   const navStyle = usePrefsStore((s) => s.navbarStyle);
   const chromeHidden = useUiStore((s) => s.chromeHidden);
   const pathname = usePathname();
-  const padLeft = navStyle === "floating" ? "lg:pl-[240px]" : "lg:pl-20";
+  const padLeft = navStyle === "floating" ? "lg:pl-[272px]" : "lg:pl-[88px]";
   return (
     <>
-      <div
-        style={{ minHeight: "100dvh" }}
-        className="bg-background ml-0 sm:ml-5">
+      <div style={{ minHeight: "100dvh" }} className="bg-background">
         {!chromeHidden && <PillNav />}
         <main
           style={{ paddingBottom: "96px" }}

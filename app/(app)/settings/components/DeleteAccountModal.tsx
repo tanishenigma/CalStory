@@ -150,8 +150,8 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
                 className="text-xs text-muted-foreground mt-1 leading-relaxed">
                 This will permanently delete your CalStory account and{" "}
                 <strong>all</strong> of your data — profile, meals, workouts,
-                weight logs, fasting sessions, hydration, and any saved API key.
-                This cannot be undone.
+                weight logs, hydration, and any saved API key. This cannot be
+                undone.
               </p>
             </div>
           </div>

@@ -81,7 +81,6 @@ export const onAuthChange = (cb: (user: User | null) => void): Unsubscribe =>
  *   users/{uid}/recents/{key}
  *   users/{uid}/weight_logs/{id}
  *   users/{uid}/fitness_logs/{dateKey}
- *   users/{uid}/fasting/active
  *   users/{uid}/hydration/{dateKey}
  *   users/{uid}/settings/api_keys
  *
@@ -117,7 +116,6 @@ export async function deleteUserData(uid: string): Promise<void> {
   );
 
   // Single-document sub-paths — best-effort, missing docs are fine.
-  await deleteDoc(doc(db, "users", uid, "fasting", "active")).catch(() => {});
   await deleteDoc(doc(db, "users", uid, "settings", "api_keys")).catch(
     () => {},
   );

@@ -76,7 +76,7 @@ export function BlogShell({
             {intro}
           </p>
 
-          <article className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-heading prose-headings:tracking-tight prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-4 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3 prose-p:leading-relaxed prose-p:text-muted-foreground prose-li:text-muted-foreground prose-a:text-primary hover:prose-a:text-primary/80">
+          <article className="prose prose-neutral dark:prose-invert max-w-none overflow-hidden prose-headings:font-heading prose-headings:tracking-tight prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-4 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3 prose-p:leading-relaxed prose-p:text-muted-foreground prose-li:text-muted-foreground prose-a:text-primary hover:prose-a:text-primary/80 prose-img:max-w-full prose-img:w-full prose-img:h-auto prose-img:rounded-2xl prose-img:my-8">
             {children}
           </article>
 

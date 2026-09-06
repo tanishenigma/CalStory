@@ -188,6 +188,22 @@
   box-sizing: border-box;
 }
 
+/* All images are responsive by default — they never overflow their container. */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Extra safety for blog/MDX prose articles */
+article img {
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+}
+
+
 html {
   scroll-behavior: smooth;
 }
@@ -555,21 +571,102 @@ html.lenis body {
 }
 
 /* ───────────────────────────────────────────────────────────────
- * Forced-dark pages.
+ * Forced-light pages.
  *
  * `RouteThemeController` adds this class to `<html>` for routes that
- * are always dark regardless of the user's stored theme preference
- * (currently `/` and `/auth`). The block mirrors the dark-mode token
- * overrides above so those pages render in dark even when the user
- * prefers light. The class is intentionally separate from `.dark` so
+ * are always light regardless of the user's stored theme preference
+ * (currently `/` and `/auth`). The block mirrors the light-mode token
+ * overrides above so those pages render in light even when the user
+ * prefers dark. The class is intentionally separate from `.dark` so
  * `prefsStore.theme` is left untouched — navigating away restores the
  * user's real preference in one frame.
  *
  * Source-order: this block is intentionally placed *after* `.dark`
  * so when both classes are on `<html>` (user has dark theme AND is
- * on a forced-dark route), any future token divergence resolves in
- * favor of the forced-dark override without a specificity arms-race.
+ * on a forced-light route), any future token divergence resolves in
+ * favor of the forced-light override without a specificity arms-race.
  * ─────────────────────────────────────────────────────────────── */
+.forced-landing {
+  --color-ink: oklch(0.2272 0.0049 173.9454);
+  --color-muted: oklch(0.5517 0.0138 285.9385);
+  --color-border: oklch(0.9197 0.004 286.3202);
+  --color-divider: oklch(0.93 0.0035 286.3202);
+  --color-surface: oklch(1 0 0);
+  --color-bg: oklch(0.9658 0.0028 128.4929);
+  --color-subtle: oklch(0.9833 0.0025 165.0767);
+  --color-background: oklch(0.9658 0.0028 128.4929);
+  --color-foreground: oklch(0.2272 0.0049 173.9454);
+  --color-card: oklch(1 0 0);
+  --background: oklch(0.9658 0.0028 128.4929);
+  --foreground: oklch(0.2272 0.0049 173.9454);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2272 0.0049 173.9454);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2272 0.0049 173.9454);
+  --primary: oklch(0.7227 0.192 149.5793);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.9276 0.0058 264.5313);
+  --secondary-foreground: oklch(0.2272 0.0049 173.9454);
+  --muted: oklch(0.9674 0.0013 286.3752);
+  --muted-foreground: oklch(0.5517 0.0138 285.9385);
+  --accent: oklch(0.9674 0.0013 286.3752);
+  --accent-foreground: oklch(0.2272 0.0049 173.9454);
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --border: oklch(0.9197 0.004 286.3202);
+  --input: oklch(0.9197 0.004 286.3202);
+  --ring: oklch(0.7227 0.192 149.5793);
+  --chart-1: oklch(0.7227 0.192 149.5793);
+  --chart-2: oklch(0.6271 0.1699 149.2138);
+  --chart-3: oklch(0.5273 0.1371 150.0693);
+  --chart-4: oklch(0.4479 0.1083 151.3277);
+  --chart-5: oklch(0.3925 0.0896 152.5353);
+  --sidebar: oklch(0.9833 0.0025 165.0767);
+  --sidebar-foreground: oklch(0.2272 0.0049 173.9454);
+  --sidebar-primary: oklch(0.2272 0.0049 173.9454);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.9658 0.0028 128.4929);
+  --sidebar-accent-foreground: oklch(0.2272 0.0049 173.9454);
+  --sidebar-border: oklch(0.9276 0.0058 264.5313);
+  --sidebar-ring: oklch(0.7227 0.192 149.5793);
+  --shadow-opacity: 0.05;
+  --shadow-2xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.03);
+  --shadow-xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.03);
+  --shadow-sm:
+    0px 4px 10px 0px hsl(0 0% 0% / 0.05), 0px 1px 2px -1px hsl(0 0% 0% / 0.05);
+  --shadow:
+    0px 4px 10px 0px hsl(0 0% 0% / 0.05), 0px 1px 2px -1px hsl(0 0% 0% / 0.05);
+  --shadow-md:
+    0px 4px 10px 0px hsl(0 0% 0% / 0.05), 0px 2px 4px -1px hsl(0 0% 0% / 0.05);
+  --shadow-lg:
+    0px 4px 10px 0px hsl(0 0% 0% / 0.05), 0px 4px 6px -1px hsl(0 0% 0% / 0.05);
+  --shadow-xl:
+    0px 4px 10px 0px hsl(0 0% 0% / 0.05), 0px 8px 10px -1px hsl(0 0% 0% / 0.05);
+  --shadow-2xl: 0px 4px 10px 0px hsl(0 0% 0% / 0.13);
+
+  /* Same light-mode navbar tokens as `:root` so the floating nav
+   * blends with the forced-light background. */
+  --navbar-bg-rgb: 246, 246, 246;
+  --navbar-fg-rgb: 58, 58, 58;
+  --navbar-bg-scrolled-rgb: 246, 246, 246;
+  --navbar-fg-scrolled-rgb: 58, 58, 58;
+  --navbar-icon-rgb: 58, 58, 58;
+  --navbar-icon-scrolled-rgb: 58, 58, 58;
+  --navbar-border: rgba(128, 128, 128, 0);
+  --navbar-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  --navbar-highlight-from: rgba(58, 58, 58, 0.1);
+  --navbar-highlight-via: rgba(58, 58, 58, 0.05);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────────────
+ * Legacy forced-dark block.
+ *
+ * Kept for pages that still opt into dark via the literal
+ * `forced-dark` class on their root element, e.g.
+ * `/tools/calorie-calculator`. The landing page itself now uses
+ * `forced-landing` (light); this block mirrors the `.dark` tokens
+ * exactly so those pages keep rendering dark.
+ * ────────────────────────────────────────────────────────────────────────────────────
+ */
 .forced-dark {
   --color-ink: oklch(0.9833 0.0025 165.0767);
   --color-muted: oklch(0.7118 0.0129 286.0665);

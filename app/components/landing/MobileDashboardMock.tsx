@@ -40,10 +40,13 @@ import { DAY_LABELS } from "@/app/lib/constants";
  * alive. Looping is gated on `useInView`.
  * ─────────────────────────────────────────────────────────────── */
 
-/* ── Dark-surface helpers (shared aesthetic with the desktop mock) ── */
-const SURFACE = "bg-white/[0.04]";
-const SURFACE_HOVER = "hover:bg-white/[0.06]";
-const BORDER = "border-white/10";
+/* ── Semantic surface helpers — use Tailwind design-token utilities
+ * so the mock renders correctly on the forced-light landing page.
+ * SURFACE → white card (var(--color-card))
+ * BORDER  → hairline divider (var(--color-border)) */
+const SURFACE = "bg-card";
+const SURFACE_HOVER = "hover:bg-accent/50";
+const BORDER = "border border-border";
 
 /* ── Mock data ──────────────────────────────────────────────── */
 
@@ -143,13 +146,13 @@ function StreakBadge({
   hasLoggedToday: boolean;
 }) {
   return (
-    <div className="flex items-center justify-center gap-1.5 px-2.5 h-14 w-14 rounded-full bg-white/5 border border-white/10 shadow-md">
+    <div className="flex items-center justify-center gap-1.5 px-2.5 h-14 w-14 rounded-full bg-accent border border-border shadow-md">
       <Flame
         size={18}
-        className={hasLoggedToday ? "text-primary" : "text-white/40"}
-        fill={hasLoggedToday ? "currentColor" : "rgba(255,255,255,0.2)"}
+        className={hasLoggedToday ? "text-primary" : "text-muted-foreground/40"}
+        fill={hasLoggedToday ? "currentColor" : "rgba(0,0,0,0.1)"}
       />
-      <span className="text-base font-bold tabular-nums text-white">
+      <span className="text-base font-bold tabular-nums text-foreground">
         {streak}
       </span>
     </div>
@@ -186,21 +189,21 @@ function MobileDayPill({
         "flex flex-col items-center justify-center gap-1 shrink-0 rounded-full p-2 size-12 transition-colors",
         isFuture ? "opacity-30 cursor-not-allowed" : "cursor-pointer",
         active
-          ? "bg-white border-2 border-transparent"
-          : "border-2 border-transparent hover:bg-white/5",
+          ? "bg-foreground border-2 border-transparent"
+          : "border-2 border-transparent hover:bg-accent/50",
       ].join(" ")}
       aria-pressed={active}>
       <span
         className={[
           "text-[10px] font-bold tracking-wider uppercase leading-none",
-          active ? "text-black" : "text-white/40",
+          active ? "text-background" : "text-muted-foreground/60",
         ].join(" ")}>
         {label}
       </span>
       <span
         className={[
           "text-base font-semibold leading-none tabular-nums",
-          active ? "text-black" : "text-white",
+          active ? "text-background" : "text-foreground",
         ].join(" ")}>
         {day}
       </span>
@@ -227,7 +230,7 @@ function MobileRing({ pct }: { pct: number }) {
           cy="50"
           r={R}
           fill="none"
-          stroke="rgba(255,255,255,0.1)"
+          stroke="rgba(0,0,0,0.08)"
           strokeWidth="8"
         />
         <motion.circle
@@ -235,7 +238,8 @@ function MobileRing({ pct }: { pct: number }) {
           cy="50"
           r={R}
           fill="none"
-          stroke="white"
+          stroke="currentColor"
+          className="text-foreground"
           strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={C}
@@ -269,23 +273,23 @@ function MobileCaloriesCard({
     <div
       className={`${SURFACE} ${BORDER} rounded-2xl px-5 py-4 flex items-center justify-between gap-4`}>
       <div className="min-w-0 flex-1">
-        <div className="text-[40px] sm:text-4xl font-extrabold leading-none tracking-tight text-white tabular-nums">
+        <div className="text-[40px] sm:text-4xl font-extrabold leading-none tracking-tight text-foreground tabular-nums">
           {left}
         </div>
-        <div className="text-xs font-semibold text-white/50 mt-1.5 mb-3">
+        <div className="text-xs font-semibold text-muted-foreground mt-1.5 mb-3">
           Calories Left
         </div>
         <div
           className={[
             "inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-full",
             completed
-              ? "bg-emerald-500/15 text-emerald-300"
-              : "bg-white/5 text-white/60",
+              ? "bg-emerald-500/15 text-emerald-700"
+              : "bg-accent text-muted-foreground",
           ].join(" ")}>
           <span
             className={[
               "w-1.5 h-1.5 rounded-full",
-              completed ? "bg-emerald-400" : "bg-white/40",
+              completed ? "bg-emerald-500" : "bg-muted-foreground/40",
             ].join(" ")}
           />
           {completed ? "Day completed" : "Tracking…"}
@@ -319,15 +323,15 @@ function MobileMacroRow({
       <div className="flex items-center gap-4 min-w-0">
         <div
           className="w-12 h-12 rounded-full grid place-items-center shrink-0"
-          style={{ backgroundColor: `${color}1A` /* ~10% alpha */ }}>
+          style={{ backgroundColor: `${color}22` /* ~13% alpha */ }}>
           <span className="text-2xl leading-none">{emoji}</span>
         </div>
-        <span className="text-base font-bold text-white truncate">
+        <span className="text-base font-bold text-foreground truncate">
           <span style={{ color }}>{value}</span>
-          <span className="text-white/50">g</span> <span>{label} Left</span>
+          <span className="text-muted-foreground">g</span> <span>{label} Left</span>
         </span>
       </div>
-      <ArrowUpRight size={18} className="text-white/40 shrink-0" />
+      <ArrowUpRight size={18} className="text-muted-foreground/40 shrink-0" />
     </button>
   );
 }
@@ -335,19 +339,19 @@ function MobileMacroRow({
 function MobileMealRow({ meal }: { meal: MealDemo }) {
   const Icon = meal.icon;
   return (
-    <div className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors">
-      <div className="w-10 h-10 rounded-xl bg-white/5 grid place-items-center shrink-0">
-        <Icon size={17} className="text-white/70" />
+    <div className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-accent/50 transition-colors">
+      <div className="w-10 h-10 rounded-xl bg-accent grid place-items-center shrink-0">
+        <Icon size={17} className="text-muted-foreground" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-bold text-white truncate">{meal.name}</div>
-        <div className="text-[11px] text-white/40">{meal.time}</div>
+        <div className="text-sm font-bold text-foreground truncate">{meal.name}</div>
+        <div className="text-[11px] text-muted-foreground">{meal.time}</div>
       </div>
       <div className="text-right shrink-0">
-        <div className="text-base font-bold text-white tabular-nums">
+        <div className="text-base font-bold text-foreground tabular-nums">
           {meal.cal}
         </div>
-        <div className="text-[9px] text-white/40 font-bold uppercase tracking-widest">
+        <div className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-widest">
           kcal
         </div>
       </div>
@@ -360,7 +364,7 @@ function MobileFab() {
     <motion.button
       type="button"
       aria-label="Add meal"
-      className="absolute bottom-5 right-5 w-14 h-14 rounded-full bg-white text-black grid place-items-center shadow-[0_8px_24px_rgba(0,0,0,0.4)] cursor-pointer"
+      className="absolute bottom-5 right-5 w-14 h-14 rounded-full bg-foreground text-background grid place-items-center shadow-[0_8px_24px_rgba(0,0,0,0.12)] cursor-pointer"
       animate={{ scale: [1, 1.06, 1] }}
       transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}>
       <Utensils size={24} strokeWidth={2.4} />
@@ -411,15 +415,14 @@ export function MobileDashboardMock() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden rounded-2xl flex flex-col text-white"
+      className="relative w-full h-full overflow-hidden rounded-2xl flex flex-col text-foreground bg-background border border-border"
       role="img"
-      aria-label="Live preview of the CalStory dashboard on mobile"
-      style={{ background: "#0a0a0a" }}>
+      aria-label="Live preview of the CalStory dashboard on mobile">
       {/* ── Mobile-only header: logo + streak ── */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-2">
           <MobileBrand size={14} />
-          <span className="font-heading font-bold text-base text-white tracking-tight">
+          <span className="font-heading font-bold text-base text-foreground tracking-tight">
             CalStory
           </span>
         </div>
@@ -466,25 +469,25 @@ export function MobileDashboardMock() {
         {/* Today's Workout */}
         <section>
           <div className="flex items-center justify-between mb-2 px-1">
-            <span className="text-sm font-bold text-white">
+            <span className="text-sm font-bold text-foreground">
               Today's Workout
             </span>
             <button
               type="button"
-              className="text-[11px] font-semibold text-white/40 hover:text-white transition-colors inline-flex items-center gap-1 cursor-pointer">
+              className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 cursor-pointer">
               See all <ArrowUpRight size={11} />
             </button>
           </div>
           <div
             className={`${SURFACE} ${BORDER} rounded-2xl px-3 py-3 flex items-center gap-3 ${SURFACE_HOVER} transition-colors cursor-pointer`}>
-            <div className="w-10 h-10 rounded-xl bg-white/5 grid place-items-center text-lg shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-accent grid place-items-center text-lg shrink-0">
               <span aria-hidden>{WORKOUT_DEMO.emoji}</span>
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-bold text-white truncate">
+              <div className="text-sm font-bold text-foreground truncate">
                 {WORKOUT_DEMO.name}
               </div>
-              <div className="text-[11px] text-white/40">
+              <div className="text-[11px] text-muted-foreground">
                 {WORKOUT_DEMO.subtitle}
               </div>
             </div>
@@ -494,10 +497,10 @@ export function MobileDashboardMock() {
         {/* Today's Meals */}
         <section>
           <div className="flex items-center justify-between mb-2 px-1">
-            <span className="text-sm font-bold text-white">Today's Meals</span>
+            <span className="text-sm font-bold text-foreground">Today's Meals</span>
             <button
               type="button"
-              className="text-[11px] font-semibold text-white/40 hover:text-white transition-colors inline-flex items-center gap-1 cursor-pointer">
+              className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 cursor-pointer">
               See all <ArrowUpRight size={11} />
             </button>
           </div>

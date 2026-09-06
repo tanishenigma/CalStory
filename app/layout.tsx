@@ -191,10 +191,10 @@ export default function RootLayout({
   // explicitly; "system" still follows the OS preference.
   var dark=t==='dark'||!t||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
   if(dark)document.documentElement.classList.add('dark');
-  // Forced-dark public pages (landing + auth) — add the matching
-  // class before paint so the user never sees a light flash.
+  // Forced-light public pages (landing + auth) — add the matching
+  // class before paint so the user never sees a dark flash.
   var p=window.location.pathname;
-  if(p==='/'||p==='/index'||p===''||p==='/auth')document.documentElement.classList.add('forced-dark');
+  if(p==='/'||p==='/index'||p===''||p==='/auth')document.documentElement.classList.add('forced-landing');
 }catch(e){}})();`,
           }}
         />

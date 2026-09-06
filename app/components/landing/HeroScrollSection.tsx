@@ -32,25 +32,14 @@ function DesktopScreenshotCard() {
  */
 function MobileScreenshotCard() {
   return (
-    <div className="relative mx-auto w-full max-w-90 aspect-[9/19] overflow-hidden rounded-[28px] border border-white/10 shadow-2xl shadow-black/40">
+    <div className="relative mx-auto w-full max-w-90 aspect-[9/19] overflow-hidden rounded-[28px] border border-border shadow-xl shadow-black/10">
       <MobileDashboardMock />
     </div>
   );
 }
 
 function HeroCopy() {
-  return (
-    <div className="space-y-4 text-left px-4 md:px-0">
-      <h2 className="text-3xl xl:text-5xl xxl:text-8xl md:text-3xl font-bold tracking-tight leading-tight font-heading lg:text-4xl">
-        Get fit with <span className="text-primary">AI-powered</span> tracking.
-      </h2>
-      <p className="text-muted-foreground text-base md:text-xs leading-relaxed lg:text-sm xl:text-xl xxl:text-xl">
-        CalStory turns plain-English meal descriptions into logged calories and
-        macros in seconds — then continuously adapts your calorie and macro
-        targets to your metabolism.
-      </p>
-    </div>
-  );
+  return null;
 }
 
 const ContainerScroll = dynamic(
@@ -66,17 +55,6 @@ function MobileLayout() {
     <div className="md:hidden py-24 space-y-8 max-w-xl mx-auto text-center px-4">
       <BlurFade delay={0.15}>
         <MobileScreenshotCard />
-      </BlurFade>
-      <BlurFade>
-        <h2 className="text-3xl font-bold leading-tight">
-          Get fit with <span className="text-primary">AI-powered</span>{" "}
-          tracking.
-        </h2>
-        <p className="text-muted-foreground text-base leading-relaxed mt-3">
-          CalStory turns plain-English meal descriptions into logged calories
-          and macros in seconds — then continuously adapts your calorie and
-          macro targets to your metabolism.
-        </p>
       </BlurFade>
     </div>
   );

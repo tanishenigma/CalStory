@@ -28,13 +28,12 @@ import { DAY_LABELS } from "@/app/lib/constants";
  * Dropped into the landing-page hero in place of the static
  * dashboard screenshot.
  *
- * Visual reference: a true dark dashboard. The hero lives on a
- * forced-dark page so the mock is intentionally dark end-to-end
- * (no white cards, no pastel blobs). Card surfaces are a slightly
- * lighter shade of the page background, text is high-contrast
- * white. The "Calories Left" card keeps a constant, compact
- * height — the same height as the macros column beside it — so
- * the row never reflows as the calorie number changes.
+ * Visual reference: a light dashboard matching the forced-light
+ * landing page. Card surfaces use semantic `bg-card border-border`
+ * tokens so they adapt to the active color scheme automatically.
+ * The "Calories Left" card keeps a constant, compact height —
+ * the same height as the macros column beside it — so the row
+ * never reflows as the calorie number changes.
  *
  * The mock auto-plays a short looping demo: the calorie ring
  * animates filling, a meal animates into the "Recently uploaded"
@@ -126,14 +125,13 @@ function FlameLogo({ size = 14 }: { size?: number }) {
   );
 }
 
-/* Dark-surface helpers — used throughout the mock so the entire
- * tree reads as one consistent dark theme instead of a patchwork
- * of light and dark cards. The exact shade is intentionally
- * slightly above the page background to read as a "card surface"
- * without going white. */
-const SURFACE = "bg-white/[0.04]";
-const SURFACE_HOVER = "hover:bg-white/[0.06]";
-const BORDER = "border-white/10";
+/* Semantic surface helpers — use Tailwind design-token utilities
+ * so the mock renders correctly on the forced-light landing page.
+ * SURFACE → white card (var(--color-card))
+ * BORDER  → hairline divider (var(--color-border)) */
+const SURFACE = "bg-card";
+const SURFACE_HOVER = "hover:bg-accent/50";
+const BORDER = "border border-border";
 
 function Sidebar({
   activeKey,
@@ -143,11 +141,11 @@ function Sidebar({
   onSelect: (k: string) => void;
 }) {
   return (
-    <aside className="hidden md:flex md:w-17 lg:w-44 shrink-0 border-r border-white/5 flex-col py-4">
+    <aside className="hidden md:flex md:w-17 lg:w-44 shrink-0 border-r border-border flex-col py-4">
       {/* Brand */}
       <div className="px-3 lg:px-4 flex items-center gap-2 mb-6">
         <FlameLogo size={14} />
-        <span className="hidden lg:inline font-heading font-bold text-sm text-white tracking-tight">
+        <span className="hidden lg:inline font-heading font-bold text-sm text-foreground tracking-tight">
           CalStory
         </span>
       </div>
@@ -164,8 +162,8 @@ function Sidebar({
               className={[
                 "group flex items-center justify-center lg:justify-start gap-3 rounded-xl px-2 lg:px-3 py-2 text-xs font-semibold transition-all cursor-pointer",
                 active
-                  ? "bg-white text-black"
-                  : "text-white/60 hover:bg-white/5 hover:text-white",
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
               ].join(" ")}>
               <Icon size={15} className="shrink-0" />
               <span className="hidden lg:inline">{label}</span>
@@ -178,7 +176,7 @@ function Sidebar({
       <div className="px-2 mt-4 flex flex-col gap-2">
         <button
           type="button"
-          className="flex items-center justify-center lg:justify-start gap-3 rounded-xl px-2 lg:px-3 py-2 text-xs font-semibold text-white/60 hover:bg-white/5 hover:text-white transition-colors cursor-pointer">
+          className="flex items-center justify-center lg:justify-start gap-3 rounded-xl px-2 lg:px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer">
           <Settings size={15} />
           <span className="hidden lg:inline">Settings</span>
         </button>
@@ -208,21 +206,21 @@ function WeekDayButton({
       {active ? (
         <motion.span
           layoutId="mock-day-ring"
-          className="absolute inset-0 rounded-full border border-dashed border-white/60"
+          className="absolute inset-0 rounded-full border border-dashed border-foreground/60"
           transition={{ type: "spring", stiffness: 380, damping: 32 }}
         />
       ) : null}
       <span
         className={[
           "text-[9px] font-bold tracking-widest",
-          active ? "text-white" : "text-white/40",
+          active ? "text-foreground" : "text-muted-foreground/60",
         ].join(" ")}>
         {label}
       </span>
       <span
         className={[
           "text-[13px] font-bold tabular-nums",
-          active ? "text-white" : "text-white/70 group-hover:text-white",
+          active ? "text-foreground" : "text-foreground/70 group-hover:text-foreground",
         ].join(" ")}>
         {day}
       </span>
@@ -240,7 +238,7 @@ function TopBar({
   streak: number;
 }) {
   return (
-    <div className="flex items-center justify-between gap-1.5 sm:gap-2 px-3 sm:px-5 py-3 border-b border-white/5">
+    <div className="flex items-center justify-between gap-1.5 sm:gap-2 px-3 sm:px-5 py-3 border-b border-border">
       <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
         {/* Prev/next arrows — hidden on tiny screens so the 7-day
          * strip has room to breathe. */}
@@ -248,13 +246,13 @@ function TopBar({
           <button
             type="button"
             aria-label="Previous day"
-            className="w-7 h-7 rounded-full grid place-items-center text-white/50 hover:bg-white/5 hover:text-white transition-colors cursor-pointer">
+            className="w-7 h-7 rounded-full grid place-items-center text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer">
             <ChevronLeft size={14} />
           </button>
           <button
             type="button"
             aria-label="Next day"
-            className="w-7 h-7 rounded-full grid place-items-center text-white/50 hover:bg-white/5 hover:text-white transition-colors cursor-pointer">
+            className="w-7 h-7 rounded-full grid place-items-center text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer">
             <ChevronRight size={14} />
           </button>
         </div>
@@ -276,15 +274,15 @@ function TopBar({
         <button
           type="button"
           aria-label="Calendar"
-          className="hidden sm:grid ml-1 w-7 h-7 rounded-full place-items-center text-white/50 hover:bg-white/5 hover:text-white transition-all cursor-pointer">
+          className="hidden sm:grid ml-1 w-7 h-7 rounded-full place-items-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer">
           <CalendarIcon size={14} />
         </button>
       </div>
 
       {/* Streak pill */}
-      <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full bg-white/5 border border-white/10 shrink-0">
-        <Flame size={12} className="text-orange-400" fill="currentColor" />
-        <span className="text-xs font-bold tabular-nums text-white">
+      <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full bg-accent border border-border shrink-0">
+        <Flame size={12} className="text-orange-500" fill="currentColor" />
+        <span className="text-xs font-bold tabular-nums text-foreground">
           {streak}
         </span>
       </div>
@@ -310,7 +308,7 @@ function CalorieRing({ pct }: { pct: number }) {
           cy="50"
           r={R}
           fill="none"
-          stroke="rgba(255,255,255,0.1)"
+          stroke="rgba(0,0,0,0.08)"
           strokeWidth="8"
         />
         <motion.circle
@@ -318,7 +316,8 @@ function CalorieRing({ pct }: { pct: number }) {
           cy="50"
           r={R}
           fill="none"
-          stroke="white"
+          stroke="currentColor"
+          className="text-foreground"
           strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={C}
@@ -328,10 +327,10 @@ function CalorieRing({ pct }: { pct: number }) {
         />
       </svg>
       <div className="absolute inset-0 grid place-items-center">
-        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white grid place-items-center">
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-foreground grid place-items-center">
           <Flame
             size={16}
-            className="text-black sm:size-4.5"
+            className="text-background sm:size-4.5"
             fill="currentColor"
           />
         </div>
@@ -357,23 +356,23 @@ function CaloriesCard({
     <div
       className={`${SURFACE} ${BORDER} rounded-2xl  px-4 sm:px-5 py-4 md:h-64 flex items-center justify-between gap-3 sm:gap-4`}>
       <div className="min-w-0 flex-1">
-        <div className="text-3xl sm:text-4xl font-extrabold leading-none tracking-tight text-white tabular-nums ">
+        <div className="text-3xl sm:text-4xl font-extrabold leading-none tracking-tight text-foreground tabular-nums ">
           {left}
         </div>
-        <div className="text-xs font-semibold text-white/50 mt-1.5 mb-3">
+        <div className="text-xs font-semibold text-muted-foreground mt-1.5 mb-3">
           Calories Left
         </div>
         <div
           className={[
             "inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-full",
             completed
-              ? "bg-emerald-500/15 text-emerald-300"
-              : "bg-white/5 text-white/60",
+              ? "bg-emerald-500/15 text-emerald-700"
+              : "bg-accent text-muted-foreground",
           ].join(" ")}>
           <span
             className={[
               "w-1.5 h-1.5 rounded-full",
-              completed ? "bg-emerald-400" : "bg-white/40",
+              completed ? "bg-emerald-500" : "bg-muted-foreground/40",
             ].join(" ")}
           />
           {completed ? "Day completed" : "Tracking…"}
@@ -404,21 +403,21 @@ function MacroCard({
       <div className="flex items-center gap-3 min-w-0">
         <div
           className="w-9 h-9 rounded-full grid place-items-center shrink-0 text-lg leading-none"
-          style={{ backgroundColor: `${color}1A` /* ~10% alpha */ }}>
+          style={{ backgroundColor: `${color}22` /* ~13% alpha */ }}>
           <span>{emoji}</span>
         </div>
         <div className="min-w-0">
-          <div className="text-[9px] font-bold uppercase tracking-widest text-white/40">
+          <div className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60">
             {label}
           </div>
-          <div className="text-sm font-bold text-white tabular-nums">
+          <div className="text-sm font-bold text-foreground tabular-nums">
             <span style={{ color }}>{value}</span>
-            <span className="text-white/50">{unit}</span>{" "}
-            <span className="text-white/40 font-medium">Left</span>
+            <span className="text-muted-foreground">{unit}</span>{" "}
+            <span className="text-muted-foreground/60 font-medium">Left</span>
           </div>
         </div>
       </div>
-      <ChevronRight size={16} className="text-white/40 shrink-0" />
+      <ChevronRight size={16} className="text-muted-foreground/40 shrink-0" />
     </button>
   );
 }
@@ -426,21 +425,21 @@ function MacroCard({
 function MealRow({ meal }: { meal: MealDemo }) {
   const Icon = meal.icon;
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors">
-      <div className="w-9 h-9 rounded-xl bg-white/5 grid place-items-center shrink-0">
-        <Icon size={15} className="text-white/70" />
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-accent/50 transition-colors">
+      <div className="w-9 h-9 rounded-xl bg-accent grid place-items-center shrink-0">
+        <Icon size={15} className="text-muted-foreground" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[12.5px] font-bold text-white truncate">
+        <div className="text-[12.5px] font-bold text-foreground truncate">
           {meal.name}
         </div>
-        <div className="text-[11px] text-white/40">{meal.time}</div>
+        <div className="text-[11px] text-muted-foreground">{meal.time}</div>
       </div>
       <div className="text-right shrink-0">
-        <div className="text-[13px] font-bold text-white tabular-nums">
+        <div className="text-[13px] font-bold text-foreground tabular-nums">
           {meal.cal}
         </div>
-        <div className="text-[9px] text-white/40 font-bold uppercase tracking-widest">
+        <div className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-widest">
           kcal
         </div>
       </div>
@@ -453,7 +452,7 @@ function Fab() {
     <motion.button
       type="button"
       aria-label="Add meal"
-      className="absolute bottom-4 right-4 w-12 h-12 sm:w-11 sm:h-11 rounded-full bg-white text-black grid place-items-center shadow-xl shadow-black/40 cursor-pointer"
+      className="absolute bottom-4 right-4 w-12 h-12 sm:w-11 sm:h-11 rounded-full bg-foreground text-background grid place-items-center shadow-xl shadow-black/10 cursor-pointer"
       animate={{ scale: [1, 1.08, 1] }}
       transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}>
       <Plus size={22} strokeWidth={2.5} className="sm:size-5" />
@@ -517,10 +516,9 @@ export function DashboardMock() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden rounded-2xl flex text-white"
+      className="relative w-full h-full overflow-hidden rounded-2xl flex text-foreground bg-background border border-border"
       role="img"
-      aria-label="Live preview of the CalStory dashboard"
-      style={{ background: "#0a0a0a" }}>
+      aria-label="Live preview of the CalStory dashboard">
       <Sidebar activeKey={activeNav} onSelect={setActiveNav} />
 
       {/* Main column */}
@@ -563,25 +561,25 @@ export function DashboardMock() {
           {/* Workout */}
           <section className="flex-1 basis-1/2 min-w-0">
             <div className="flex w-full items-center justify-between mb-2 px-1">
-              <span className="text-[12px] font-bold text-white">
+              <span className="text-[12px] font-bold text-foreground">
                 Today's Workout
               </span>
               <button
                 type="button"
-                className="text-[10.5px] font-semibold text-white/40 hover:text-white transition-colors inline-flex items-center gap-1 cursor-pointer">
+                className="text-[10.5px] font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 cursor-pointer">
                 See all <ArrowUpRight size={10} />
               </button>
             </div>
             <div
               className={`${SURFACE} ${BORDER} rounded-2xl px-3 py-3 flex items-center gap-3 ${SURFACE_HOVER} transition-colors cursor-pointer`}>
-              <div className="w-9 h-9 rounded-xl bg-white/5 grid place-items-center text-base shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-accent grid place-items-center text-base shrink-0">
                 <span aria-hidden>{WORKOUT_DEMO.emoji}</span>
               </div>
               <div className="min-w-0">
-                <div className="text-[12.5px] font-bold text-white truncate">
+                <div className="text-[12.5px] font-bold text-foreground truncate">
                   {WORKOUT_DEMO.name}
                 </div>
-                <div className="text-[11px] text-white/40">
+                <div className="text-[11px] text-muted-foreground">
                   {WORKOUT_DEMO.subtitle}
                 </div>
               </div>
@@ -591,12 +589,12 @@ export function DashboardMock() {
           {/* Recently uploaded */}
           <section className="flex-1 basis-1/2 min-w-0">
             <div className="flex items-center justify-between mb-2 px-1">
-              <span className="text-[12px] font-bold text-white">
+              <span className="text-[12px] font-bold text-foreground">
                 Recently uploaded
               </span>
               <button
                 type="button"
-                className="text-[10.5px] font-semibold text-white/40 hover:text-white transition-colors inline-flex items-center gap-1 cursor-pointer">
+                className="text-[10.5px] font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 cursor-pointer">
                 See all <ArrowUpRight size={10} />
               </button>
             </div>

@@ -10,7 +10,6 @@ import {
   Dumbbell,
   TrendingUp,
   Settings,
-  Activity,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuthStore } from "@/app/store/authStore";
@@ -24,7 +23,6 @@ const NAV: {
   { href: "/dashboard", label: "Home", Icon: Home },
   { href: "/nutrition", label: "Nutrition", Icon: UtensilsCrossed },
   { href: "/workouts", label: "Workouts", Icon: Dumbbell },
-  { href: "/fitness", label: "Fitness", Icon: Activity },
   { href: "/progress", label: "Progress", Icon: TrendingUp },
   { href: "/settings", label: "Settings", Icon: Settings },
 ];
@@ -78,7 +76,7 @@ function PillNavInner({ pathname }: { pathname: string }) {
   return (
     <>
       {/* Desktop sidebar — hidden below lg */}
-      <nav className="fixed left-3 lg:left-4 top-1/2 -translate-y-1/2 w-16 bg-background border border-border rounded-[30px] shadow-[0_4px_24px_oklch(0_0_0/_0.07)] dark:shadow-none hidden lg:flex flex-col items-center gap-[2px] py-[10px] px-2 z-[200]">
+      <nav className="fixed left-3 lg:left-4 inset-y-4 w-[68px] bg-background border border-border rounded-[30px] shadow-[0_4px_24px_oklch(0_0_0/_0.07)] dark:shadow-[0_4px_24px_oklch(0_0_0/_0.12)] hidden lg:flex flex-col items-center gap-[2px] py-[10px] px-2 z-[200] overflow-y-auto overflow-x-hidden">
         <div className="w-[38px] h-[38px] bg-foreground rounded-full flex items-center justify-center mb-[10px] overflow-hidden">
           <img
             src="/light.png"
@@ -180,7 +178,7 @@ function FloatingSidebar({ pathname }: { pathname: string }) {
   return (
     <>
       {/* Desktop floating sidebar — lg and up */}
-      <nav className="fixed left-3 lg:left-4 inset-y-4 w-64 bg-card/60 dark:bg-card/60 backdrop-blur-2xl border border-border/60 dark:border-border/40 rounded-3xl shadow-[0_8px_32px_oklch(0_0_0/_0.08)] dark:shadow-none hidden lg:flex flex-col gap-1 py-4 px-3 z-[200] ">
+      <nav className="fixed left-3 lg:left-4 inset-y-4 w-60 bg-card/60 dark:bg-card/60 backdrop-blur-2xl border border-border/60 dark:border-border/40 rounded-3xl shadow-[0_8px_32px_oklch(0_0_0/_0.08)] dark:shadow-[0_8px_32px_oklch(0_0_0/_0.18)] hidden lg:flex flex-col gap-1 py-4 px-3 z-[200] overflow-y-auto overflow-x-hidden">
         {/* Brand */}
         <div className="flex items-center gap-2.5 px-2 py-1.5 mb-3 ">
           <Link

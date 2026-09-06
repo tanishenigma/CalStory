@@ -9,6 +9,50 @@ const FAQS: {
   a: ReactNode;
 }[] = [
     {
+      q: "Does CalStory use a proprietary AI model?",
+      a: (
+        <>
+          <p>
+            No. CalStory uses the <strong>Google Gemini API</strong> for AI meal
+            logging. There is no proprietary or fine-tuned model — and we&apos;re
+            transparent about that.
+          </p>
+          <p className="mt-3">
+            <strong>What we built on top of Gemini:</strong>
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5 mt-2">
+            <li>
+              <strong>Context-aware prompting.</strong> Each log request includes
+              your recent meal history, macro targets, and current TDEE estimate so
+              the model has relevant context — not just generic food knowledge.
+            </li>
+            <li>
+              <strong>Structured output parsing.</strong> The API route enforces strict
+              JSON-only output and falls back gracefully instead of returning a
+              broken response.
+            </li>
+            <li>
+              <strong>Adaptive TDEE algorithm.</strong> This is CalStory&apos;s own
+              logic — not AI. Each week we compare your logged weight trend to your
+              goal and adjust your calorie target in 50 kcal steps based on actual
+              data.
+            </li>
+            <li>
+              <strong>Your data, your account.</strong> Meal logs, workouts, and
+              weight entries are stored in your own Firebase document. CalStory
+              doesn&apos;t hold a server-side copy.
+            </li>
+          </ul>
+          <p className="mt-3">
+            The AI logging is Gemini. The tracker, the adaptive targets, the streak
+            system, and the progress analytics are CalStory&apos;s own product —
+            and that&apos;s what you&apos;re paying for.
+          </p>
+        </>
+      ),
+    },
+
+    {
       q: "How does AI meal logging work?",
       a: (
         <>

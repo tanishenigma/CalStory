@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store/authStore";
 import { useApp } from "@/app/context/AppContext";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
@@ -33,14 +33,17 @@ const TABS: { key: Tab; label: string; icon: LucideIcon }[] = [
   { key: "units", label: "Units", icon: Ruler },
 ];
 
-function SettingsPageContent() {
+interface SettingsClientProps {
+  initialTabParam?: string;
+}
+
+function SettingsPageContent({ initialTabParam }: SettingsClientProps) {
   const { profile, isLoading } = useAuthGuard();
   const { state, setProfile, logWeight } = useApp();
   const { user } = useAuthStore();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  const initialTab = (searchParams.get("tab") as Tab | null) ?? "profile";
+  const initialTab = (initialTabParam as Tab | undefined) ?? "profile";
   const [tab, setTab] = useState<Tab>(
     ["profile", "goals", "appearance", "units", "ai"].includes(initialTab)
       ? initialTab
@@ -166,10 +169,8 @@ function SettingsPageContent() {
   );
 }
 
-export default function SettingsPage() {
-  return (
-    <React.Suspense fallback={<Spinner />}>
-      <SettingsPageContent />
-    </React.Suspense>
-  );
+export default function SettingsClient({
+  initialTabParam,
+}: SettingsClientProps) {
+  return <SettingsPageContent initialTabParam={initialTabParam} />;
 }

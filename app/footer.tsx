@@ -1,8 +1,16 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FaGithub } from "react-icons/fa";
+import { ArrowRight } from "lucide-react";
 
 const productLinks = [
+  {
+    label: "Pricing",
+    href: "/pricing",
+  },
   {
     label: "AI Food Logger",
     href: "/nutrition/",
@@ -48,6 +56,25 @@ const legalLinks = [
 
 const Footer = () => {
   const year = new Date().getFullYear();
+  const [email, setEmail] = useState("");
+  const [subState, setSubState] = useState<"idle" | "loading" | "done" | "error">("idle");
+
+  async function handleSubscribe(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim() || !email.includes("@")) return;
+    setSubState("loading");
+    try {
+      await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      setSubState("done");
+      setEmail("");
+    } catch {
+      setSubState("error");
+    }
+  }
 
   return (
     <footer
@@ -168,15 +195,55 @@ const Footer = () => {
           </div>
         </div>
 
+        {/* Email capture row */}
+        <div className="mt-10 pt-8 border-t border-border/30">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="font-semibold text-sm font-heading">Stay in the loop</p>
+              <p className="text-xs text-muted-foreground/70 mt-0.5">
+                Product updates, new features, and the occasional insight from the team.
+              </p>
+            </div>
+            {subState === "done" ? (
+              <p className="text-sm text-primary font-semibold shrink-0">✓ You&apos;re on the list.</p>
+            ) : (
+              <form onSubmit={handleSubscribe} className="flex gap-2 shrink-0" aria-label="Email subscription form">
+                <input
+                  id="footer-email-input"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  disabled={subState === "loading"}
+                  className="h-10 px-4 rounded-xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60 w-52"
+                />
+                <button
+                  type="submit"
+                  disabled={subState === "loading"}
+                  className="h-10 px-4 rounded-xl bg-foreground text-background text-sm font-bold inline-flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer shrink-0"
+                >
+                  {subState === "loading" ? "..." : "Subscribe"}
+                  {subState !== "loading" && <ArrowRight className="w-3.5 h-3.5" />}
+                </button>
+              </form>
+            )}
+          </div>
+          {subState === "error" && (
+            <p className="text-xs text-red-400 mt-2">Something went wrong — try again.</p>
+          )}
+        </div>
+
         {/* Bottom bar: copyright + GitHub */}
-        <div className="mt-12 pt-6 border-t border-border/30 flex flex-col-reverse md:flex-row items-center justify-between gap-4 text-[11px] font-medium text-muted-foreground/80">
+        <div className="mt-8 pt-6 border-t border-border/30 flex flex-col-reverse md:flex-row items-center justify-between gap-4 text-[11px] font-medium text-muted-foreground/80">
           <span>&copy;{year} CalStory. All rights reserved.</span>
           <a
             href="https://github.com/tanishenigma"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="CalStory on GitHub (opens in a new tab)"
-            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors">
+            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+          >
             <FaGithub size={12} aria-hidden="true" />
             <span>GitHub</span>
           </a>

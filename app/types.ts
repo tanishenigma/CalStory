@@ -426,6 +426,34 @@ export interface Profile {
   syncedFromSource?: "google_fit" | "manual";
 }
 
+// ─── Billing / Subscription ────────────────────────────────
+/**
+ * Maps the Polar product names to internal tier identifiers.
+ * "free" is the default — no Polar record exists for it.
+ * "plus" = $7/mo product. "pro" = $14/mo product.
+ */
+export type SubscriptionTier = "free" | "plus" | "pro";
+
+/**
+ * Subscription record stored at `users/{uid}/subscription/active`.
+ * Written by the Polar webhook handler; read anywhere billing
+ * gating is needed (e.g. AI log limits, export features).
+ */
+export interface Subscription {
+  /** Resolved CalStory tier. */
+  tier: SubscriptionTier;
+  /** Mirrors Polar's subscription `status` field. */
+  status: "active" | "canceled" | "past_due" | "trialing" | "unpaid";
+  /** Polar subscription ID — for reconciliation / customer portal links. */
+  polarSubscriptionId: string;
+  /** Polar customer ID. */
+  polarCustomerId: string;
+  /** Polar product ID that triggered this record. */
+  polarProductId: string;
+  /** Unix ms timestamp of the last webhook event that updated this record. */
+  updatedAt: number;
+}
+
 /**
  * A weight log entry. Each entry represents a single weigh-in.
  * The most recent entry is treated as the user's "current" weight
@@ -464,25 +492,6 @@ export interface FitnessLog {
   syncedAt: number;
 }
 
-// ─── Fasting Tracker ────────────────────────────────────────
-export type FastingStatus = "active" | "completed" | "broken";
-
-/**
- * A fasting session. Stored at users/{uid}/fasting/active.
- * All timestamps are UTC milliseconds — elapsed time is computed
- * as `Date.now() - startUtcMs`, never via local-hour subtraction.
- */
-export interface FastingSession {
-  id: string;
-  /** UTC ms when the fast started. */
-  startUtcMs: number;
-  /** Target fast length in milliseconds (e.g. 16h = 57600000). */
-  targetDurationMs: number;
-  status: FastingStatus;
-  /** UTC ms when the fast ended (set on complete/break). */
-  endUtcMs?: number;
-}
-
 // ─── Hydration Tracker ──────────────────────────────────────
 export interface HydrationEntry {
   id: string;
@@ -515,8 +524,6 @@ export interface AppState {
 
   /** Today's fitness data (steps, calories) from Google Fit or manual entry. */
   fitnessLogs: Record<string, FitnessLog>;
-  /** The currently active fasting session, or null if none. */
-  fastingSession: FastingSession | null;
   /** Today's hydration log, or null if not yet loaded. */
   hydrationLog: HydrationLog | null;
 }
@@ -544,10 +551,6 @@ export interface AppContextValue {
 
   // ── Fitness Sync ──
   saveFitnessLog: (log: FitnessLog) => Promise<void>;
-
-  // ── Fasting Tracker ──
-  setFastingSession: (session: FastingSession) => Promise<void>;
-  clearFastingSession: () => Promise<void>;
 
   // ── Hydration Tracker ──
   addHydration: (ml: number) => Promise<void>;

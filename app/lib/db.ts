@@ -19,9 +19,9 @@ import type {
   RecentMeal,
   WeightLog,
   FitnessLog,
-  FastingSession,
   HydrationLog,
   HydrationEntry,
+  Subscription,
 } from "@/app/types";
 
 /* ────────────────────────────────────────────────────────────
@@ -454,46 +454,6 @@ export async function getFitnessLogs(
   );
 }
 
-// ── Fasting Session ────────────────────────────────────────────
-// Path: users/{uid}/fasting/active
-// Single document — only one active fast at a time.
-export async function saveFastingSession(
-  uid: string,
-  session: FastingSession,
-): Promise<void> {
-  logger.debug(`[API Request] saveFastingSession (uid: ${uid})`);
-  await safe(async () => {
-    const ref = doc(db, "users", uid, "fasting", "active");
-    const data = Object.fromEntries(
-      Object.entries({ ...session, savedAt: serverTimestamp() }).filter(
-        ([, v]) => v !== undefined,
-      ),
-    );
-    await setDoc(ref, data);
-    logger.debug(`[API Response] saveFastingSession success`);
-  }, undefined);
-}
-
-export async function getFastingSession(
-  uid: string,
-): Promise<FastingSession | null> {
-  logger.debug(`[API Request] getFastingSession (uid: ${uid})`);
-  return safe(async () => {
-    const snap = await getDoc(doc(db, "users", uid, "fasting", "active"));
-    if (!snap.exists()) return null;
-    logger.debug(`[API Response] getFastingSession success`);
-    return snap.data() as FastingSession;
-  }, null);
-}
-
-export async function clearFastingSessionDB(uid: string): Promise<void> {
-  logger.debug(`[API Request] clearFastingSessionDB (uid: ${uid})`);
-  await safe(async () => {
-    await deleteDoc(doc(db, "users", uid, "fasting", "active"));
-    logger.debug(`[API Response] clearFastingSessionDB success`);
-  }, undefined);
-}
-
 // ── Hydration Logs ──────────────────────────────────────────────
 // Path: users/{uid}/hydration/{date}
 // One document per local day. Entire document is rewritten on every
@@ -523,4 +483,46 @@ export async function getHydrationLog(
     logger.debug(`[API Response] getHydrationLog success`);
     return snap.data() as HydrationLog;
   }, null);
+}
+
+// ── Subscription (Polar billing) ──────────────────────────
+/**
+ * Returns the user's active Polar subscription record, or null if
+ * the user is on the free tier (no record exists).
+ */
+export async function getSubscription(
+  uid: string,
+): Promise<Subscription | null> {
+  return safe(async () => {
+    const snap = await getDoc(doc(db, "users", uid, "subscription", "active"));
+    if (!snap.exists()) return null;
+    return snap.data() as Subscription;
+  }, null);
+}
+
+/**
+ * Upserts the subscription record. Called by the Polar webhook handler
+ * on subscription.created and subscription.updated events.
+ */
+export async function setSubscription(
+  uid: string,
+  data: Subscription,
+): Promise<void> {
+  return safe(async () => {
+    await setDoc(doc(db, "users", uid, "subscription", "active"), data, {
+      merge: true,
+    });
+    logger.debug(`[db] setSubscription uid=${uid} tier=${data.tier}`);
+  }, undefined);
+}
+
+/**
+ * Deletes the subscription record. Called when a subscription is
+ * permanently canceled so the user reverts to the free tier.
+ */
+export async function clearSubscription(uid: string): Promise<void> {
+  return safe(async () => {
+    await deleteDoc(doc(db, "users", uid, "subscription", "active"));
+    logger.debug(`[db] clearSubscription uid=${uid}`);
+  }, undefined);
 }

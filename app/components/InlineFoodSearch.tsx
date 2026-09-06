@@ -402,9 +402,9 @@ export default function InlineFoodSearch({
         )}
       </div>
 
-      {/* Results */}
+      {/* Results — card layout matching landing design language */}
       {results.length > 0 && (
-        <div className="mt-2 divide-y divide-border border border-border rounded-xl overflow-hidden">
+        <div className="mt-3 flex flex-col gap-2">
           {results.map((food, idx) => {
             const getNutrient = (num: string) => {
               const n = food.foodNutrients.find(x => x.nutrientNumber === num);
@@ -414,25 +414,71 @@ export default function InlineFoodSearch({
             const p = Math.round(getNutrient("203"));
             const c = Math.round(getNutrient("205"));
             const f = Math.round(getNutrient("204"));
-            const brandInfo = food.brandOwner ? ` · ${food.brandOwner}` : "";
-            const description = `${cal} kcal · P${p}g C${c}g F${f}g per 100g${brandInfo}`;
-            
+            const brandInfo = food.brandOwner ? food.brandOwner : null;
+
+            // Derive a food-type emoji for the thumbnail
+            const lowerName = (food.description ?? "").toLowerCase();
+            let emoji = "🍽️";
+            if (lowerName.includes("chicken") || lowerName.includes("turkey")) emoji = "🍗";
+            else if (lowerName.includes("beef") || lowerName.includes("steak")) emoji = "🥩";
+            else if (lowerName.includes("egg")) emoji = "🥚";
+            else if (lowerName.includes("milk") || lowerName.includes("dairy") || lowerName.includes("yogurt") || lowerName.includes("cheese")) emoji = "🥛";
+            else if (lowerName.includes("rice")) emoji = "🍚";
+            else if (lowerName.includes("bread") || lowerName.includes("toast") || lowerName.includes("roti") || lowerName.includes("naan")) emoji = "🍞";
+            else if (lowerName.includes("apple") || lowerName.includes("banana") || lowerName.includes("fruit") || lowerName.includes("mango")) emoji = "🍎";
+            else if (lowerName.includes("salad") || lowerName.includes("vegetable") || lowerName.includes("broccoli") || lowerName.includes("spinach")) emoji = "🥗";
+            else if (lowerName.includes("protein") || lowerName.includes("whey") || lowerName.includes("supplement")) emoji = "💪";
+            else if (lowerName.includes("fish") || lowerName.includes("salmon") || lowerName.includes("tuna")) emoji = "🐟";
+            else if (lowerName.includes("nut") || lowerName.includes("almond") || lowerName.includes("peanut")) emoji = "🥜";
+            else if (lowerName.includes("oil") || lowerName.includes("butter") || lowerName.includes("ghee")) emoji = "🧈";
+            else if (lowerName.includes("pasta") || lowerName.includes("noodle")) emoji = "🍝";
+            else if (lowerName.includes("oat") || lowerName.includes("cereal") || lowerName.includes("granola")) emoji = "🥣";
+            else if (lowerName.includes("chocolate") || lowerName.includes("candy") || lowerName.includes("cookie")) emoji = "🍫";
+            else if (lowerName.includes("juice") || lowerName.includes("drink") || lowerName.includes("soda")) emoji = "🧃";
+
             return (
               <div
                 key={`${food.fdcId}-${idx}`}
-                className="p-3 hover:bg-subtle transition-colors flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="font-bold text-foreground text-sm truncate">
+                className="group flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-primary/25 hover:shadow-md hover:shadow-primary/5 transition-all duration-200 cursor-pointer"
+                onClick={() => handleSelectFood(food)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && handleSelectFood(food)}
+                aria-label={`Add ${food.description ?? "food"} to log`}
+              >
+                {/* Thumbnail */}
+                <div className="w-11 h-11 shrink-0 rounded-xl bg-primary/8 flex items-center justify-center text-xl">
+                  {emoji}
+                </div>
+
+                {/* Text content */}
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm text-foreground truncate leading-snug">
                     {food.description || "Unknown Food"}
                   </div>
-                  <div className="text-xs text-muted-foreground truncate">
-                    {description}
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    {/* Key stat chip */}
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black tabular-nums">
+                      {cal} kcal
+                    </span>
+                    <span className="text-[11px] text-muted-foreground tabular-nums">
+                      P{p}g · C{c}g · F{f}g
+                    </span>
+                    {brandInfo && (
+                      <span className="text-[11px] text-muted-foreground/60 truncate max-w-[120px]">
+                        {brandInfo}
+                      </span>
+                    )}
                   </div>
                 </div>
+
+                {/* Quick-add button */}
                 <button
-                  onClick={() => handleSelectFood(food)}
+                  onClick={(e) => { e.stopPropagation(); handleSelectFood(food); }}
                   disabled={loading}
-                  className="w-8 h-8 shrink-0 flex items-center justify-center bg-subtle hover:bg-muted rounded-full text-foreground border border-border transition-colors">
+                  aria-label={`Quick add ${food.description ?? "food"}`}
+                  className="w-9 h-9 shrink-0 flex items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/30 hover:bg-primary/90 hover:shadow-primary/40 hover:shadow-md active:scale-95 transition-all disabled:opacity-50"
+                >
                   <Plus className="w-4 h-4" />
                 </button>
               </div>

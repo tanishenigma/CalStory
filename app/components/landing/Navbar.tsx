@@ -24,6 +24,7 @@ export type NavbarTargets = Partial<{
 
 const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Features", href: "/#features" },
+  { label: "Pricing", href: "/pricing" },
   { label: "Method", href: "/#how-it-works" },
   { label: "FAQ", href: "/#faq" },
   { label: "About", href: "/about" },
@@ -320,7 +321,7 @@ export function Navbar({
           </motion.span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8 relative z-10">
+        <div className="hidden md:flex items-center gap-8 relative z-10 group/nav">
           {NAV_LINKS.map((link) => {
             const isHash =
               link.href.startsWith("#") || link.href.startsWith("/#");
@@ -328,18 +329,16 @@ export function Navbar({
               <motion.span
                 key={link.label}
                 style={{ color: textColor }}
-                className="text-xs font-bold uppercase tracking-widest">
+                className="text-xs font-bold uppercase tracking-widest transition-[opacity,filter] duration-200 group-hover/nav:opacity-40 group-hover/nav:[filter:blur(1px)] hover:!opacity-100 hover:![filter:none]">
                 {isHash ? (
                   <a
                     href={link.href}
-                    onClick={handleHashClick}
-                    className="opacity-80 hover:opacity-100 transition-opacity">
+                    onClick={handleHashClick}>
                     {link.label}
                   </a>
                 ) : (
                   <Link
-                    href={link.href}
-                    className="opacity-80 hover:opacity-100 transition-opacity">
+                    href={link.href}>
                     {link.label}
                   </Link>
                 )}
