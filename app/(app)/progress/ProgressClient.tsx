@@ -15,11 +15,14 @@ import { ConsistencyHeatmap } from "@/app/components/progress/ConsistencyHeatmap
 import { CalorieVsTdeeChart } from "@/app/components/progress/CalorieVsTdeeChart";
 import { TodayFitnessSync } from "@/app/components/progress/TodayFitnessSync";
 import { useFitnessAutoSync } from "@/app/hooks/useFitnessAutoSync";
+import { Download } from "lucide-react";
+import { ExportProgressModal } from "@/app/components/progress/ExportProgressModal";
 
 export default function ProgressPage() {
   const { profile, isLoading } = useAuthGuard();
   const { state, saveFitnessLog } = useApp();
   const [mounted, setMounted] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -67,9 +70,25 @@ export default function ProgressPage() {
 
   return (
     <div className="pb-24 p-4 md:p-6 lg:p-8 min-w-0 w-full">
-      <h1 className="mb-4 sm:mb-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
-        Progress
-      </h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-8">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
+          Progress
+        </h1>
+        <button
+          type="button"
+          onClick={() => setExportOpen(true)}
+          className="inline-flex items-center gap-2 self-start sm:self-auto px-4 py-2 rounded-xl bg-card hover:bg-muted/70 text-foreground border border-border shadow-xs text-sm font-medium transition-all active:scale-[0.98] cursor-pointer"
+        >
+          <Download className="w-4 h-4 text-primary" />
+          <span>Export Progress</span>
+        </button>
+      </div>
+
+      <ExportProgressModal
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+      />
+
       <TodayFitnessSync />
       <Streak />
       <div className="mb-4  grid grid-cols-1 lg:grid-cols-2 gap-4 items-center p-2">

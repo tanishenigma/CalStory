@@ -55,7 +55,9 @@ const TIERS = [
       "Workout templates + re-log",
     ],
     cta: "Get Plus",
-    polarCheckoutLink: process.env.NEXT_PUBLIC_POLAR_PLUS_CHECKOUT_LINK ?? null,
+    polarCheckoutLink:
+      process.env.NEXT_PUBLIC_POLAR_PLUS_CHECKOUT_LINK ||
+      "https://buy.polar.sh/polar_cl_o705YWAwROcBAmFgWwhu7IQ73TblaR8U1MlDX1wHvNU",
   },
   {
     id: "pro",
@@ -75,7 +77,9 @@ const TIERS = [
       "Early access to features in development",
     ],
     cta: "Get Pro",
-    polarCheckoutLink: process.env.NEXT_PUBLIC_POLAR_PRO_CHECKOUT_LINK ?? null,
+    polarCheckoutLink:
+      process.env.NEXT_PUBLIC_POLAR_PRO_CHECKOUT_LINK ||
+      "https://buy.polar.sh/polar_cl_3xXxFPrnqJ0iEa5R4PEO9YABKLXejLF9Sryrf0d5JZ0",
   },
 ] as const;
 
@@ -195,11 +199,15 @@ export default function PricingSection() {
   };
 
   async function handleCta(tier: Tier) {
-    if (tier.id === "free" || !tier.polarCheckoutLink) {
+    if (tier.id === "free") {
       router.push(user ? "/dashboard" : "/auth");
       return;
     }
-    await openPolarEmbed(tier.polarCheckoutLink);
+    if (tier.polarCheckoutLink && !tier.polarCheckoutLink.includes("REPLACE_ME")) {
+      window.location.href = tier.polarCheckoutLink;
+      return;
+    }
+    router.push(user ? "/dashboard" : "/auth");
   }
 
   return (
