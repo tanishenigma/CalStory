@@ -173,7 +173,7 @@ export default function NutritionPage() {
               value={agg.cal}
               max={calTarget}
               ringColor="var(--color-primary)"
-              trackColor="oklch(0.7227 0.1920 149.5793 / 0.18)"
+              trackColor="oklch(0.7173 0.1906 49.4698 / 0.18)"
             />
             <EnergyRing
               label="Expenditure"
@@ -223,7 +223,7 @@ export default function NutritionPage() {
               current={agg.c}
               max={cTarget}
               unit="g"
-              color="bg-green-500"
+              color="bg-primary"
             />
             <TargetRow
               label="Fat"

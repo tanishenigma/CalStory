@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useApp, todayLocalKey } from "@/app/context/AppContext";
 import { DAY_LABELS } from "@/app/lib/constants";
 import DatePicker from "@/app/components/DatePicker";
+import BrandLogo from "@/app/components/BrandLogo";
 import { ChevronLeft, ChevronRight, Flame } from "lucide-react";
 import { useStreak } from "@/app/hooks/useStreak";
 
@@ -66,22 +67,7 @@ export default function WeekStrip() {
         {/* Mobile-only header: logo + streak above the week strip */}
         <div className="lg:hidden flex items-center justify-between px-1 pb-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center overflow-hidden">
-              <img
-                src="/light.png"
-                alt="CalStory"
-                width={28}
-                height={28}
-                className="w-7 h-7 object-contain block dark:hidden"
-              />
-              <img
-                src="/dark.png"
-                alt="CalStory"
-                width={28}
-                height={28}
-                className="w-7 h-7 object-contain hidden dark:block"
-              />
-            </div>
+            <BrandLogo className="h-8 w-8" />
             <span className="font-heading font-bold text-base text-foreground tracking-tight">
               CalStory
             </span>

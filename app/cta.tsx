@@ -43,7 +43,7 @@ const CTASection = ({ handleSignIn }: CtaSectionProps) => {
                     ? router.push("/dashboard")
                     : handleSignIn()
                 }
-                className="h-14 px-10 rounded-2xl bg-foreground text-background text-base font-bold hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center gap-2.5 shadow-xl hover:shadow-2xl hover:shadow-primary/10">
+                className="h-14 px-10 rounded-full bg-foreground text-background text-base font-bold hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center gap-2.5 shadow-xl hover:shadow-2xl hover:shadow-primary/10">
                 {hasProfile ? "Go to Dashboard" : "Get started free"}
                 <ArrowRight size={18} />
               </button>

@@ -23,8 +23,7 @@ interface GoalsTabProps {
   setWorkoutsPerWeek: (n: number) => void;
   weightInput: string;
   setWeightInput: (s: string) => void;
-  /** Goal / target weight the user is working toward (stringified,
-   *  in the active display unit — same convention as `weightInput`). */
+
   targetWeightInput: string;
   setTargetWeightInput: (s: string) => void;
   weightUnit: WeightUnit;
@@ -59,11 +58,6 @@ export function GoalsTab({
 
   const weightKg =
     weightUnit === "lbs" ? lbsToKg(Number(weightInput)) : Number(weightInput);
-
-  // Target weight conversion. Empty string clears the target
-  // entirely (we store `undefined` on the profile so the Progress
-  // page falls back to its heuristic). Otherwise we convert to kg
-  // — same canonical storage unit the rest of the app uses.
   const targetWeightKg =
     targetWeightInput.trim() === ""
       ? undefined
@@ -75,9 +69,6 @@ export function GoalsTab({
     ...profile,
     goal,
     intensity,
-    // TDEE preview must use *current* weight, never the target. Using
-    // the target here would silently shift calorie math when the user
-    // is editing their goal weight.
     weight: weightKg,
     steps,
     workoutsPerWeek,
@@ -109,8 +100,7 @@ export function GoalsTab({
         carbs: calc.carbs,
         fat: calc.fat,
       });
-      // Bidirectional: a real *current* weight change also creates a
-      // weigh-in. Changing the target weight never creates a log.
+
       const previousWeight = profile.weight ?? 0;
       if (Math.abs(weightKg - previousWeight) > 0.05) {
         await logWeight(weightKg, weightUnit);
@@ -157,8 +147,6 @@ export function GoalsTab({
     </BlurFade>
   );
 }
-
-// ── Sub-components ────────────────────────────────────────────────
 
 function ActivitySection({
   steps,
@@ -212,7 +200,7 @@ function ActivitySection({
               key={n}
               type="button"
               onClick={() => setWorkoutsPerWeek(n)}
-              className={`relative py-3 rounded-xl border text-center text-sm font-bold transition-colors ${
+              className={`relative py-3 rounded-xl border text-center text-sm font-bold transition-colors hover:border-foreground ${
                 workoutsPerWeek === n
                   ? "border-transparent bg-foreground text-background"
                   : "border-foreground/10 text-foreground"

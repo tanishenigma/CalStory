@@ -8,7 +8,7 @@ import "./bento-grid.css";
 
 const DEFAULT_PARTICLE_COUNT = 12;
 const DEFAULT_SPOTLIGHT_RADIUS = 300;
-const DEFAULT_GLOW_COLOR = "34, 197, 94"; // CalStory primary green rgb
+const DEFAULT_GLOW_COLOR = "254, 119, 2"; // CalStory primary orange rgb
 const MOBILE_BREAKPOINT = 768;
 
 const createParticleElement = (x: number, y: number, color: string) => {

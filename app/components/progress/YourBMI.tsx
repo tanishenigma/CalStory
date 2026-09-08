@@ -41,7 +41,7 @@ const CATEGORIES: Category[] = [
     min: 18.5,
     max: 25,
     label: "Healthy",
-    color: "var(--color-primary)",
+    color: "oklch(0.7227 0.192 149.5793)",
     textColor: "#15803D",
   },
   {

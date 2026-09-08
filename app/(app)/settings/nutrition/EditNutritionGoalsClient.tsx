@@ -1,11 +1,8 @@
 "use client";
 
-import React from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronDown } from "lucide-react";
-import { Card, CardContent } from "@/app/components/ui/card";
 
-// Reusable Circular Progress Icon
 function CircularProgress({
   value,
   total,

@@ -177,7 +177,7 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
               <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
                 Stored key{" "}
                 {!apiKeyNeedsReEncrypt && (
-                  <span className="normal-case font-normal text-emerald-600 dark:text-emerald-400 ml-1">
+                  <span className="normal-case font-normal text-amber-600 dark:text-amber-400 ml-1">
                     · encrypted
                   </span>
                 )}
@@ -245,7 +245,7 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
             </div>
           )}
           {apiKeySuccess && !apiKeyError && (
-            <div className="flex items-center gap-2 mt-2.5 text-xs text-emerald-600 dark:text-emerald-400">
+            <div className="flex items-center gap-2 mt-2.5 text-xs text-amber-600 dark:text-amber-400">
               <CheckCircle2 size={13} />
               Key saved successfully.
             </div>

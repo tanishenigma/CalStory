@@ -84,8 +84,8 @@ export function WeeklyEnergy() {
           {
             label: "Consumed",
             data: consumedData,
-            borderColor: "#22c55e",
-            backgroundColor: "#22c55e",
+            borderColor: "#EA580C",
+            backgroundColor: "#EA580C",
             tension: 0.4,
             pointRadius: 3,
             borderWidth: 2,
@@ -177,7 +177,7 @@ export function WeeklyEnergy() {
             <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
               Consumed
             </div>
-            <div className="text-xl font-mono font-bold text-[#22c55e]">
+            <div className="text-xl font-mono font-bold text-primary">
               {chartData.avgConsumed}
             </div>
           </div>

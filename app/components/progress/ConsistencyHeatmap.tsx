@@ -53,7 +53,7 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
 
   const WORKOUT_MIN_TARGET = 60;
 
-  const accentRgb = "48, 158, 134";
+  const accentRgb = "254, 119, 2";
   const accentClass = "text-primary";
   const accentSoft = "bg-primary/10 border-primary/20";
 
@@ -302,7 +302,7 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
 
                         border:
                           mode === "meals" && cell.hasWorkout && !cell.isFuture
-                            ? "1px solid oklch(0.7227 0.1920 149.5793 / 0.6)"
+                            ? "1px solid oklch(0.7173 0.1906 49.4698 / 0.6)"
                             : "1px solid transparent",
                         aspectRatio: "1",
                         minHeight: "clamp(10px, 2vw, 14px)",
@@ -355,7 +355,7 @@ export function ConsistencyHeatmap({ mode = "meals" }: { mode?: HeatmapMode }) {
                   <span
                     className="w-3 h-3 rounded-[3px] inline-block bg-transparent"
                     style={{
-                      border: "1px solid oklch(0.7227 0.1920 149.5793 / 0.6)",
+                      border: "1px solid oklch(0.7173 0.1906 49.4698 / 0.6)",
                     }}
                   />
                   + workout

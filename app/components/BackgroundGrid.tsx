@@ -45,7 +45,7 @@ export function BackgroundGrid({
         zIndex: 0,
         // Light-mode grid color (4% ink hairlines)
         backgroundImage:
-          "linear-gradient(to right, oklch(0.2272 0.0049 173.9454 / 0.04) 1px, transparent 1px), linear-gradient(to bottom, oklch(0.2272 0.0049 173.9454 / 0.04) 1px, transparent 1px)",
+          "linear-gradient(to right, color-mix(in srgb, var(--color-foreground) 4%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in srgb, var(--color-foreground) 4%, transparent) 1px, transparent 1px)",
         backgroundSize: `${GRID_SIZE}px ${GRID_SIZE}px`,
         backgroundPosition: "-1px -1px",
       }}>
@@ -55,7 +55,7 @@ export function BackgroundGrid({
         className="absolute inset-0 dark:block hidden"
         style={{
           backgroundImage:
-            "linear-gradient(to right, oklch(1 0 0 / 0.03) 1px, transparent 1px), linear-gradient(to bottom, oklch(1 0 0 / 0.03) 1px, transparent 1px)",
+            "linear-gradient(to right, color-mix(in srgb, var(--color-white) 3%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in srgb, var(--color-white) 3%, transparent) 1px, transparent 1px)",
           backgroundSize: `${GRID_SIZE}px ${GRID_SIZE}px`,
           backgroundPosition: "-1px -1px",
         }}

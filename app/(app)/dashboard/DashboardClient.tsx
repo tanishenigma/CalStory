@@ -73,14 +73,7 @@ export default function DashboardPage() {
 
           <MacroPills macros={totals} target={targetMacros} />
         </div>
-        {/* Bottom Row: Workout & Meals */}
-        <TodaySections
-          todayWorkouts={todayWorkouts}
-          todayMeals={todayMeals}
-          recentWorkouts={recentWorkouts}
-          recentMeals={recentMeals}
-          mealIcons={MEAL_ICONS}
-        />
+
         {/* Hydration card */}
         <section>
           <div className="flex items-center justify-between mb-3">
@@ -107,6 +100,14 @@ export default function DashboardPage() {
             />
           </Card>
         </section>
+        {/* Bottom Row: Workout & Meals */}
+        <TodaySections
+          todayWorkouts={todayWorkouts}
+          todayMeals={todayMeals}
+          recentWorkouts={recentWorkouts}
+          recentMeals={recentMeals}
+          mealIcons={MEAL_ICONS}
+        />
       </div>
     </div>
   );

@@ -57,13 +57,7 @@ export default function TiltedCard({
 
   const [lastY, setLastY] = useState(0);
 
-  // Mobile-warning toast — fires once on mount when `showMobileWarning` is
-  // true. Replaces the previous inline `<div className="tilted-card-mobile-
-  // alert">` banner, which was hidden/shown via a CSS media query inside
-  // TiltedCard.css. We use sonner's `toast` (wired globally in
-  // app/layout.tsx via <Toaster />) rather than useToast() so this
-  // component works regardless of whether its caller wraps it in a
-  // <ToastContainer>.
+
   useEffect(() => {
     if (!showMobileWarning) return;
     toast.warning(
@@ -73,8 +67,6 @@ export default function TiltedCard({
         duration: 5000,
       },
     );
-    // Only on mount — subsequent prop changes shouldn't re-fire.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleMouse(e: React.MouseEvent<HTMLElement>) {
@@ -122,9 +114,6 @@ export default function TiltedCard({
       onMouseMove={handleMouse}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}>
-      {/* Mobile warning is now surfaced via toast.warning() above; the
-          previous inline `.tilted-card-mobile-alert` div has been removed
-          (and its CSS rules can be cleaned up in a follow-up). */}
 
       <motion.div
         className="tilted-card-inner"

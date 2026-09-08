@@ -102,15 +102,15 @@ function Cell({ value }: { value: CellValue }) {
   if (value === "partial")
     return (
       <div className="flex justify-center">
-        <div className="w-6 h-6 rounded-full bg-amber-400/15 flex items-center justify-center">
-          <Minus className="w-3.5 h-3.5 text-amber-500" strokeWidth={2.5} />
+        <div className="w-6 h-6 rounded-full bg-amber/15 flex items-center justify-center">
+          <Minus className="w-3.5 h-3.5 text-amber" strokeWidth={2.5} />
         </div>
       </div>
     );
   return (
     <div className="flex justify-center">
-      <div className="w-6 h-6 rounded-full bg-red-400/10 flex items-center justify-center">
-        <X className="w-3.5 h-3.5 text-red-400" strokeWidth={2.5} />
+      <div className="w-6 h-6 rounded-full bg-red/10 flex items-center justify-center">
+        <X className="w-3.5 h-3.5 text-red" strokeWidth={2.5} />
       </div>
     </div>
   );
@@ -127,28 +127,27 @@ export default function ComparisonTable() {
       ref={ref}
       id="comparison"
       aria-labelledby="comparison-heading"
-      className="relative z-10 py-24 px-4 w-full"
-    >
+      className="relative z-10 py-24 px-4 w-full">
       <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, ease: EASE }}
-          className="text-center mb-12"
-        >
+          className="text-center mb-12">
           <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase mb-4">
             Comparison
           </span>
           <h2
             id="comparison-heading"
-            className="text-3xl md:text-5xl font-bold tracking-tight leading-tight font-heading"
-          >
+            className="text-3xl md:text-5xl font-bold tracking-tight leading-tight font-heading">
             CalStory vs. what you&apos;ve{" "}
             <span className="text-primary">already tried</span>.
           </h2>
           <p className="mt-4 text-muted-foreground text-sm max-w-2xl mx-auto leading-relaxed">
-            How CalStory compares to tracking in a spreadsheet and typical fitness apps.
-            <span className="text-amber-500 font-medium"> Partial</span> = available but limited or gated.
+            How CalStory compares to tracking in a spreadsheet and typical
+            fitness apps.
+            <span className="text-amber font-medium"> Partial</span> = available
+            but limited or gated.
           </p>
         </motion.div>
 
@@ -156,8 +155,7 @@ export default function ComparisonTable() {
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.15, ease: EASE }}
-          className="overflow-x-auto rounded-2xl border border-border shadow-sm"
-        >
+          className="overflow-x-auto rounded-2xl border border-border shadow-sm">
           <table className="w-full min-w-[560px] text-sm">
             <thead>
               <tr className="border-b border-border">
@@ -171,8 +169,7 @@ export default function ComparisonTable() {
                       h.highlight
                         ? "text-primary bg-primary/5"
                         : "text-foreground"
-                    }`}
-                  >
+                    }`}>
                     {h.highlight && (
                       <div className="text-[10px] font-black tracking-widest uppercase text-primary/60 mb-1">
                         ← Best choice
@@ -189,8 +186,7 @@ export default function ComparisonTable() {
                   key={f.label}
                   className={`border-b border-border/60 last:border-0 ${
                     i % 2 === 0 ? "bg-background" : "bg-card/50"
-                  }`}
-                >
+                  }`}>
                   <td className="p-4 pl-6">
                     <div className="font-medium text-foreground">{f.label}</div>
                     {f.note && (
@@ -202,8 +198,7 @@ export default function ComparisonTable() {
                   {HEADERS.map((h) => (
                     <td
                       key={h.key}
-                      className={`p-4 ${h.highlight ? "bg-primary/[0.03]" : ""}`}
-                    >
+                      className={`p-4 ${h.highlight ? "bg-primary/[0.03]" : ""}`}>
                       <Cell value={f[h.key]} />
                     </td>
                   ))}
@@ -217,9 +212,10 @@ export default function ComparisonTable() {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="text-center text-xs text-muted-foreground mt-5"
-        >
-          Based on publicly available feature documentation for each category. &ldquo;Other fitness apps&rdquo; reflects typical patterns — individual apps vary.
+          className="text-center text-xs text-muted-foreground mt-5">
+          Based on publicly available feature documentation for each category.
+          &ldquo;Other fitness apps&rdquo; reflects typical patterns —
+          individual apps vary.
         </motion.p>
       </div>
     </section>

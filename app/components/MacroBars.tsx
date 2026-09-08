@@ -17,7 +17,7 @@ interface EatenMacros {
 }
 
 const MACROS: MacroDef[] = [
-  { n: "Protein", k: "p", target: "protein", col: "oklch(0.6271 0.1699 149.2138)" },
+  { n: "Protein", k: "p", target: "protein", col: "var(--color-cyan)" },
   { n: "Carbs", k: "c", target: "carbs", col: "var(--color-primary)" },
   { n: "Fat", k: "f", target: "fat", col: "oklch(0.7951 0.1841 84.4000)" },
 ];

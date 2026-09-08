@@ -231,7 +231,7 @@ export function TodaySections({
                     gap,
                     maxVisible,
                   )}>
-                  <div className="w-12 h-12 rounded-full bg-emerald-50/50 flex items-center justify-center text-xl flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-amber-50/50 flex items-center justify-center text-xl flex-shrink-0">
                     <Icon size={20} className="text-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">

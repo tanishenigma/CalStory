@@ -2,6 +2,7 @@
 
 import { Card } from "@/app/components/ui/card";
 import { useApp, todayLocalKey } from "@/app/context/AppContext";
+import { Flame } from "lucide-react";
 
 interface Props {
   eaten: number;
@@ -52,7 +53,7 @@ export default function CalorieHero({ eaten, target }: Props) {
             over
               ? "bg-red-50 text-red-600"
               : hasTarget
-                ? "bg-emerald-50 text-emerald-600"
+                ? "bg-amber-50 text-amber-600"
                 : "bg-foreground/5 text-muted-foreground",
           ].join(" ")}>
           <span
@@ -61,7 +62,7 @@ export default function CalorieHero({ eaten, target }: Props) {
               over
                 ? "bg-red-400"
                 : hasTarget
-                  ? "bg-emerald-500"
+                  ? "bg-amber-500"
                   : "bg-muted-foreground",
             ].join(" ")}
           />
@@ -76,9 +77,23 @@ export default function CalorieHero({ eaten, target }: Props) {
           height="100%"
           viewBox="0 0 180 180"
           className={over ? "animate-pulse" : ""}>
+          {/* Gradient for progress arc */}
+          <defs>
+            <linearGradient
+              id="flameProgressGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%">
+              <stop offset="0%" stopColor="#f97316" />
+              <stop offset="50%" stopColor="#fb923c" />
+              <stop offset="100%" stopColor="#facc15" />
+            </linearGradient>
+          </defs>
+
           {/* Start the ring at 12 o'clock and go clockwise */}
           <g transform="rotate(-90 90 90)">
-            {/* Track — full circle, light grey */}
+            {/* Track */}
             <circle
               cx="90"
               cy="90"
@@ -87,24 +102,25 @@ export default function CalorieHero({ eaten, target }: Props) {
               className="stroke-border dark:stroke-border"
               strokeWidth="12"
             />
-            {/* Progress — same full circle, but shortened by offset */}
+
+            {/* Progress */}
             <circle
               cx="90"
               cy="90"
               r={R}
               fill="none"
-              stroke={over ? "var(--color-red)" : "currentColor"}
+              stroke={over ? "var(--color-red)" : "url(#flameProgressGradient)"}
               strokeWidth="12"
               strokeLinecap="round"
               strokeDasharray={C}
               strokeDashoffset={offset}
-              className={`ring-arc transition-all duration-1000 ease-out ${over ? "" : "text-foreground"}`}
+              className="ring-arc transition-all duration-1000 ease-out"
             />
           </g>
         </svg>
         {/* centre glyph */}
-        <div className="absolute inset-0 flex items-center justify-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl select-none pointer-events-none">
-          🔥
+        <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none">
+          <Flame className="size-[45%] max-w-40 max-h-40 fill-orange-400 stroke-0" />
         </div>
       </div>
     </Card>

@@ -107,7 +107,7 @@ const MethodSection = forwardRef<HTMLElement>(
                         <div
                           className={`step-badge shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold tabular-nums transition-colors duration-300 ${
                             isActive
-                              ? "bg-green-500 text-white"
+                              ? "bg-primary text-white"
                               : "bg-foreground text-background"
                           }`}>
                           {s.n}
@@ -115,7 +115,7 @@ const MethodSection = forwardRef<HTMLElement>(
                         <div>
                           <div
                             className={`step-title font-bold text-base mb-1 tracking-tight font-heading transition-colors duration-300 ${
-                              isActive ? "text-green-500" : ""
+                              isActive ? "text-primary" : ""
                             }`}>
                             {s.title}
                           </div>

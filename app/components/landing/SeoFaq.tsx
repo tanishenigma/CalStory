@@ -57,7 +57,7 @@ const FAQS: Faq[] = [
         <p>
           After onboarding you land on the dashboard. Log your first meal with
           the AI food logger — type something like{" "}
-          <em>&ldquo;two eggs, toast, and a protein shake&rdquo;</em> and the
+          <em>&ldquo;a veggie wrap and a protein shake&rdquo;</em> and the
           model returns calories and macros in roughly nine seconds. That&apos;s
           it; the rest of the app opens up as you start logging.
         </p>

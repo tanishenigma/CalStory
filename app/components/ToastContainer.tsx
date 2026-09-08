@@ -2,7 +2,6 @@
 
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 
-// ─── types ────────────────────────────────────────────────
 interface Toast {
   id: number;
   msg: string;
@@ -21,7 +20,6 @@ export function useToast(): ShowToast {
   return ctx;
 }
 
-// ─── provider + container ─────────────────────────────────
 interface ToastContainerProps {
   children: React.ReactNode;
 }

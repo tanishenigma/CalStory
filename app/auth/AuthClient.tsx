@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { PageSkeleton } from "@/app/components/PageSkeleton";
+import BrandLogo from "@/app/components/BrandLogo";
 import { useAuthStore } from "@/app/store/authStore";
 import { useApp } from "@/app/context/AppContext";
 import { signInWithGoogle } from "@/app/lib/auth";
@@ -54,14 +55,8 @@ export default function AuthPage() {
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm font-bold tracking-tight font-heading self-start">
-          <span className="grid h-9 w-9 place-items-center rounded-full overflow-hidden bg-foreground">
-            <img
-              src="/dark.png"
-              alt="CalStory"
-              width={28}
-              height={28}
-              className="w-7 h-7 object-contain  block"
-            />
+          <span className="grid h-9 w-9 place-items-center">
+            <BrandLogo className="h-9 w-9" />
           </span>
           <span>CalStory</span>
         </Link>
@@ -139,12 +134,12 @@ export default function AuthPage() {
           className="absolute inset-0 z-10 pointer-events-none"
           style={{
             background:
-              "linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.45) 100%)",
+              "linear-gradient(to bottom, transparent 55%, rgba(255,255,255,0.55) 100%)",
           }}
         />
 
         <Image
-          src="/screenshots/dashboard_light.png"
+          src="/light_dashboard.png"
           alt="CalStory — track your progress"
           fill
           quality={100}
@@ -154,12 +149,12 @@ export default function AuthPage() {
 
         {/* Optional tagline over the image */}
         <div className="absolute bottom-8 left-8 right-8 z-20">
-          <p className="font-heading text-xl font-bold text-white leading-snug drop-shadow-md">
+          <p className="font-heading text-xl font-bold text-ink leading-snug drop-shadow-sm">
             Every meal logged.
             <br />
             Every rep counted.
           </p>
-          <p className="mt-1 text-sm text-white/70">
+          <p className="mt-1 text-sm text-ink/70">
             Your story, by the numbers.
           </p>
         </div>

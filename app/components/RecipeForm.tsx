@@ -87,9 +87,7 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
 
   return (
     <div className="w-full max-w-sm mx-auto bg-card rounded-[24px] p-6 shadow-[0_8px_32px_oklch(0_0_0/_0.12)] border border-border dark:border-border origin-bottom-right animate-in zoom-in-95 duration-200">
-      <h2 className="text-[18px] font-bold mb-6 text-foreground">
-        Log Food
-      </h2>
+      <h2 className="text-[18px] font-bold mb-6 text-foreground">Log Food</h2>
 
       <div className="space-y-4">
         <div>
@@ -157,7 +155,7 @@ export default function RecipeForm({ onClose }: RecipeFormProps) {
                 setLastEdited("macros");
                 setC(e.target.value);
               }}
-              className="w-full border-b border-border py-1.5 outline-none font-semibold text-[15px] focus:border-border text-emerald-500"
+              className="w-full border-b border-border py-1.5 outline-none font-semibold text-[15px] focus:border-border text-amber-500"
               placeholder="0"
             />
           </div>

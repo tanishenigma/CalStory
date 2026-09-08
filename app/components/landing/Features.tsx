@@ -17,7 +17,7 @@ const features = [
   {
     title: "Log meals in seconds with AI",
     description:
-      'CalStory turns "I had two eggs, toast, and a protein shake" into a saved entry in under five seconds. Our AI food logger understands plain English then estimates calories and macros against a nutrition database. You confirm before anything is committed, so the numbers stay yours — not the model\'s.',
+      'CalStory turns "I had a veggie wrap and a protein shake" into a saved entry in under five seconds. Our AI food logger understands plain English then estimates calories and macros against a nutrition database. You confirm before anything is committed, so the numbers stay yours — not the model\'s.',
     image: "/landing/log-meals.webp",
   },
   {

@@ -1,6 +1,3 @@
-// Shared types for the Settings tab components.
-// Tab + intensity helpers that were previously inlined in SettingsClient.
-
 import type { GoalKey, IntensityKey } from "@/app/types";
 
 export type Tab = "profile" | "goals" | "appearance" | "units" | "ai";

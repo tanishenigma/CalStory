@@ -1,6 +1,5 @@
 "use client";
 
-import { useApp } from "@/app/context/AppContext";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
@@ -76,10 +75,10 @@ export default function MacroPills({ macros, target }: Props) {
       {/* Carbs Pill */}
       <Link
         href="/nutrition"
-        className="flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
+        className="card-glass flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
-          <div className="w-12 h-12 rounded-full flex bg-emerald-50/50 items-center justify-center relative shrink-0">
-            <MeterRing pct={cPct} colorClass="text-emerald-500">
+          <div className="w-12 h-12 rounded-full flex bg-amber-50/50 items-center justify-center relative shrink-0">
+            <MeterRing pct={cPct} colorClass="text-amber-500">
               🍞
             </MeterRing>
           </div>
@@ -96,11 +95,11 @@ export default function MacroPills({ macros, target }: Props) {
       {/* Protein Pill */}
       <Link
         href="/nutrition"
-        className="flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
+        className="card-glass flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
           <div className="w-12 h-12 rounded-full bg-red-50/50 flex items-center justify-center relative shrink-0">
             <MeterRing pct={pPct} colorClass="text-red-500">
-              🥛
+              🫘
             </MeterRing>
           </div>
           <span className="text-base font-bold text-foreground truncate">
@@ -116,7 +115,7 @@ export default function MacroPills({ macros, target }: Props) {
       {/* Fat Pill */}
       <Link
         href="/nutrition"
-        className="flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
+        className="card-glass flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
           <div className="w-12 h-12 rounded-full bg-yellow-50/50 flex items-center justify-center relative shrink-0">
             <MeterRing pct={fPct} colorClass="text-yellow-500">

@@ -39,7 +39,10 @@ function escapeCsv(val: unknown): string {
   return `"${str}"`;
 }
 
-export function ExportProgressModal({ open, onClose }: ExportProgressModalProps) {
+export function ExportProgressModal({
+  open,
+  onClose,
+}: ExportProgressModalProps) {
   const { state } = useApp();
   const [downloading, setDownloading] = useState<string | null>(null);
 
@@ -174,7 +177,9 @@ export function ExportProgressModal({ open, onClose }: ExportProgressModalProps)
           .join(","),
       ];
 
-      const dates = Object.keys(state.meals || {}).sort().reverse();
+      const dates = Object.keys(state.meals || {})
+        .sort()
+        .reverse();
       dates.forEach((date) => {
         const meals = state.meals[date] || [];
         meals.forEach((m) => {
@@ -225,7 +230,9 @@ export function ExportProgressModal({ open, onClose }: ExportProgressModalProps)
           .join(","),
       ];
 
-      const dates = Object.keys(state.workouts || {}).sort().reverse();
+      const dates = Object.keys(state.workouts || {})
+        .sort()
+        .reverse();
       dates.forEach((date) => {
         const workouts = state.workouts[date] || [];
         workouts.forEach((w) => {
@@ -298,8 +305,7 @@ export function ExportProgressModal({ open, onClose }: ExportProgressModalProps)
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="relative w-full max-w-xl bg-card border border-border rounded-2xl shadow-xl overflow-hidden p-6 sm:p-7"
-        >
+          className="relative w-full max-w-xl bg-card border border-border rounded-2xl shadow-xl overflow-hidden p-6 sm:p-7">
           {/* Header */}
           <div className="flex items-start justify-between gap-4 pb-4 border-b border-border">
             <div>
@@ -318,8 +324,7 @@ export function ExportProgressModal({ open, onClose }: ExportProgressModalProps)
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-            >
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -348,8 +353,7 @@ export function ExportProgressModal({ open, onClose }: ExportProgressModalProps)
               <button
                 disabled={downloading === "daily"}
                 onClick={exportDailySummary}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
-              >
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 active:scale-95 transition-all disabled:opacity-50">
                 <FileSpreadsheet className="w-3.5 h-3.5" />
                 {downloading === "daily" ? "Exporting..." : "CSV"}
               </button>
@@ -358,7 +362,7 @@ export function ExportProgressModal({ open, onClose }: ExportProgressModalProps)
             {/* Weight Logs */}
             <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-muted/20 hover:bg-muted/40 transition-colors">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
                   <Scale className="w-4 h-4" />
                 </div>
                 <div>
@@ -373,8 +377,7 @@ export function ExportProgressModal({ open, onClose }: ExportProgressModalProps)
               <button
                 disabled={downloading === "weight"}
                 onClick={exportWeightHistory}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-card border border-border text-foreground hover:bg-muted/80 active:scale-95 transition-all disabled:opacity-50"
-              >
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-card border border-border text-foreground hover:bg-muted/80 active:scale-95 transition-all disabled:opacity-50">
                 <FileSpreadsheet className="w-3.5 h-3.5" />
                 {downloading === "weight" ? "Exporting..." : "CSV"}
               </button>
@@ -398,8 +401,7 @@ export function ExportProgressModal({ open, onClose }: ExportProgressModalProps)
               <button
                 disabled={downloading === "meals"}
                 onClick={exportMealsHistory}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-card border border-border text-foreground hover:bg-muted/80 active:scale-95 transition-all disabled:opacity-50"
-              >
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-card border border-border text-foreground hover:bg-muted/80 active:scale-95 transition-all disabled:opacity-50">
                 <FileSpreadsheet className="w-3.5 h-3.5" />
                 {downloading === "meals" ? "Exporting..." : "CSV"}
               </button>
@@ -423,8 +425,7 @@ export function ExportProgressModal({ open, onClose }: ExportProgressModalProps)
               <button
                 disabled={downloading === "workouts"}
                 onClick={exportWorkoutsHistory}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-card border border-border text-foreground hover:bg-muted/80 active:scale-95 transition-all disabled:opacity-50"
-              >
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-card border border-border text-foreground hover:bg-muted/80 active:scale-95 transition-all disabled:opacity-50">
                 <FileSpreadsheet className="w-3.5 h-3.5" />
                 {downloading === "workouts" ? "Exporting..." : "CSV"}
               </button>
@@ -452,8 +453,7 @@ export function ExportProgressModal({ open, onClose }: ExportProgressModalProps)
                 <button
                   disabled={downloading === "json"}
                   onClick={exportFullJson}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
-                >
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 active:scale-95 transition-all disabled:opacity-50">
                   <Download className="w-3.5 h-3.5" />
                   {downloading === "json" ? "Exporting..." : "JSON"}
                 </button>
@@ -465,12 +465,13 @@ export function ExportProgressModal({ open, onClose }: ExportProgressModalProps)
           <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
-              <span>Exports run client-side — your private data stays secure</span>
+              <span>
+                Exports run client-side — your private data stays secure
+              </span>
             </div>
             <button
               onClick={onClose}
-              className="px-4 py-1.5 text-xs font-medium rounded-lg bg-muted/60 hover:bg-muted text-foreground transition-colors"
-            >
+              className="px-4 py-1.5 text-xs font-medium rounded-lg bg-muted/60 hover:bg-muted text-foreground transition-colors">
               Done
             </button>
           </div>

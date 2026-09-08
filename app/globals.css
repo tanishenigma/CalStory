@@ -21,7 +21,7 @@
   --color-foreground: oklch(0.2272 0.0049 173.9454);
   --color-background: oklch(0.9658 0.0028 128.4929);
   --color-muted-foreground: oklch(0.5517 0.0138 285.9385);
-  --color-primary: oklch(0.7227 0.192 149.5793);
+  --color-primary: oklch(0.7173 0.1906 49.4698);
   --color-card: oklch(1 0 0);
   --color-accent: oklch(0.9674 0.0013 286.3752);
   --color-subtle: oklch(0.9833 0.0025 165.0767);
@@ -38,18 +38,13 @@
 
   /* ── Chart colors ── */
   --color-chart-1: var(--primary);
-  --color-chart-2: oklch(0.6271 0.1699 149.2138);
-  --color-chart-3: oklch(0.5273 0.1371 150.0693);
-  --color-chart-4: oklch(0.4479 0.1083 151.3277);
-  --color-chart-5: oklch(0.3925 0.0896 152.5353);
+  --color-chart-2: oklch(0.6461 0.1943 41.1158);
+  --color-chart-3: oklch(0.5534 0.1739 38.4022);
+  --color-chart-4: oklch(0.4698 0.143 37.3035);
+  --color-chart-5: oklch(0.4084 0.1165 38.1715);
 
   /* ── Primary RGB for rgba() usage ── */
-  --primary-rgb: 48, 158, 134;
-
-  /* ── Landing navbar tokens (RGB triplets so they can be plugged
-   *    into animated rgba(...) expressions). Channel values track
-   *    the resolved RGB of --color-background / --color-foreground
-   *    so dark mode automatically flips them without extra logic. */
+  --primary-rgb: 254, 119, 2;
   --navbar-bg-rgb: 246, 246, 246; /* = light --color-background */
   --navbar-fg-rgb: 58, 58, 58; /* = light --color-foreground */
   --navbar-bg-scrolled-rgb: 246, 246, 246;
@@ -64,11 +59,7 @@
 
 /* ─── Primary RGB (for rgba() usage in inline styles) ─── */
 :root {
-  --primary-rgb: 48, 158, 134;
-
-  /* Custom easing curves — the built-in CSS keywords (ease, ease-in-out…)
-   * are too weak/linear-feeling for UI work, so every timing function in
-   * this file should reference one of these instead of a bare keyword. */
+  --primary-rgb: 254, 119, 2;
   --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
   --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -76,17 +67,10 @@
   --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
   --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
   --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
-
-  /* "Energetic" variants — snappier than the smooth ones above.
-   * Use -out for anything entering/exiting the screen (fast start,
-   * gentle settle = feels responsive). Use -in-out for anything
-   * already on screen that needs to move (accelerate/decelerate,
-   * like a car — feels natural rather than mechanical). */
   --ease-out-energetic: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out-energetic: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-/* ─── Custom font utilities (Tailwind v4 requires explicit @utility) ─── */
 @utility font-instrument {
   font-family: var(--font-instrument), "Inter", sans-serif;
 }
@@ -159,10 +143,6 @@
   background-color: var(--color-subtle);
 }
 
-/* Appropriate touch target size (Apple/WCAG minimum 44×44px) without
- * affecting visual layout — expands the hit area via a pseudo-element
- * instead of padding, so a visually small icon button stays easy to
- * tap on touch devices. */
 @utility touch-hitbox {
   position: relative;
 
@@ -203,7 +183,6 @@ article img {
   border-radius: 1rem;
 }
 
-
 html {
   scroll-behavior: smooth;
 }
@@ -216,11 +195,6 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
-
-/* Background grid is rendered only on the landing page via the
-   <BackgroundGrid /> component imported in LandingClient.tsx. It is NOT
-   a global body::before — that would bleed through to the dashboard,
-   auth, and other solid-background pages where the grid is undesirable. */
 
 h1,
 h2,
@@ -242,17 +216,6 @@ textarea {
   font-family: inherit;
 }
 
-/* Recolor the native browser date picker's calendar indicator
- * (the small icon on the right side of <input type="date">) so
- * it uses the foreground color in both light and dark mode.
- * Chromium / Safari / Edge honor the ::-webkit pseudo-element;
- * Firefox ignores it (and renders no indicator at all), so this
- * is purely a progressive enhancement.
- *
- * On the onboarding DOB field specifically (id="ob-dob") we
- * paint the indicator red-500 — matches the invalid-input
- * border treatment so the error state reads as a unit.
- */
 #ob-dob::-webkit-calendar-picker-indicator {
   color: oklch(0.637 0.237 27.92); /* red-500 */
   cursor: pointer;
@@ -445,7 +408,7 @@ html.lenis body {
   --card-foreground: oklch(0.2272 0.0049 173.9454);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2272 0.0049 173.9454);
-  --primary: oklch(0.7227 0.192 149.5793);
+  --primary: oklch(0.7173 0.1906 49.4698);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.9276 0.0058 264.5313);
   --secondary-foreground: oklch(0.2272 0.0049 173.9454);
@@ -456,12 +419,12 @@ html.lenis body {
   --destructive: oklch(0.6368 0.2078 25.3313);
   --border: oklch(0.9197 0.004 286.3202);
   --input: oklch(0.9197 0.004 286.3202);
-  --ring: oklch(0.7227 0.192 149.5793);
-  --chart-1: oklch(0.7227 0.192 149.5793);
-  --chart-2: oklch(0.6271 0.1699 149.2138);
-  --chart-3: oklch(0.5273 0.1371 150.0693);
-  --chart-4: oklch(0.4479 0.1083 151.3277);
-  --chart-5: oklch(0.3925 0.0896 152.5353);
+  --ring: oklch(0.7173 0.1906 49.4698);
+  --chart-1: oklch(0.7173 0.1906 49.4698);
+  --chart-2: oklch(0.6461 0.1943 41.1158);
+  --chart-3: oklch(0.5534 0.1739 38.4022);
+  --chart-4: oklch(0.4698 0.143 37.3035);
+  --chart-5: oklch(0.4084 0.1165 38.1715);
   --radius: 1rem;
   --sidebar: oklch(0.9833 0.0025 165.0767);
   --sidebar-foreground: oklch(0.2272 0.0049 173.9454);
@@ -470,7 +433,7 @@ html.lenis body {
   --sidebar-accent: oklch(0.9658 0.0028 128.4929);
   --sidebar-accent-foreground: oklch(0.2272 0.0049 173.9454);
   --sidebar-border: oklch(0.9276 0.0058 264.5313);
-  --sidebar-ring: oklch(0.7227 0.192 149.5793);
+  --sidebar-ring: oklch(0.7173 0.1906 49.4698);
   --shadow-x: 0px;
   --shadow-y: 4px;
   --shadow-blur: 10px;
@@ -499,19 +462,19 @@ html.lenis body {
   --color-muted: oklch(0.7118 0.0129 286.0665);
   --color-border: oklch(0.2739 0.0055 286.0326);
   --color-divider: oklch(0.21 0.004 286.0326);
-  --color-surface: oklch(0.1972 0.005 145.3814);
-  --color-bg: oklch(0.1479 0.0027 145.4374);
-  --color-subtle: oklch(0.1735 0.0026 145.4374);
-  --color-background: oklch(0.1479 0.0027 145.4374);
+  --color-surface: oklch(0% 0 0);
+  --color-bg: oklch(0.1479 0.0027 173.9454);
+  --color-subtle: oklch(0.1735 0.0026 173.9454);
+  --color-background: oklch(0.1479 0.0027 173.9454);
   --color-foreground: oklch(0.9833 0.0025 165.0767);
-  --color-card: oklch(0.1972 0.005 145.3814);
-  --background: oklch(0.1479 0.0027 145.4374);
+  --color-card: oklch(0% 0 0);
+  --background: oklch(0.1479 0.0027 173.9454);
   --foreground: oklch(0.9833 0.0025 165.0767);
-  --card: oklch(0.1972 0.005 145.3814);
+  --card: oklch(0% 0 0);
   --card-foreground: oklch(0.9833 0.0025 165.0767);
-  --popover: oklch(0.1972 0.005 145.3814);
+  --popover: oklch(0% 0 0);
   --popover-foreground: oklch(0.9833 0.0025 165.0767);
-  --primary: oklch(0.7227 0.192 149.5793);
+  --primary: oklch(0.7173 0.1906 49.4698);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.2739 0.0055 286.0326);
   --secondary-foreground: oklch(0.9833 0.0025 165.0767);
@@ -522,20 +485,20 @@ html.lenis body {
   --destructive: oklch(0.3958 0.1331 25.723);
   --border: oklch(0.2739 0.0055 286.0326);
   --input: oklch(0.2739 0.0055 286.0326);
-  --ring: oklch(0.7227 0.192 149.5793);
-  --chart-1: oklch(0.7227 0.192 149.5793);
-  --chart-2: oklch(0.8003 0.1821 151.711);
-  --chart-3: oklch(0.8712 0.1363 154.4491);
-  --chart-4: oklch(0.925 0.0806 155.9947);
-  --chart-5: oklch(0.9819 0.0181 155.8263);
-  --sidebar: oklch(0.1479 0.0027 145.4374);
+  --ring: oklch(0.7173 0.1906 49.4698);
+  --chart-1: oklch(0.7173 0.1906 49.4698);
+  --chart-2: oklch(0.7576 0.159 55.9344);
+  --chart-3: oklch(0.8366 0.1165 66.2896);
+  --chart-4: oklch(0.9015 0.0729 70.6972);
+  --chart-5: oklch(0.9542 0.0372 75.1644);
+  --sidebar: oklch(0.1479 0.0027 173.9454);
   --sidebar-foreground: oklch(0.9833 0.0025 165.0767);
-  --sidebar-primary: oklch(0.7227 0.192 149.5793);
+  --sidebar-primary: oklch(0.7173 0.1906 49.4698);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.1972 0.005 145.3814);
+  --sidebar-accent: oklch(0% 0 0);
   --sidebar-accent-foreground: oklch(0.9833 0.0025 165.0767);
   --sidebar-border: oklch(0.2739 0.0055 286.0326);
-  --sidebar-ring: oklch(0.7227 0.192 149.5793);
+  --sidebar-ring: oklch(0.7173 0.1906 49.4698);
   --shadow-x: 0px;
   --shadow-y: 10px;
   --shadow-blur: 20px;
@@ -556,8 +519,6 @@ html.lenis body {
     0px 10px 20px 0px hsl(0 0% 0% / 0.3), 0px 8px 10px -1px hsl(0 0% 0% / 0.3);
   --shadow-2xl: 0px 10px 20px 0px hsl(0 0% 0% / 0.75);
 
-  /* Dark-mode landing navbar tokens. The "scrolled" pair matches
-   * the dark page background + foreground so the navbar blends in. */
   --navbar-bg-rgb: 38, 38, 38; /* = dark --color-background */
   --navbar-fg-rgb: 251, 251, 251; /* = dark --color-foreground */
   --navbar-bg-scrolled-rgb: 38, 38, 38;
@@ -570,22 +531,6 @@ html.lenis body {
   --navbar-highlight-via: rgba(255, 255, 255, 0.05);
 }
 
-/* ───────────────────────────────────────────────────────────────
- * Forced-light pages.
- *
- * `RouteThemeController` adds this class to `<html>` for routes that
- * are always light regardless of the user's stored theme preference
- * (currently `/` and `/auth`). The block mirrors the light-mode token
- * overrides above so those pages render in light even when the user
- * prefers dark. The class is intentionally separate from `.dark` so
- * `prefsStore.theme` is left untouched — navigating away restores the
- * user's real preference in one frame.
- *
- * Source-order: this block is intentionally placed *after* `.dark`
- * so when both classes are on `<html>` (user has dark theme AND is
- * on a forced-light route), any future token divergence resolves in
- * favor of the forced-light override without a specificity arms-race.
- * ─────────────────────────────────────────────────────────────── */
 .forced-landing {
   --color-ink: oklch(0.2272 0.0049 173.9454);
   --color-muted: oklch(0.5517 0.0138 285.9385);
@@ -600,10 +545,10 @@ html.lenis body {
   --background: oklch(0.9658 0.0028 128.4929);
   --foreground: oklch(0.2272 0.0049 173.9454);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2272 0.0049 173.9454);
+  --card-foreground: oklch(0% 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2272 0.0049 173.9454);
-  --primary: oklch(0.7227 0.192 149.5793);
+  --primary: oklch(0.7173 0.1906 49.4698);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.9276 0.0058 264.5313);
   --secondary-foreground: oklch(0.2272 0.0049 173.9454);
@@ -614,12 +559,12 @@ html.lenis body {
   --destructive: oklch(0.6368 0.2078 25.3313);
   --border: oklch(0.9197 0.004 286.3202);
   --input: oklch(0.9197 0.004 286.3202);
-  --ring: oklch(0.7227 0.192 149.5793);
-  --chart-1: oklch(0.7227 0.192 149.5793);
-  --chart-2: oklch(0.6271 0.1699 149.2138);
-  --chart-3: oklch(0.5273 0.1371 150.0693);
-  --chart-4: oklch(0.4479 0.1083 151.3277);
-  --chart-5: oklch(0.3925 0.0896 152.5353);
+  --ring: oklch(0.7173 0.1906 49.4698);
+  --chart-1: oklch(0.7173 0.1906 49.4698);
+  --chart-2: oklch(0.6461 0.1943 41.1158);
+  --chart-3: oklch(0.5534 0.1739 38.4022);
+  --chart-4: oklch(0.4698 0.143 37.3035);
+  --chart-5: oklch(0.4084 0.1165 38.1715);
   --sidebar: oklch(0.9833 0.0025 165.0767);
   --sidebar-foreground: oklch(0.2272 0.0049 173.9454);
   --sidebar-primary: oklch(0.2272 0.0049 173.9454);
@@ -627,7 +572,7 @@ html.lenis body {
   --sidebar-accent: oklch(0.9658 0.0028 128.4929);
   --sidebar-accent-foreground: oklch(0.2272 0.0049 173.9454);
   --sidebar-border: oklch(0.9276 0.0058 264.5313);
-  --sidebar-ring: oklch(0.7227 0.192 149.5793);
+  --sidebar-ring: oklch(0.7173 0.1906 49.4698);
   --shadow-opacity: 0.05;
   --shadow-2xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.03);
   --shadow-xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.03);
@@ -656,35 +601,24 @@ html.lenis body {
   --navbar-highlight-from: rgba(58, 58, 58, 0.1);
   --navbar-highlight-via: rgba(58, 58, 58, 0.05);
 }
-
-/* ────────────────────────────────────────────────────────────────────────────────────
- * Legacy forced-dark block.
- *
- * Kept for pages that still opt into dark via the literal
- * `forced-dark` class on their root element, e.g.
- * `/tools/calorie-calculator`. The landing page itself now uses
- * `forced-landing` (light); this block mirrors the `.dark` tokens
- * exactly so those pages keep rendering dark.
- * ────────────────────────────────────────────────────────────────────────────────────
- */
 .forced-dark {
   --color-ink: oklch(0.9833 0.0025 165.0767);
   --color-muted: oklch(0.7118 0.0129 286.0665);
-  --color-border: oklch(0.2739 0.0055 286.0326);
+  --color-border: oklch(0% 0 0);
   --color-divider: oklch(0.21 0.004 286.0326);
-  --color-surface: oklch(0.1972 0.005 145.3814);
-  --color-bg: oklch(0.1479 0.0027 145.4374);
-  --color-subtle: oklch(0.1735 0.0026 145.4374);
-  --color-background: oklch(0.1479 0.0027 145.4374);
+  --color-surface: oklch(0% 0 0);
+  --color-bg: oklch(0.1479 0.0027 173.9454);
+  --color-subtle: oklch(0.1735 0.0026 173.9454);
+  --color-background: oklch(0.1479 0.0027 173.9454);
   --color-foreground: oklch(0.9833 0.0025 165.0767);
-  --color-card: oklch(0.1972 0.005 145.3814);
-  --background: oklch(0.1479 0.0027 145.4374);
+  --color-card: oklch(0% 0 0);
+  --background: oklch(0% 0 0);
   --foreground: oklch(0.9833 0.0025 165.0767);
-  --card: oklch(0.1972 0.005 145.3814);
+  --card: oklch(0% 0 0);
   --card-foreground: oklch(0.9833 0.0025 165.0767);
-  --popover: oklch(0.1972 0.005 145.3814);
+  --popover: oklch(0% 0 0);
   --popover-foreground: oklch(0.9833 0.0025 165.0767);
-  --primary: oklch(0.7227 0.192 149.5793);
+  --primary: oklch(0.7173 0.1906 49.4698);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.2739 0.0055 286.0326);
   --secondary-foreground: oklch(0.9833 0.0025 165.0767);
@@ -695,20 +629,20 @@ html.lenis body {
   --destructive: oklch(0.3958 0.1331 25.723);
   --border: oklch(0.2739 0.0055 286.0326);
   --input: oklch(0.2739 0.0055 286.0326);
-  --ring: oklch(0.7227 0.192 149.5793);
-  --chart-1: oklch(0.7227 0.192 149.5793);
-  --chart-2: oklch(0.8003 0.1821 151.711);
-  --chart-3: oklch(0.8712 0.1363 154.4491);
-  --chart-4: oklch(0.925 0.0806 155.9947);
-  --chart-5: oklch(0.9819 0.0181 155.8263);
-  --sidebar: oklch(0.1479 0.0027 145.4374);
+  --ring: oklch(0.7173 0.1906 49.4698);
+  --chart-1: oklch(0.7173 0.1906 49.4698);
+  --chart-2: oklch(0.7576 0.159 55.9344);
+  --chart-3: oklch(0.8366 0.1165 66.2896);
+  --chart-4: oklch(0.9015 0.0729 70.6972);
+  --chart-5: oklch(0.9542 0.0372 75.1644);
+  --sidebar: oklch(0.1479 0.0027 173.9454);
   --sidebar-foreground: oklch(0.9833 0.0025 165.0767);
-  --sidebar-primary: oklch(0.7227 0.192 149.5793);
+  --sidebar-primary: oklch(0.7173 0.1906 49.4698);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.1972 0.005 145.3814);
+  --sidebar-accent: oklch(0% 0 0);
   --sidebar-accent-foreground: oklch(0.9833 0.0025 165.0767);
   --sidebar-border: oklch(0.2739 0.0055 286.0326);
-  --sidebar-ring: oklch(0.7227 0.192 149.5793);
+  --sidebar-ring: oklch(0.7173 0.1906 49.4698);
   --shadow-opacity: 0.3;
   --shadow-2xs: 0px 10px 20px 0px hsl(0 0% 0% / 0.15);
   --shadow-xs: 0px 10px 20px 0px hsl(0 0% 0% / 0.15);
@@ -738,15 +672,6 @@ html.lenis body {
   --navbar-highlight-via: rgba(255, 255, 255, 0.05);
 }
 
-/* ───────────────────────────────────────────────────────────────
- * shadcn-style surface primitives
- *
- * All card-like containers in the app should use `.card` instead
- * of repeating `bg-foreground border border-[#E8E7E4] rounded-2xl`.
- * Variants and slot utilities make the same primitives composable
- * across the landing page, dashboard, settings, etc.
- * ─────────────────────────────────────────────────────────────── */
-
 .card {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -755,14 +680,13 @@ html.lenis body {
   color: var(--color-ink);
 }
 
-/* Frosted glass variant — same border/radius as .card but with a
- * semi-transparent background + backdrop-blur so the page gradient
- * bleeds through. Combine with .card: <Card className="card-glass …"> */
 .card-glass {
-  background-color: var(--color-card, oklch(0.1972 0.005 145 / 0.65));
-  background-color: oklch(from var(--color-card) l c h / 0.65);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+}
+html.dynamic-bg-active .card,
+html.dynamic-bg-active .card-glass {
+  background-color: oklch(from var(--color-card) l c h / 0.62);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-color: rgb(255 255 255 / 0.08);
 }
 
@@ -772,9 +696,7 @@ html.lenis body {
     transform 200ms var(--ease-out-quad),
     border-color 200ms var(--ease-out-quad);
 }
-/* Disable hover effects on touch devices — there's no such thing as a
- * "hover" on a touchscreen; without this, an accidental finger-drag
- * over the card would trigger and then get stuck in the hover state. */
+
 @media (hover: hover) and (pointer: fine) {
   .card-interactive:hover {
     box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.08);
@@ -897,11 +819,6 @@ html.lenis body {
     @apply font-sans;
   }
 }
-/* ─── View Transitions — theme toggle clip-path animation ─── */
-/*
- * Suppress the browser's default root cross-fade so only the
- * JS-driven ::view-transition-new(root) clip-path reveal plays.
- */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -1045,31 +962,11 @@ input[type="number"] {
   color: var(--color-primary);
 }
 
-/* ═══════════════════════════════════════════════════════════════
- * PRACTICAL ANIMATION UTILITIES
- * (animations.dev — "Practical Animation Tips" reference sheet)
- *
- * Reusable primitives so every animation added later in the app
- * automatically follows the same set of rules-of-thumb instead of
- * reinventing them ad hoc:
- *   - fast (<300ms), GPU-stable, correctly-eased transitions
- *   - no scale(0) pop-ins, no flicker, no keyboard-triggered anims
- *   - origin-aware popovers, blur-assisted crossfades, 44px hit targets
- * ═══════════════════════════════════════════════════════════════ */
-
-/* ─── Fix shaky animations ───
- * transform-animated elements can jitter 1px at start/end in some
- * browsers as rendering swaps between CPU/GPU. Hinting will-change
- * lets the browser commit the element to the GPU up front. Apply to
- * any element right before/while it animates via transform. */
 .gpu-optimized,
 .will-animate {
   will-change: transform;
 }
 
-/* ─── Scale your buttons ───
- * Give instant feedback on press so the UI feels like it's listening.
- * Apply directly to interactive elements: <button className="btn-press"> */
 .btn-press {
   transition: transform 120ms var(--ease-out-quad);
 }
@@ -1077,10 +974,6 @@ input[type="number"] {
   transform: scale(0.97);
 }
 
-/* ─── Don't animate from scale(0) ───
- * Elements entering the screen should start at 0.9+, never 0 — a
- * higher initial scale reads as "already had a shape," which feels
- * more natural than materializing from nothing. */
 @keyframes scaleIn {
   from {
     opacity: 0;
@@ -1095,27 +988,15 @@ input[type="number"] {
   animation: scaleIn 180ms var(--ease-out-energetic);
 }
 
-/* ─── Skip delay/animation on subsequent tooltips ───
- * Once one tooltip/menu in a group is open, switching to a sibling
- * should be instant — no re-delay, no re-animate. Toggle this data
- * attribute from JS once the first item has opened. */
 [data-instant] {
   transition-duration: 0ms !important;
   animation-duration: 0ms !important;
 }
 
-/* ─── Make popovers origin-aware ───
- * transform-origin defaults to `center`, which almost never matches
- * where the popover's trigger actually is. Set `--transform-origin`
- * from JS (e.g. based on trigger position) and apply this class, or
- * wire directly to Radix/Base UI's own origin variables. */
 .origin-aware {
   transform-origin: var(--transform-origin, center);
 }
 
-/* ─── Keep animations fast ───
- * UI animations should generally stay under 300ms; use these instead
- * of ad hoc duration values scattered through components. */
 .duration-fast {
   transition-duration: 120ms;
 }
@@ -1126,28 +1007,15 @@ input[type="number"] {
   transition-duration: 280ms;
 }
 
-/* ─── Don't animate keyboard interactions ───
- * Arrow-key navigation in menus/lists/command palettes fires many
- * times a second — animating it makes input feel laggy. Toggle this
- * on while keyboard nav is active to strip transitions entirely. */
 .no-anim-on-keyboard {
   transition: none !important;
 }
 
-/* ─── Be careful with frequently-used elements ───
- * A neutral marker for elements interacted with dozens of times a
- * day (list rows, frequently-clicked icons). Default to no motion;
- * only opt specific elements back in once you're sure it helps. */
 .no-motion {
   transition: none;
   animation: none;
 }
 
-/* ─── Fix hover flicker ───
- * Never move the element the pointer is hovering — animate an inner
- * child instead, so the parent's hit box stays put and the hover
- * state can't flicker on/off.
- *   <div class="hover-parent"><div class="hover-inner">…</div></div> */
 .hover-inner {
   transition: transform 200ms var(--ease-out-quad);
 }
@@ -1157,10 +1025,6 @@ input[type="number"] {
   }
 }
 
-/* ─── Disable hover on touch devices ───
- * Tailwind v4's `hover:` variant already scopes to devices that
- * support real hover; use this media query directly in raw CSS for
- * the same guarantee outside of Tailwind utilities. */
 @media (hover: hover) and (pointer: fine) {
   .hover-lift:hover {
     transform: translateY(-2px);
@@ -1168,27 +1032,15 @@ input[type="number"] {
   }
 }
 
-/* ─── Use ease-out for enter/exit ───
- * Fast start, gentle settle — reads as responsive. Apply to anything
- * mounting/unmounting (dropdowns, modals, toasts, tooltips). */
 .anim-enter,
 .anim-exit {
   transition-timing-function: var(--ease-out-energetic);
 }
 
-/* ─── Use ease-in-out for on-screen movement ───
- * Elements that are already visible and need to move (drag reorder,
- * a sliding tab indicator, a timeline scrub) should accelerate then
- * decelerate, like a car — not snap in with an enter/exit curve. */
 .anim-move {
   transition-timing-function: var(--ease-in-out-energetic);
 }
 
-/* ─── Use blur when nothing else works ───
- * When two states are crossfading and still look like two distinct
- * objects no matter the easing/duration, a couple px of blur bridges
- * the visual gap and tricks the eye into seeing one smooth motion.
- * Toggle `data-state="hidden"` from JS to drive the transition. */
 .blur-crossfade {
   transition:
     opacity 200ms var(--ease-out-quad),

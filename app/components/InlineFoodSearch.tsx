@@ -100,7 +100,7 @@ export default function InlineFoodSearch({
   /* -------------------------------------------------------------- */
   function handleSelectFood(food: USDAFood) {
     const getNutrient = (num: string) => {
-      const n = food.foodNutrients?.find(x => x.nutrientNumber === num);
+      const n = food.foodNutrients?.find((x) => x.nutrientNumber === num);
       return n ? n.value : 0;
     };
 
@@ -124,11 +124,25 @@ export default function InlineFoodSearch({
     const labelStr = food.description || "Food";
     const lowerName = labelStr.toLowerCase();
     let portionLabel = "Piece";
-    if (lowerName.includes("roti") || lowerName.includes("chapati") || lowerName.includes("naan") || lowerName.includes("paratha")) {
+    if (
+      lowerName.includes("roti") ||
+      lowerName.includes("chapati") ||
+      lowerName.includes("naan") ||
+      lowerName.includes("paratha")
+    ) {
       portionLabel = "Roti / Chapati";
-    } else if (lowerName.includes("slice") || lowerName.includes("bread") || lowerName.includes("pizza") || lowerName.includes("cake")) {
+    } else if (
+      lowerName.includes("slice") ||
+      lowerName.includes("bread") ||
+      lowerName.includes("pizza") ||
+      lowerName.includes("cake")
+    ) {
       portionLabel = "Slice";
-    } else if (lowerName.includes("scoop") || lowerName.includes("protein") || lowerName.includes("whey")) {
+    } else if (
+      lowerName.includes("scoop") ||
+      lowerName.includes("protein") ||
+      lowerName.includes("whey")
+    ) {
       portionLabel = "Scoop";
     } else if (lowerName.includes("egg")) {
       portionLabel = "Egg";
@@ -141,11 +155,17 @@ export default function InlineFoodSearch({
         group: "Standard Measures",
         options: [
           {
-            label: food.householdServingFullText ? food.householdServingFullText : `1 Serving (${food.servingSize}${food.servingSizeUnit})`,
+            label: food.householdServingFullText
+              ? food.householdServingFullText
+              : `1 Serving (${food.servingSize}${food.servingSizeUnit})`,
             value: "serving",
-            factor: food.servingSizeUnit.toLowerCase() === "g" || food.servingSizeUnit.toLowerCase() === "ml" ? food.servingSize : 100
-          }
-        ]
+            factor:
+              food.servingSizeUnit.toLowerCase() === "g" ||
+              food.servingSizeUnit.toLowerCase() === "ml"
+                ? food.servingSize
+                : 100,
+          },
+        ],
       });
     }
 
@@ -172,10 +192,8 @@ export default function InlineFoodSearch({
       },
       {
         group: "Count & Portions",
-        options: [
-          { label: portionLabel, value: "portion", factor: 80 },
-        ],
-      }
+        options: [{ label: portionLabel, value: "portion", factor: 80 }],
+      },
     );
 
     setSelectedFood({
@@ -407,7 +425,9 @@ export default function InlineFoodSearch({
         <div className="mt-3 flex flex-col gap-2">
           {results.map((food, idx) => {
             const getNutrient = (num: string) => {
-              const n = food.foodNutrients.find(x => x.nutrientNumber === num);
+              const n = food.foodNutrients.find(
+                (x) => x.nutrientNumber === num,
+              );
               return n ? n.value : 0;
             };
             const cal = Math.round(getNutrient("208"));
@@ -419,22 +439,87 @@ export default function InlineFoodSearch({
             // Derive a food-type emoji for the thumbnail
             const lowerName = (food.description ?? "").toLowerCase();
             let emoji = "🍽️";
-            if (lowerName.includes("chicken") || lowerName.includes("turkey")) emoji = "🍗";
-            else if (lowerName.includes("beef") || lowerName.includes("steak")) emoji = "🥩";
+            if (lowerName.includes("chicken") || lowerName.includes("turkey"))
+              emoji = "🍗";
+            else if (lowerName.includes("beef") || lowerName.includes("steak"))
+              emoji = "🥩";
             else if (lowerName.includes("egg")) emoji = "🥚";
-            else if (lowerName.includes("milk") || lowerName.includes("dairy") || lowerName.includes("yogurt") || lowerName.includes("cheese")) emoji = "🥛";
+            else if (
+              lowerName.includes("milk") ||
+              lowerName.includes("dairy") ||
+              lowerName.includes("yogurt") ||
+              lowerName.includes("cheese")
+            )
+              emoji = "🥛";
             else if (lowerName.includes("rice")) emoji = "🍚";
-            else if (lowerName.includes("bread") || lowerName.includes("toast") || lowerName.includes("roti") || lowerName.includes("naan")) emoji = "🍞";
-            else if (lowerName.includes("apple") || lowerName.includes("banana") || lowerName.includes("fruit") || lowerName.includes("mango")) emoji = "🍎";
-            else if (lowerName.includes("salad") || lowerName.includes("vegetable") || lowerName.includes("broccoli") || lowerName.includes("spinach")) emoji = "🥗";
-            else if (lowerName.includes("protein") || lowerName.includes("whey") || lowerName.includes("supplement")) emoji = "💪";
-            else if (lowerName.includes("fish") || lowerName.includes("salmon") || lowerName.includes("tuna")) emoji = "🐟";
-            else if (lowerName.includes("nut") || lowerName.includes("almond") || lowerName.includes("peanut")) emoji = "🥜";
-            else if (lowerName.includes("oil") || lowerName.includes("butter") || lowerName.includes("ghee")) emoji = "🧈";
-            else if (lowerName.includes("pasta") || lowerName.includes("noodle")) emoji = "🍝";
-            else if (lowerName.includes("oat") || lowerName.includes("cereal") || lowerName.includes("granola")) emoji = "🥣";
-            else if (lowerName.includes("chocolate") || lowerName.includes("candy") || lowerName.includes("cookie")) emoji = "🍫";
-            else if (lowerName.includes("juice") || lowerName.includes("drink") || lowerName.includes("soda")) emoji = "🧃";
+            else if (
+              lowerName.includes("bread") ||
+              lowerName.includes("toast") ||
+              lowerName.includes("roti") ||
+              lowerName.includes("naan")
+            )
+              emoji = "🍞";
+            else if (
+              lowerName.includes("apple") ||
+              lowerName.includes("banana") ||
+              lowerName.includes("fruit") ||
+              lowerName.includes("mango")
+            )
+              emoji = "🍎";
+            else if (
+              lowerName.includes("salad") ||
+              lowerName.includes("vegetable") ||
+              lowerName.includes("broccoli") ||
+              lowerName.includes("spinach")
+            )
+              emoji = "🥗";
+            else if (
+              lowerName.includes("protein") ||
+              lowerName.includes("whey") ||
+              lowerName.includes("supplement")
+            )
+              emoji = "💪";
+            else if (
+              lowerName.includes("fish") ||
+              lowerName.includes("salmon") ||
+              lowerName.includes("tuna")
+            )
+              emoji = "🐟";
+            else if (
+              lowerName.includes("nut") ||
+              lowerName.includes("almond") ||
+              lowerName.includes("peanut")
+            )
+              emoji = "🥜";
+            else if (
+              lowerName.includes("oil") ||
+              lowerName.includes("butter") ||
+              lowerName.includes("ghee")
+            )
+              emoji = "🧈";
+            else if (
+              lowerName.includes("pasta") ||
+              lowerName.includes("noodle")
+            )
+              emoji = "🍝";
+            else if (
+              lowerName.includes("oat") ||
+              lowerName.includes("cereal") ||
+              lowerName.includes("granola")
+            )
+              emoji = "🥣";
+            else if (
+              lowerName.includes("chocolate") ||
+              lowerName.includes("candy") ||
+              lowerName.includes("cookie")
+            )
+              emoji = "🍫";
+            else if (
+              lowerName.includes("juice") ||
+              lowerName.includes("drink") ||
+              lowerName.includes("soda")
+            )
+              emoji = "🧃";
 
             return (
               <div
@@ -444,8 +529,7 @@ export default function InlineFoodSearch({
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && handleSelectFood(food)}
-                aria-label={`Add ${food.description ?? "food"} to log`}
-              >
+                aria-label={`Add ${food.description ?? "food"} to log`}>
                 {/* Thumbnail */}
                 <div className="w-11 h-11 shrink-0 rounded-xl bg-primary/8 flex items-center justify-center text-xl">
                   {emoji}
@@ -474,11 +558,13 @@ export default function InlineFoodSearch({
 
                 {/* Quick-add button */}
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleSelectFood(food); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectFood(food);
+                  }}
                   disabled={loading}
                   aria-label={`Quick add ${food.description ?? "food"}`}
-                  className="w-9 h-9 shrink-0 flex items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/30 hover:bg-primary/90 hover:shadow-primary/40 hover:shadow-md active:scale-95 transition-all disabled:opacity-50"
-                >
+                  className="w-9 h-9 shrink-0 flex items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/30 hover:bg-primary/90 hover:shadow-primary/40 hover:shadow-md active:scale-95 transition-all disabled:opacity-50">
                   <Plus className="w-4 h-4" />
                 </button>
               </div>

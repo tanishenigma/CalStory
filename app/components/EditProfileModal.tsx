@@ -21,35 +21,13 @@ interface EditProfileModalProps {
   onClose: () => void;
 }
 
-/**
- * Modal for editing the user's date-of-birth, current weight, and
- * height from the settings page.
- *
- * - Age is derived from the DOB and read-only in this view — the
- *   user picks a date and we show the resulting age next to the
- *   input.
- * - Height respects the user's stored `heightUnit` (metric cm vs
- *   imperial ft+in) and is always normalised to cm before being
- *   written to the profile. BMR depends on height, so a height
- *   change also forces a TDEE / macro recompute.
- * - When weight changes, a new `WeightLog` entry is written and
- *   the change is mirrored onto `profile.weight`, so the progress
- *   page chart updates immediately. This is the "settings ↔
- *   progress" sync the spec calls for.
- */
 export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
   const { state, setProfile, logWeight } = useApp();
   const toast = useToast();
   const profile = state.profile;
 
-  // Local form state — initialised from the profile the moment
-  // the modal opens, so closing & re-opening always reflects the
-  // latest saved values.
   const [dob, setDob] = useState<string>("");
   const [weightInput, setWeightInput] = useState<string>("");
-  // Height is edited in the user's display unit but always
-  // normalised to cm on save. Imperial needs two inputs (feet +
-  // inches); metric needs a single cm number.
   const [heightCmInput, setHeightCmInput] = useState<string>("");
   const [heightFeet, setHeightFeet] = useState<string>("");
   const [heightInches, setHeightInches] = useState<string>("");
@@ -57,17 +35,13 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
 
   useEffect(() => {
     if (!open || !profile) return;
-    // Prefer the stored DOB; fall back to deriving one from the
-    // numeric age (legacy profiles created before the DOB field
-    // existed will only have `age`).
+  
     const initialDob = profile.dob ?? ageToDobIso(profile.age) ?? "";
     setDob(initialDob);
     const initialWeightDisplay =
       profile.weightUnit === "lbs" ? kgToLbs(profile.weight) : profile.weight;
     setWeightInput(String(initialWeightDisplay));
-    // Prefill height in the user's preferred unit. The internal
-    // `profile.height` is always stored in cm, so we convert
-    // outward for display.
+  
     if (profile.heightUnit === "imperial") {
       const { feet, inches } = cmToFtInParts(profile.height);
       setHeightFeet(String(feet));
@@ -82,19 +56,13 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
 
   if (!open || !profile) return null;
 
-  // Local alias after the early-return guard so the rest of the
-  // component body (and any closures defined below) can treat
-  // `profile` as non-null without using `!`.
+
   const currentProfile = profile;
 
   const weightUnit = currentProfile.weightUnit;
   const inputWeightKg =
     weightUnit === "lbs" ? lbsToKg(Number(weightInput)) : Number(weightInput);
 
-  // Normalise height to cm regardless of which unit the user is
-  // editing in. Returned height is `null` when the inputs are
-  // empty or non-numeric so the caller can show the right
-  // validation message.
   const inputHeightCm = (() => {
     if (currentProfile.heightUnit === "imperial") {
       const ft = Number(heightFeet);
@@ -143,10 +111,7 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
     setSaving(true);
 
     try {
-      // 1. Recompute TDEE / macro split whenever any of age,
-      //    weight, or height changed. All three feed BMR
-      //    (Mifflin–St Jeor) and weight also feeds the macro
-      //    weight calculation, so we batch the writes.
+  
       if (anyChange) {
         const base = {
           ...currentProfile,
@@ -166,10 +131,7 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
         });
       }
 
-      // 2. Log the weight change. `logWeight` is the single source
-      //    of truth for weight sync — it writes to the
-      //    `weight_logs` collection AND mirrors onto
-      //    `profile.weight`, which is what the progress page reads.
+  
       if (weightChanged) {
         const log = await logWeight(inputWeightKg, weightUnit);
         if (!log) {
@@ -273,8 +235,6 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
               )}
             </div>
 
-            {/* Height — respects the user's `heightUnit` preference.
-                Both branches normalise to cm before being saved. */}
             <div className="mb-2">
               <label
                 htmlFor="edit-height-cm"

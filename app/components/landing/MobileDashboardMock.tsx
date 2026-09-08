@@ -129,7 +129,7 @@ function MobileBrand({ size = 14 }: { size?: number }) {
     <div
       className="rounded-full bg-white grid place-items-center shrink-0"
       style={{ width: size + 12, height: size + 12 }}>
-      <Flame size={size} className="text-black" fill="currentColor" />
+      <Flame size={size} className="text-foreground" fill="currentColor" />
     </div>
   );
 }
@@ -283,13 +283,13 @@ function MobileCaloriesCard({
           className={[
             "inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-full",
             completed
-              ? "bg-emerald-500/15 text-emerald-700"
+              ? "bg-primary/15 text-primary"
               : "bg-accent text-muted-foreground",
           ].join(" ")}>
           <span
             className={[
               "w-1.5 h-1.5 rounded-full",
-              completed ? "bg-emerald-500" : "bg-muted-foreground/40",
+              completed ? "bg-primary" : "bg-muted-foreground/40",
             ].join(" ")}
           />
           {completed ? "Day completed" : "Tracking…"}
@@ -323,12 +323,15 @@ function MobileMacroRow({
       <div className="flex items-center gap-4 min-w-0">
         <div
           className="w-12 h-12 rounded-full grid place-items-center shrink-0"
-          style={{ backgroundColor: `${color}22` /* ~13% alpha */ }}>
+          style={{
+            backgroundColor: `color-mix(in srgb, ${color} 13%, transparent)`,
+          }}>
           <span className="text-2xl leading-none">{emoji}</span>
         </div>
         <span className="text-base font-bold text-foreground truncate">
           <span style={{ color }}>{value}</span>
-          <span className="text-muted-foreground">g</span> <span>{label} Left</span>
+          <span className="text-muted-foreground">g</span>{" "}
+          <span>{label} Left</span>
         </span>
       </div>
       <ArrowUpRight size={18} className="text-muted-foreground/40 shrink-0" />
@@ -344,7 +347,9 @@ function MobileMealRow({ meal }: { meal: MealDemo }) {
         <Icon size={17} className="text-muted-foreground" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-bold text-foreground truncate">{meal.name}</div>
+        <div className="text-sm font-bold text-foreground truncate">
+          {meal.name}
+        </div>
         <div className="text-[11px] text-muted-foreground">{meal.time}</div>
       </div>
       <div className="text-right shrink-0">
@@ -454,17 +459,22 @@ export function MobileDashboardMock() {
         {/* Macros — stacked full-width rows, like the real mobile app */}
         <MobileMacroRow
           emoji="🍞"
-          color="#34d399"
+          color="var(--color-primary)"
           label="Carbs"
           value={cLeft}
         />
         <MobileMacroRow
           emoji="🥛"
-          color="#f87171"
+          color="var(--color-red)"
           label="Protein"
           value={pLeft}
         />
-        <MobileMacroRow emoji="🧈" color="#facc15" label="Fats" value={fLeft} />
+        <MobileMacroRow
+          emoji="🥑"
+          color="var(--color-amber)"
+          label="Fats"
+          value={fLeft}
+        />
 
         {/* Today's Workout */}
         <section>
@@ -497,7 +507,9 @@ export function MobileDashboardMock() {
         {/* Today's Meals */}
         <section>
           <div className="flex items-center justify-between mb-2 px-1">
-            <span className="text-sm font-bold text-foreground">Today's Meals</span>
+            <span className="text-sm font-bold text-foreground">
+              Today's Meals
+            </span>
             <button
               type="button"
               className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 cursor-pointer">

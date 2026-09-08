@@ -1,12 +1,9 @@
 "use client";
 
 /**
- * Exported animation helper — use this anywhere to trigger a View Transitions
- * circle-wipe from a given screen position when switching theme.
- *
- * @param originX  X coordinate (px) for the clip-path origin
- * @param originY  Y coordinate (px) for the clip-path origin
- * @param duration Animation duration in ms (default 450)
+ * @param originX 
+ * @param originY 
+ * @param duration 
  */
 export async function animateThemeTransition(
   applyTheme: () => void,

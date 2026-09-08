@@ -101,9 +101,7 @@ export default function DetailedMealForm({ onClose }: DetailedMealFormProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-sm mx-4 sm:mx-auto bg-card rounded-[24px] p-4 sm:p-6 shadow-xl animate-in zoom-in-95 duration-200">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-[18px] font-bold text-foreground">
-            Log Food
-          </h2>
+          <h2 className="text-[18px] font-bold text-foreground">Log Food</h2>
           <button
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground transition-colors">
@@ -191,7 +189,7 @@ export default function DetailedMealForm({ onClose }: DetailedMealFormProps) {
                     setLastEdited("macros");
                     setC(e.target.value);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1.5 outline-none font-semibold text-[15px] focus:border-border text-emerald-500 pr-3"
+                  className="w-full bg-transparent border-b border-border py-1.5 outline-none font-semibold text-[15px] focus:border-border text-amber-500 pr-3"
                   placeholder="0"
                 />
                 <span className="absolute right-0 bottom-2 text-[10px] font-bold text-muted-foreground select-none">

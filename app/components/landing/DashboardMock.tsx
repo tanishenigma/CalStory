@@ -120,7 +120,7 @@ function FlameLogo({ size = 14 }: { size?: number }) {
     <div
       className="rounded-full bg-white grid place-items-center shrink-0"
       style={{ width: size + 12, height: size + 12 }}>
-      <Flame size={size} className="text-black" fill="currentColor" />
+      <Flame size={size} className="text-foreground" fill="currentColor" />
     </div>
   );
 }
@@ -220,7 +220,9 @@ function WeekDayButton({
       <span
         className={[
           "text-[13px] font-bold tabular-nums",
-          active ? "text-foreground" : "text-foreground/70 group-hover:text-foreground",
+          active
+            ? "text-foreground"
+            : "text-foreground/70 group-hover:text-foreground",
         ].join(" ")}>
         {day}
       </span>
@@ -281,7 +283,7 @@ function TopBar({
 
       {/* Streak pill */}
       <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full bg-accent border border-border shrink-0">
-        <Flame size={12} className="text-orange-500" fill="currentColor" />
+        <Flame size={12} className="text-amber" fill="currentColor" />
         <span className="text-xs font-bold tabular-nums text-foreground">
           {streak}
         </span>
@@ -366,13 +368,13 @@ function CaloriesCard({
           className={[
             "inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-full",
             completed
-              ? "bg-emerald-500/15 text-emerald-700"
+              ? "bg-primary/15 text-primary"
               : "bg-accent text-muted-foreground",
           ].join(" ")}>
           <span
             className={[
               "w-1.5 h-1.5 rounded-full",
-              completed ? "bg-emerald-500" : "bg-muted-foreground/40",
+              completed ? "bg-primary" : "bg-muted-foreground/40",
             ].join(" ")}
           />
           {completed ? "Day completed" : "Tracking…"}
@@ -403,7 +405,9 @@ function MacroCard({
       <div className="flex items-center gap-3 min-w-0">
         <div
           className="w-9 h-9 rounded-full grid place-items-center shrink-0 text-lg leading-none"
-          style={{ backgroundColor: `${color}22` /* ~13% alpha */ }}>
+          style={{
+            backgroundColor: `color-mix(in srgb, ${color} 13%, transparent)`,
+          }}>
           <span>{emoji}</span>
         </div>
         <div className="min-w-0">
@@ -535,21 +539,21 @@ export function DashboardMock() {
           <div className="flex flex-col gap-2 min-w-0 md:h-64">
             <MacroCard
               emoji="🍞"
-              color="#34d399"
+              color="var(--color-primary)"
               label="Carbs"
               value={cLeft}
               unit="g"
             />
             <MacroCard
-              emoji="🥛"
-              color="#f87171"
+              emoji="🫘"
+              color="var(--color-red)"
               label="Protein"
               value={pLeft}
               unit="g"
             />
             <MacroCard
-              emoji="🧈"
-              color="#facc15"
+              emoji="🥑"
+              color="var(--color-amber)"
               label="Fats"
               value={fLeft}
               unit="g"

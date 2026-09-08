@@ -11,11 +11,23 @@ import {
   Bike,
   SquarePen,
   X,
+  FileText,
+  History,
+  Calendar,
+  RotateCcw,
+  CheckCircle2,
 } from "lucide-react";
 import WorkoutConfirmationCard from "@/app/components/nutrition/workout-confirmation-card";
 import { useWorkoutChat } from "@/app/lib/use-workout-chat";
 import { cn } from "@/app/lib/utils";
-import type { WorkoutChatMessage, PendingWorkout } from "@/app/types";
+import { useApp, todayLocalKey, uid } from "@/app/context/AppContext";
+import { toast } from "sonner";
+import type {
+  WorkoutChatMessage,
+  PendingWorkout,
+  Workout,
+  SavedWorkout,
+} from "@/app/types";
 
 /* ------------------------------------------------------------------
  * AIWorkoutLogger — inline "log a workout" panel embedded on the
@@ -92,9 +104,30 @@ export default function AIWorkoutLogger({
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const [activeDrawer, setActiveDrawer] = useState<
+    "template" | "history" | null
+  >(null);
+
+  const { state, addWorkout } = useApp();
 
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Past workouts across days, newest first, for the history drawer.
+  const historyWorkouts = useMemo(() => {
+    const all: (Workout & { day: string })[] = [];
+    const sortedDays = Object.keys(state.workouts).sort().reverse();
+    for (const day of sortedDays) {
+      const dayWorkouts = state.workouts[day] ?? [];
+      for (const w of [...dayWorkouts].reverse()) {
+        all.push({ ...w, day });
+      }
+    }
+    return all;
+  }, [state.workouts]);
+
+  // Saved workout templates, for the template drawer.
+  const templates = state.savedWorkouts ?? [];
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -142,6 +175,24 @@ export default function AIWorkoutLogger({
       next.add(id);
       return next;
     });
+  }
+
+  /** Prefill the input from a saved workout template and send it. */
+  function handleUseTemplate(template: SavedWorkout) {
+    setActiveDrawer(null);
+    const msg = `Log workout: ${template.name} — ${template.exercises.map((e) => e.name).join(", ")}`;
+    handleSend(msg);
+  }
+
+  /** Repeat a past workout — log it again for today with a fresh ID. */
+  async function handleRepeatWorkout(workout: Workout) {
+    const fresh: Workout = {
+      ...workout,
+      id: uid(),
+    };
+    await addWorkout(fresh);
+    toast.success(`"${workout.name}" logged for today! 🎉`);
+    setActiveDrawer(null);
   }
 
   const isEmpty = messages.length === 0;
@@ -317,6 +368,257 @@ export default function AIWorkoutLogger({
             <ArrowUp size={18} />
           </button>
         </div>
+
+        {/* ── Use template / Log history buttons ─────────────── */}
+        <div className="flex items-center justify-start w-full gap-1">
+          <button
+            type="button"
+            onClick={() =>
+              setActiveDrawer(activeDrawer === "template" ? null : "template")
+            }
+            className={cn(
+              "touch-hitbox flex items-center gap-1.5 px-3 py-2 min-h-[36px] text-xs font-semibold rounded-full border transition-colors",
+              activeDrawer === "template"
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-border bg-subtle text-foreground/80 hover:border-primary/30 hover:bg-primary/5 hover:text-foreground",
+            )}>
+            <FileText size={13} />
+            Use template
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setActiveDrawer(activeDrawer === "history" ? null : "history")
+            }
+            className={cn(
+              "touch-hitbox flex items-center gap-1.5 px-3 py-2 min-h-[36px] text-xs font-semibold rounded-full border transition-colors",
+              activeDrawer === "history"
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-border bg-subtle text-foreground/80 hover:border-primary/30 hover:bg-primary/5 hover:text-foreground",
+            )}>
+            <History size={13} />
+            Log history
+          </button>
+        </div>
+      </div>
+
+      {/* ── Drawer overlays ───────────────────────────────────── */}
+      {activeDrawer === "template" && (
+        <WorkoutTemplateDrawer
+          templates={templates}
+          onUse={handleUseTemplate}
+          onClose={() => setActiveDrawer(null)}
+        />
+      )}
+      {activeDrawer === "history" && (
+        <WorkoutHistoryDrawer
+          workouts={historyWorkouts}
+          onRepeat={handleRepeatWorkout}
+          onClose={() => setActiveDrawer(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------
+ * WorkoutTemplateDrawer — saved workout templates
+ * ------------------------------------------------------------------ */
+function WorkoutTemplateDrawer({
+  templates,
+  onUse,
+  onClose,
+}: {
+  templates: SavedWorkout[];
+  onUse: (t: SavedWorkout) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40 shrink-0">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <FileText size={14} className="text-primary" />
+          Templates
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-6 h-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+          <X size={13} />
+        </button>
+      </div>
+      <div className="overflow-y-auto flex-1 py-2" data-lenis-prevent>
+        {templates.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 py-8 text-center px-4">
+            <Dumbbell size={24} className="text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">
+              No templates yet. Save a workout as a template to find it here!
+            </p>
+          </div>
+        ) : (
+          templates.map((template) => (
+            <div key={template.id} className="px-3 py-1">
+              <button
+                type="button"
+                onClick={() => onUse(template)}
+                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl bg-subtle border border-border/60 hover:border-primary/30 hover:bg-primary/5 transition-colors text-left">
+                <Dumbbell size={14} className="text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground truncate">
+                    {template.name}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {template.type} · {template.exercises.length} exercise
+                    {template.exercises.length !== 1 ? "s" : ""}
+                  </p>
+                </div>
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------
+ * WorkoutHistoryDrawer — past workouts with "Repeat" action
+ * ------------------------------------------------------------------ */
+function WorkoutHistoryDrawer({
+  workouts,
+  onRepeat,
+  onClose,
+}: {
+  workouts: (Workout & { day: string })[];
+  onRepeat: (workout: Workout) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [repeatedIds, setRepeatedIds] = useState<Set<string>>(new Set());
+  const [repeatLoading, setRepeatLoading] = useState<string | null>(null);
+
+  const today = todayLocalKey();
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, (Workout & { day: string })[]>();
+    for (const w of workouts) {
+      if (!map.has(w.day)) map.set(w.day, []);
+      map.get(w.day)!.push(w);
+    }
+    return [...map.entries()].sort(([a], [b]) => b.localeCompare(a));
+  }, [workouts]);
+
+  function formatDay(day: string): string {
+    if (day === today) return "Today";
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+    if (day === yKey) return "Yesterday";
+    const d = new Date(day + "T00:00:00");
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+
+  async function handleRepeat(workout: Workout) {
+    if (repeatLoading) return;
+    setRepeatLoading(workout.id);
+    try {
+      await onRepeat(workout);
+      setRepeatedIds((prev) => new Set(prev).add(workout.id));
+    } finally {
+      setRepeatLoading(null);
+    }
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40 shrink-0">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <History size={14} className="text-primary" />
+          Log History
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-6 h-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+          <X size={13} />
+        </button>
+      </div>
+      <div className="overflow-y-auto flex-1 py-2" data-lenis-prevent>
+        {grouped.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 py-8 text-center px-4">
+            <Dumbbell size={24} className="text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">
+              No workouts logged yet. Start training!
+            </p>
+          </div>
+        ) : (
+          grouped.map(([day, dayWorkouts]) => (
+            <div key={day} className="px-3 py-1">
+              <div className="flex items-center gap-2 py-1.5">
+                <Calendar size={11} className="text-muted-foreground/60" />
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                  {formatDay(day)}
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                {dayWorkouts.map((workout) => {
+                  const isRepeated = repeatedIds.has(workout.id);
+                  return (
+                    <div
+                      key={workout.id}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-subtle border border-border/60 hover:border-border/80 transition-colors">
+                      <Dumbbell
+                        size={12}
+                        className="text-primary shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground truncate">
+                          {workout.name}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground capitalize">
+                          {workout.type} · {workout.duration} min
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={repeatLoading === workout.id}
+                        onClick={() => handleRepeat(workout)}
+                        aria-label={
+                          isRepeated
+                            ? `${workout.name} repeated`
+                            : `Repeat ${workout.name} for today`
+                        }
+                        className={cn(
+                          "shrink-0 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold transition-all active:scale-95",
+                          isRepeated
+                            ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25"
+                            : "bg-primary/8 text-primary border border-primary/20 hover:bg-primary/15",
+                          repeatLoading === workout.id &&
+                            "opacity-60 cursor-not-allowed",
+                        )}>
+                        {isRepeated ? (
+                          <>
+                            <CheckCircle2 size={10} />
+                            <span className="hidden xs:inline">Done</span>
+                          </>
+                        ) : (
+                          <>
+                            <RotateCcw
+                              size={10}
+                              className={cn(
+                                repeatLoading === workout.id && "animate-spin",
+                              )}
+                            />
+                            <span className="hidden xs:inline">Repeat</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

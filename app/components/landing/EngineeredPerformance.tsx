@@ -98,7 +98,7 @@ function TiltCard({
   const spotlightBg = useTransform(
     [glowX, glowY],
     ([x, y]) =>
-      `radial-gradient(320px circle at ${x}% ${y}%, oklch(0.7227 0.1920 149.5793 / 0.12) 0%, transparent 70%)`,
+      `radial-gradient(320px circle at ${x}% ${y}%, color-mix(in srgb, var(--color-primary) 12%, transparent) 0%, transparent 70%)`,
   );
 
   return (
@@ -121,7 +121,7 @@ function TiltCard({
         style={{ rotateX, rotateY, scale, transformStyle: "preserve-3d" }}
         className="relative h-full bg-card border border-border rounded-2xl overflow-hidden
                    cursor-default transition-[border-color,box-shadow] duration-300
-                   hover:border-primary/25 hover:shadow-[0_16px_48px_oklch(0.7227 0.1920 149.5793 / 0.10)]">
+                   hover:border-primary/25 hover:shadow-[0_16px_48px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
         {/* Cursor spotlight */}
         <motion.div
           className="pointer-events-none absolute inset-0 rounded-2xl z-0"
@@ -157,7 +157,7 @@ function IconBadge({ Icon }: { Icon: React.ElementType }) {
 function Card1({ index }: { index: number }) {
   const meals = [
     { name: "Oatmeal & berries", kcal: 340 },
-    { name: "Grilled chicken wrap", kcal: 520 },
+    { name: "Grilled veggie wrap", kcal: 520 },
     { name: "Greek yoghurt", kcal: 140 },
   ];
   const innerRef = useRef<HTMLDivElement>(null);
@@ -284,7 +284,7 @@ function Card2({ index }: { index: number }) {
               <defs>
                 <linearGradient id="tdeeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="var(--color-primary)" />
-                  <stop offset="100%" stopColor="oklch(0.7540 0.1770 70.5000)" />
+                  <stop offset="100%" stopColor="var(--color-amber)" />
                 </linearGradient>
               </defs>
             </svg>
@@ -333,7 +333,7 @@ function Card2({ index }: { index: number }) {
         </div>
 
         <div className="mt-auto text-[10px] text-muted-foreground flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
           Model updated 3 hours ago
         </div>
       </div>
@@ -402,8 +402,8 @@ function Card3({ index }: { index: number }) {
                 style={{
                   backgroundColor:
                     alpha > 0
-                      ? `oklch(0.7227 0.1920 149.5793 / ${alpha})`
-                      : "oklch(0 0 0 / 0.05)",
+                      ? `color-mix(in srgb, var(--color-primary) ${alpha * 100}%, transparent)`
+                      : "color-mix(in srgb, var(--color-foreground) 5%, transparent)",
                 }}
               />
             );
@@ -441,8 +441,20 @@ function Card4({ index }: { index: number }) {
       unit: "g",
       color: "var(--color-primary)",
     },
-    { label: "Carbs", val: 180, goal: 250, unit: "g", color: "oklch(0.7540 0.1770 70.5000)" },
-    { label: "Fat", val: 55, goal: 70, unit: "g", color: "oklch(0.8353 0.1870 69.9000)" },
+    {
+      label: "Carbs",
+      val: 180,
+      goal: 250,
+      unit: "g",
+      color: "var(--color-amber)",
+    },
+    {
+      label: "Fat",
+      val: 55,
+      goal: 70,
+      unit: "g",
+      color: "var(--color-amber)",
+    },
   ];
 
   return (
@@ -518,7 +530,7 @@ function Card4({ index }: { index: number }) {
         </div>
 
         <div className="mt-auto flex items-center gap-1.5 text-[10px] text-muted-foreground">
-          <CheckCircle2 size={11} className="text-green-500" />
+          <CheckCircle2 size={11} className="text-primary" />
           Targets synced with TDEE model
         </div>
       </div>
@@ -562,9 +574,9 @@ function Card5({ index }: { index: number }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 border border-green-500/20">
-              <TrendingUp size={10} className="text-green-500" />
-              <span className="text-[10px] font-bold text-green-600">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
+              <TrendingUp size={10} className="text-primary" />
+              <span className="text-[10px] font-bold text-primary">
                 On track
               </span>
             </div>

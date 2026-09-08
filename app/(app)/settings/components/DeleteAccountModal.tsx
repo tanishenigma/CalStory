@@ -73,19 +73,11 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
     setDeleting(true);
     try {
       await deleteAccount();
-      // Auth user is gone. The auth listener will clear
-      // `useAuthStore.user`; we bounce to `/` so the user lands
-      // somewhere sensible without a stale session hanging around.
       toast("Account deleted");
       onClose();
-      // `replace` (not `push`) so the back button doesn't bring the
-      // user back into a dead auth context.
+
       router.replace("/");
-      // Note: Firestore cleanup happens *inside* `deleteAccount()`
-      // (auth-first ordering — see `app/lib/auth.ts`). Once the auth
-      // user is gone, orphaned `/users/{uid}` documents are
-      // unreachable through the security rules, so a partial wipe
-      // is harmless.
+ 
     } catch (err) {
       const code = err instanceof DeleteAccountError ? err.code : "unknown";
       const msg =
@@ -197,11 +189,7 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
               <p className="text-xs text-red-600 dark:text-red-400 leading-relaxed">
                 {error}
               </p>
-              {/* Retry only on popup-related failures so the user can
-                  try the verification again without re-typing DELETE.
-                  Other errors (network, rate-limit) aren't retryable
-                  by clicking the same button — the user needs to fix
-                  the underlying issue first. */}
+        
               {(errorCode === "reauth-blocked" ||
                 errorCode === "reauth-cancelled") && (
                 <button

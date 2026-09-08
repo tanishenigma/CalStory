@@ -58,8 +58,8 @@ const FAQS: {
         <>
           <p>
             Tap <strong>“Log with AI”</strong> on the dashboard and describe what
-            you ate in plain language — for example, “two eggs, toast, and a
-            protein shake” or “a Chipotle bowl with chicken, brown rice, black
+            you ate in plain language — for example, “a veggie wrap and a
+            protein shake” or “a burrito bowl with brown rice, black
             beans, and guac.” The model returns a structured calorie and macro
             breakdown (calories, protein, carbs, fat, and serving size) in roughly
             6–9 seconds.

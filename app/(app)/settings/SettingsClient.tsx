@@ -7,7 +7,6 @@ import { useApp } from "@/app/context/AppContext";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
 import { signOut } from "@/app/lib/auth";
 import { kgToLbs } from "@/app/lib/units";
-import BlurFade from "@/app/components/animations/BlurFade";
 import { EditProfileModal } from "@/app/components/EditProfileModal";
 import type {
   GoalKey,
@@ -69,11 +68,6 @@ function SettingsPageContent({ initialTabParam }: SettingsClientProps) {
     String(initialWeightDisplay),
   );
 
-  // Target weight is the *goal* the user is working toward. Kept
-  // separate from `weight` (current weigh-in) so saving a new target
-  // doesn't silently shift TDEE math or write a bogus weigh-in.
-  // Default to the current weight so the field is pre-filled and
-  // "no change" → save still leaves the user's target intact.
   const initialTargetDisplay =
     state.profile?.weightUnit === "lbs"
       ? kgToLbs(state.profile?.targetWeight ?? state.profile?.weight ?? 0)
@@ -100,7 +94,7 @@ function SettingsPageContent({ initialTabParam }: SettingsClientProps) {
   }
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-10 ">
       <div className="pt-2">
         <h1 className="text-3xl font-bold ">Settings</h1>
         <p className="text-sm text-muted-foreground">

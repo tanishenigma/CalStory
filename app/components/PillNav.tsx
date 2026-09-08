@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuthStore } from "@/app/store/authStore";
+import BrandLogo from "@/app/components/BrandLogo";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const NAV: {
@@ -46,14 +47,19 @@ function PillNavInner({ pathname }: { pathname: string }) {
     height: number;
   } | null>(null);
 
+  const mainNav = NAV.filter((item) => item.href !== "/settings");
+  const settingsItem = NAV.find((item) => item.href === "/settings");
+
   const activeHref = NAV.find(
     ({ href }) => pathname === href || pathname.startsWith(href + "/"),
   )?.href;
 
   const measure = () => {
     if (!activeHref) return;
+
     const el = itemRefs.current[activeHref];
     if (!el) return;
+
     setIndicator({
       top: el.offsetTop,
       left: el.offsetLeft,
@@ -64,75 +70,71 @@ function PillNavInner({ pathname }: { pathname: string }) {
 
   useLayoutEffect(() => {
     measure();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeHref]);
 
   useEffect(() => {
     window.addEventListener("resize", measure);
+
     return () => window.removeEventListener("resize", measure);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeHref]);
 
+  const renderItem = ({ href, label, Icon }: (typeof NAV)[number]) => {
+    const active = pathname === href || pathname.startsWith(href + "/");
+
+    return (
+      <Link
+        key={href}
+        href={href}
+        title={label}
+        ref={(el) => {
+          itemRefs.current[href] = el;
+        }}
+        className="relative w-11 h-11 shrink-0 rounded-full flex items-center justify-center focus-visible:outline-none">
+        <Icon
+          size={20}
+          className={
+            active
+              ? "text-background relative z-10"
+              : "text-foreground/70 hover:text-foreground relative z-10"
+          }
+        />
+      </Link>
+    );
+  };
+
   return (
-    <>
-      {/* Desktop sidebar — hidden below lg */}
-      <nav className="fixed left-3 lg:left-4 inset-y-4 w-[68px] bg-background border border-border rounded-[30px] shadow-[0_4px_24px_oklch(0_0_0/_0.07)] dark:shadow-[0_4px_24px_oklch(0_0_0/_0.12)] hidden lg:flex flex-col items-center gap-[2px] py-[10px] px-2 z-[200] overflow-y-auto overflow-x-hidden">
-        <div className="w-[38px] h-[38px] bg-foreground rounded-full flex items-center justify-center mb-[10px] overflow-hidden">
-          <img
-            src="/light.png"
-            alt="CalStory"
-            width={28}
-            height={28}
-            className="w-7 h-7 object-contain block dark:hidden"
-          />
-          <img
-            src="/dark.png"
-            alt="CalStory"
-            width={28}
-            height={28}
-            className="w-7 h-7 object-contain hidden dark:block"
-          />
-        </div>
+    <nav className="fixed left-3 lg:left-4 top-1/2 -translate-y-1/2 h-[420px] w-[68px] bg-background border border-border rounded-[30px] shadow-[0_4px_24px_oklch(0_0_0/_0.07)] dark:shadow-[0_4px_24px_oklch(0_0_0/_0.12)] hidden lg:flex flex-col items-center gap-[2px] py-[10px] px-2 z-[200] overflow-hidden">
+      <Link href="/" title="Go to landing page" className="mb-[10px] shrink-0">
+        <BrandLogo />
+      </Link>
+      {indicator && (
+        <motion.div
+          initial={false}
+          animate={{
+            top: indicator.top,
+            left: indicator.left,
+            width: indicator.width,
+            height: indicator.height,
+            opacity: activeHref ? 1 : 0,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 320,
+            damping: 28,
+          }}
+          className="absolute rounded-full bg-foreground pointer-events-none"
+        />
+      )}
 
-        {indicator && (
-          <motion.div
-            initial={false}
-            animate={{
-              top: indicator.top,
-              left: indicator.left,
-              width: indicator.width,
-              height: indicator.height,
-              opacity: activeHref ? 1 : 0,
-            }}
-            transition={{ type: "spring", stiffness: 320, damping: 28 }}
-            className="absolute rounded-full bg-foreground pointer-events-none"
-          />
-        )}
+      {/* Main navigation */}
+      {mainNav.map(renderItem)}
 
-        {NAV.map(({ href, label, Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
-          return (
-            <Link
-              key={href}
-              href={href}
-              title={label}
-              ref={(el) => {
-                itemRefs.current[href] = el;
-              }}
-              className="relative w-11 h-11 rounded-full flex items-center justify-center focus-visible:outline-none">
-              <Icon
-                size={20}
-                className={
-                  active
-                    ? "text-background relative z-10"
-                    : "text-foreground/70 hover:text-foreground"
-                }
-              />
-            </Link>
-          );
-        })}
-      </nav>
-    </>
+      {/* Push Settings to bottom */}
+      <div className="flex-1" />
+
+      {/* Bottom Settings */}
+      {settingsItem && renderItem(settingsItem)}
+    </nav>
   );
 }
 
@@ -184,22 +186,7 @@ function FloatingSidebar({ pathname }: { pathname: string }) {
           <Link
             href="/"
             className="flex items-center cursor-pointer relative z-10 shrink-0 gap-2.5 group ">
-            <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center overflow-hidden">
-              <img
-                src="/light.png"
-                alt="CalStory"
-                width={28}
-                height={28}
-                className="w-7 h-7 object-contain block dark:hidden"
-              />
-              <img
-                src="/dark.png"
-                alt="CalStory"
-                width={28}
-                height={28}
-                className="w-7 h-7 object-contain hidden dark:block"
-              />
-            </div>
+            <BrandLogo className="h-8 w-8" />
             <h1 className="font-bold text-base tracking-tight text-foreground">
               CalStory
             </h1>

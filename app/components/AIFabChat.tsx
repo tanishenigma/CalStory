@@ -57,7 +57,7 @@ const INTENT_META: Record<
 > = {
   food: {
     label: "Food",
-    tone: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+    tone: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
     icon: Utensils,
   },
   workout: {
@@ -72,19 +72,19 @@ const QUICK_ACTIONS: {
   icon: typeof Utensils;
   prefill: string;
 }[] = [
-    {
-      label: "Greek yogurt with granola and berries",
-      icon: Utensils,
-      prefill: "Greek yogurt with granola and berries",
-    },
-    {
-      label: "Pull-ups 3×12",
-      icon: Dumbbell,
-      prefill: "Pull-ups 3×12",
-    },
-    { label: "Protein shake", icon: Coffee, prefill: "Protein shake" },
-    { label: "5km run 25 min", icon: Flame, prefill: "5km run 25 min" },
-  ];
+  {
+    label: "Greek yogurt with granola and berries",
+    icon: Utensils,
+    prefill: "Greek yogurt with granola and berries",
+  },
+  {
+    label: "Pull-ups 3×12",
+    icon: Dumbbell,
+    prefill: "Pull-ups 3×12",
+  },
+  { label: "Protein shake", icon: Coffee, prefill: "Protein shake" },
+  { label: "5km run 25 min", icon: Flame, prefill: "5km run 25 min" },
+];
 
 type DrawerType = "history" | "template" | "sessions" | null;
 
@@ -238,7 +238,6 @@ export default function AIFabChat({ onClose }: Props) {
         "transition-shadow duration-200",
         "overflow-hidden",
       )}>
-
       {/* ── Header (fixed ~44px) ────────────────────────────────── */}
       <div className="relative flex items-center justify-center px-3 sm:px-4 py-3 border-b border-border/60 shrink-0">
         <button
@@ -264,7 +263,10 @@ export default function AIFabChat({ onClose }: Props) {
         <div className="absolute right-3 flex items-center gap-1.5">
           <button
             type="button"
-            onClick={() => { reset(); setActiveDrawer(null); }}
+            onClick={() => {
+              reset();
+              setActiveDrawer(null);
+            }}
             aria-label="Start a new chat"
             className="touch-hitbox w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-subtle hover:text-foreground transition-colors">
             <SquarePen size={14} />
@@ -276,7 +278,6 @@ export default function AIFabChat({ onClose }: Props) {
            input row. Always the same height regardless of which
            drawer (or the chat thread) is displayed. ─────────────── */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-
         {/* Drawer: rendered above the chat when open */}
         {activeDrawer && (
           <div className="flex-1 flex flex-col overflow-hidden border-b border-border/40">
@@ -473,9 +474,7 @@ export default function AIFabChat({ onClose }: Props) {
             <button
               type="button"
               onClick={() =>
-                setActiveDrawer(
-                  activeDrawer === "template" ? null : "template",
-                )
+                setActiveDrawer(activeDrawer === "template" ? null : "template")
               }
               className={cn(
                 "touch-hitbox flex items-center gap-1.5 px-3 py-2 min-h-[36px] text-xs font-semibold rounded-full border transition-colors",
@@ -489,9 +488,7 @@ export default function AIFabChat({ onClose }: Props) {
             <button
               type="button"
               onClick={() =>
-                setActiveDrawer(
-                  activeDrawer === "history" ? null : "history",
-                )
+                setActiveDrawer(activeDrawer === "history" ? null : "history")
               }
               className={cn(
                 "touch-hitbox flex items-center gap-1.5 px-3 py-2 min-h-[36px] text-xs font-semibold rounded-full border transition-colors",
@@ -568,7 +565,7 @@ function HistoryDrawer({
 
   const mealTimeColors: Record<string, string> = {
     breakfast: "text-amber-500",
-    lunch: "text-emerald-500",
+    lunch: "text-amber-500",
     dinner: "text-violet-500",
     snack: "text-sky-500",
   };
@@ -643,7 +640,8 @@ function HistoryDrawer({
                           {meal.name}
                         </p>
                         <p className="text-[10px] text-muted-foreground capitalize">
-                          {meal.time} · {meal.cal} kcal · P{meal.p} C{meal.c} F{meal.f}
+                          {meal.time} · {meal.cal} kcal · P{meal.p} C{meal.c} F
+                          {meal.f}
                         </p>
                       </div>
 
@@ -660,9 +658,10 @@ function HistoryDrawer({
                         className={cn(
                           "shrink-0 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold transition-all active:scale-95",
                           isRepeated
-                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25"
+                            ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25"
                             : "bg-primary/8 text-primary border border-primary/20 hover:bg-primary/15",
-                          repeatLoading === meal.id && "opacity-60 cursor-not-allowed",
+                          repeatLoading === meal.id &&
+                            "opacity-60 cursor-not-allowed",
                         )}>
                         {isRepeated ? (
                           <>
@@ -832,9 +831,13 @@ function SessionDrawer({
                       <Clock size={9} className="text-muted-foreground/60" />
                       <p className="text-[10px] text-muted-foreground">
                         {formatTime(session.updatedAt)} ·{" "}
-                        {session.messages.filter((m) => m.role === "user").length}{" "}
+                        {
+                          session.messages.filter((m) => m.role === "user")
+                            .length
+                        }{" "}
                         message
-                        {session.messages.filter((m) => m.role === "user").length !== 1
+                        {session.messages.filter((m) => m.role === "user")
+                          .length !== 1
                           ? "s"
                           : ""}
                       </p>

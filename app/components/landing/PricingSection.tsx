@@ -67,11 +67,6 @@ const TIERS = [
     intro: null,
     inherits: "Plus",
     features: [
-      "Unlimited AI meal logs",
-      "Daily AI progress insights",
-      "Adaptive TDEE recalculation",
-      "Advanced macro split views",
-      "Workout templates + re-log",
       "Data export (CSV / JSON)",
       "Priority support",
       "Early access to features in development",
@@ -115,8 +110,7 @@ function TierCard({ tier, onCta }: TierCardProps) {
     <motion.div
       className="flex flex-col p-7 h-full rounded-2xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow duration-300"
       whileHover={{ y: -2 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-    >
+      transition={{ duration: 0.25, ease: "easeOut" }}>
       {/* Header — tier name + price, one line, same size logic */}
       <div className="flex items-baseline justify-between gap-4">
         <h3 className="font-heading text-xl font-semibold tracking-tight text-foreground">
@@ -172,8 +166,7 @@ function TierCard({ tier, onCta }: TierCardProps) {
       <button
         id={`pricing-cta-${tier.id}`}
         onClick={() => onCta(tier)}
-        className="w-full h-11 mt-7 rounded-xl bg-foreground text-background text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.99] cursor-pointer"
-      >
+        className="w-full h-11 mt-7 rounded-full bg-foreground text-background text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.99] cursor-pointer">
         {tier.cta}
       </button>
     </motion.div>
@@ -203,7 +196,10 @@ export default function PricingSection() {
       router.push(user ? "/dashboard" : "/auth");
       return;
     }
-    if (tier.polarCheckoutLink && !tier.polarCheckoutLink.includes("REPLACE_ME")) {
+    if (
+      tier.polarCheckoutLink &&
+      !tier.polarCheckoutLink.includes("REPLACE_ME")
+    ) {
       window.location.href = tier.polarCheckoutLink;
       return;
     }
@@ -215,27 +211,24 @@ export default function PricingSection() {
       ref={ref}
       id="pricing"
       aria-labelledby="pricing-heading"
-      className="relative z-10 py-24 px-6 w-full"
-    >
+      className="relative z-10 py-16 md:py-32 px-6 w-full">
       <div className="max-w-6xl mx-auto">
         {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, ease: EASE }}
-          className="text-center mb-4"
-        >
+          className="text-center mb-4">
           <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-widest uppercase mb-4">
             Pricing
           </span>
           <h2
             id="pricing-heading"
-            className="text-3xl md:text-5xl font-bold tracking-tight leading-tight font-heading text-foreground"
-          >
+            className="text-3xl md:text-5xl font-bold tracking-tight leading-tight font-heading text-foreground">
             Simple, honest pricing
           </h2>
           <p className="text-muted-foreground mt-3 text-base max-w-xl mx-auto">
-            Free for core tracking. Plus and Pro add the AI depth.
+            Free for core tracking. Paid plans add unlimited AI logging.
           </p>
         </motion.div>
 
@@ -245,8 +238,7 @@ export default function PricingSection() {
           variants={containerVariants}
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
-          className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start mt-12"
-        >
+          className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start mt-12">
           {TIERS.map((tier) => (
             <motion.div key={tier.id} variants={cardMotion} className="h-full">
               <TierCard tier={tier} onCta={handleCta} />

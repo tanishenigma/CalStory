@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { FaGithub } from "react-icons/fa";
 import { ArrowRight } from "lucide-react";
+import BrandLogo from "@/app/components/BrandLogo";
 
 const productLinks = [
   {
@@ -57,7 +57,9 @@ const legalLinks = [
 const Footer = () => {
   const year = new Date().getFullYear();
   const [email, setEmail] = useState("");
-  const [subState, setSubState] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [subState, setSubState] = useState<
+    "idle" | "loading" | "done" | "error"
+  >("idle");
 
   async function handleSubscribe(e: React.FormEvent) {
     e.preventDefault();
@@ -107,16 +109,7 @@ const Footer = () => {
               href="/"
               aria-label="CalStory home"
               className="flex items-center gap-2.5 group w-fit">
-              <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center transition-transform group-hover:scale-110 overflow-hidden">
-                <Image
-                  src="/dark.png"
-                  alt="CalStory logo"
-                  width={28}
-                  height={28}
-                  loading="lazy"
-                  className="w-7 h-7 object-contain block"
-                />
-              </div>
+              <BrandLogo className="h-8 w-8" />
               <p className="font-bold text-xl tracking-tight font-heading">
                 CalStory
               </p>
@@ -199,15 +192,23 @@ const Footer = () => {
         <div className="mt-10 pt-8 border-t border-border/30">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="font-semibold text-sm font-heading">Stay in the loop</p>
+              <p className="font-semibold text-sm font-heading">
+                Stay in the loop
+              </p>
               <p className="text-xs text-muted-foreground/70 mt-0.5">
-                Product updates, new features, and the occasional insight from the team.
+                Product updates, new features, and the occasional insight from
+                the team.
               </p>
             </div>
             {subState === "done" ? (
-              <p className="text-sm text-primary font-semibold shrink-0">✓ You&apos;re on the list.</p>
+              <p className="text-sm text-primary font-semibold shrink-0">
+                ✓ You&apos;re on the list.
+              </p>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex gap-2 shrink-0" aria-label="Email subscription form">
+              <form
+                onSubmit={handleSubscribe}
+                className="flex gap-2 shrink-0"
+                aria-label="Email subscription form">
                 <input
                   id="footer-email-input"
                   type="email"
@@ -221,16 +222,19 @@ const Footer = () => {
                 <button
                   type="submit"
                   disabled={subState === "loading"}
-                  className="h-10 px-4 rounded-xl bg-foreground text-background text-sm font-bold inline-flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer shrink-0"
-                >
+                  className="h-10 px-4 rounded-xl bg-foreground text-background text-sm font-bold inline-flex items-center gap-1.5 hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer shrink-0">
                   {subState === "loading" ? "..." : "Subscribe"}
-                  {subState !== "loading" && <ArrowRight className="w-3.5 h-3.5" />}
+                  {subState !== "loading" && (
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  )}
                 </button>
               </form>
             )}
           </div>
           {subState === "error" && (
-            <p className="text-xs text-red-400 mt-2">Something went wrong — try again.</p>
+            <p className="text-xs text-red mt-2">
+              Something went wrong — try again.
+            </p>
           )}
         </div>
 
@@ -242,8 +246,7 @@ const Footer = () => {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="CalStory on GitHub (opens in a new tab)"
-            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
-          >
+            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors">
             <FaGithub size={12} aria-hidden="true" />
             <span>GitHub</span>
           </a>

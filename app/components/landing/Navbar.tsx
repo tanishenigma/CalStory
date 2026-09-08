@@ -15,6 +15,7 @@ import type { RefObject } from "react";
 import { Menu } from "lucide-react";
 import { useAuthStore } from "@/app/store/authStore";
 import { useProfileStore } from "@/app/store/profileStore";
+import BrandLogo from "@/app/components/BrandLogo";
 
 export type NavbarTargets = Partial<{
   features: RefObject<HTMLElement | null>;
@@ -23,10 +24,7 @@ export type NavbarTargets = Partial<{
 }>;
 
 const NAV_LINKS: { label: string; href: string }[] = [
-  { label: "Features", href: "/#features" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Method", href: "/#how-it-works" },
-  { label: "FAQ", href: "/#faq" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
@@ -307,13 +305,7 @@ export function Navbar({
         <Link
           href="/"
           className="flex items-center relative z-10 shrink-0 gap-2.5 cursor-pointer">
-          <img
-            src="/dark.png"
-            alt="CalStory"
-            width={32}
-            height={32}
-            className="w-10 h-10 object-contain block"
-          />
+          <BrandLogo className="h-10 w-10" />
           <motion.span
             style={{ color: textColor }}
             className="font-bold text-lg tracking-tight font-heading ">

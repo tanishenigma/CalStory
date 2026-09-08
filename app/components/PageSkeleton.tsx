@@ -4,18 +4,6 @@ import React from "react";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { cn } from "@/app/lib/utils";
 
-/* ------------------------------------------------------------------
- * PageSkeleton — layout-stable loading placeholders that mirror the
- * real authenticated pages. Replaces the generic centered spinner so
- * removing the localStorage profile cache (which previously let pages
- * render synchronously) doesn't introduce a layout shift or a
- * contentless flash.
- *
- * Each variant is sized to match its real counterpart — same row
- * heights, same card footprints — so the swap to live content is
- * imperceptible.
- * ------------------------------------------------------------------ */
-
 type Variant =
   | "dashboard"
   | "nutrition"

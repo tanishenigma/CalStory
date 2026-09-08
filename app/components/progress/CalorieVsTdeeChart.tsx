@@ -104,13 +104,13 @@ export function CalorieVsTdeeChart({
         {
           label: "Calorie Intake",
           data: data.map((d) => d.intake),
-          borderColor: "#22c55e",
-          backgroundColor: "oklch(0.7227 0.1920 149.5793 / 0.2)",
+          borderColor: "#EA580C",
+          backgroundColor: "oklch(0.7173 0.1906 49.4698 / 0.2)",
           fill: true,
           tension: 0.4,
           pointRadius: 0,
           pointHoverRadius: 4,
-          pointHoverBackgroundColor: "#22c55e",
+          pointHoverBackgroundColor: "#EA580C",
           pointHoverBorderWidth: 0,
         },
         {

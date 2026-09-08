@@ -18,7 +18,7 @@ const REASONS = [
     n: "01",
     icon: Zap,
     title: "Log meals in plain English in < 9 seconds",
-    body: 'Type "chicken rice and broccoli" and CalStory returns a confirmed macro breakdown instantly. Gemini parses natural language food descriptions — no barcode scanner, no database archaeology, no dropdown menus.',
+    body: 'Type "a veggie wrap and a protein shake" and CalStory returns a confirmed macro breakdown instantly. Gemini parses natural language food descriptions — no barcode scanner, no database archaeology, no dropdown menus.',
     tag: "AI Logging",
   },
   {
