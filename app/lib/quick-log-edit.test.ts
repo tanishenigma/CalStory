@@ -182,7 +182,7 @@ describe("Quick Log discard flow", () => {
     expect(ql.messages.find((m) => m.workout)).toBeUndefined();
   });
 
-  it("marks the intent as confirmed so the card UI shows Saved ✓ (or is hidden)", () => {
+  it("marks the intent as confirmed so the card UI shows Saved (or is hidden)", () => {
     const ql = new FakeQuickLog({
       messages: [
         { id: "m1", role: "model", text: "x", intent: "food", meal: MEAL },

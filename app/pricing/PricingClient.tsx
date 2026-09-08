@@ -1,15 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import PricingSection from "@/app/components/landing/PricingSection";
 import { RouteThemeController } from "@/app/components/RouteThemeController";
-
-// Lazy-load Navbar and Footer so the pricing section is visible immediately
-const Navbar = dynamic(
-  () => import("@/app/components/landing/Navbar").then((m) => m.Navbar),
-  { ssr: false },
-);
-const Footer = dynamic(() => import("@/app/footer"), { ssr: false });
+import { PublicPageShell } from "@/app/components/landing-redesign/PublicPageShell";
 
 const FAQ_ITEMS = [
   {
@@ -40,12 +33,9 @@ const FAQ_ITEMS = [
 
 export default function PricingClient() {
   return (
-    <>
+    <PublicPageShell>
       {/* Force the same light theme used on the landing page */}
       <RouteThemeController />
-
-      {/* ── Nav ── */}
-      <Navbar onSignIn={() => { window.location.href = "/auth"; }} />
 
       <main className="min-h-screen pt-20">
         {/* ── Tier cards (reused from landing) ── */}
@@ -75,8 +65,6 @@ export default function PricingClient() {
         </section>
       </main>
 
-      {/* ── Footer ── */}
-      <Footer />
-    </>
+    </PublicPageShell>
   );
 }

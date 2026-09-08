@@ -248,13 +248,13 @@ function TopBar({
           <button
             type="button"
             aria-label="Previous day"
-            className="w-7 h-7 rounded-full grid place-items-center text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer">
+            className="w-7 h-7 rounded-lg grid place-items-center text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer">
             <ChevronLeft size={14} />
           </button>
           <button
             type="button"
             aria-label="Next day"
-            className="w-7 h-7 rounded-full grid place-items-center text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer">
+            className="w-7 h-7 rounded-lg grid place-items-center text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer">
             <ChevronRight size={14} />
           </button>
         </div>
@@ -276,7 +276,7 @@ function TopBar({
         <button
           type="button"
           aria-label="Calendar"
-          className="hidden sm:grid ml-1 w-7 h-7 rounded-full place-items-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer">
+          className="hidden sm:grid ml-1 w-7 h-7 rounded-lg place-items-center text-muted-foreground hover:bg-accent hover:text-foreground transition-all cursor-pointer">
           <CalendarIcon size={14} />
         </button>
       </div>
@@ -401,7 +401,7 @@ function MacroCard({
   return (
     <button
       type="button"
-      className={`${SURFACE} ${BORDER} rounded-2xl px-4 py-2.5 flex items-center justify-between gap-3 ${SURFACE_HOVER} active:scale-[0.99] transition-all cursor-pointer w-full text-left`}>
+      className={`${SURFACE} ${BORDER} rounded-lg px-4 py-2.5 flex items-center justify-between gap-3 ${SURFACE_HOVER} active:scale-[0.99] transition-all cursor-pointer w-full text-left`}>
       <div className="flex items-center gap-3 min-w-0">
         <div
           className="w-9 h-9 rounded-full grid place-items-center shrink-0 text-lg leading-none"
@@ -575,7 +575,7 @@ export function DashboardMock() {
               </button>
             </div>
             <div
-              className={`${SURFACE} ${BORDER} rounded-2xl px-3 py-3 flex items-center gap-3 ${SURFACE_HOVER} transition-colors cursor-pointer`}>
+              className={`${SURFACE} ${BORDER} rounded-xl px-3 py-3 flex items-center gap-3 ${SURFACE_HOVER} transition-colors cursor-pointer`}>
               <div className="w-9 h-9 rounded-xl bg-accent grid place-items-center text-base shrink-0">
                 <span aria-hidden>{WORKOUT_DEMO.emoji}</span>
               </div>

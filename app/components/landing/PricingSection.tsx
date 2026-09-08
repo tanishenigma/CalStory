@@ -80,45 +80,31 @@ const TIERS = [
 
 type Tier = (typeof TIERS)[number];
 
-// ---------------------------------------------------------------------------
-// Polar embed checkout with redirect fallback
-// ---------------------------------------------------------------------------
-async function openPolarEmbed(checkoutLink: string) {
-  try {
-    // Dynamic import keeps bundle clean for non-paying users
-    const mod = await import("@polar-sh/checkout/embed");
-    // @ts-expect-error — types may vary by package version
-    const Checkout = mod.PolarEmbedCheckout ?? mod.default;
-    if (typeof Checkout?.create === "function") {
-      await Checkout.create(checkoutLink, { theme: "light" });
-      return;
-    }
-    throw new Error("PolarEmbedCheckout.create not found");
-  } catch {
-    // Fallback: open checkout in same tab
-    window.location.href = checkoutLink;
-  }
-}
-
 interface TierCardProps {
   tier: Tier;
   onCta: (tier: Tier) => void;
 }
 
 function TierCard({ tier, onCta }: TierCardProps) {
+  const isPlus = tier.id === "plus";
+
   return (
     <motion.div
-      className="flex flex-col p-7 h-full rounded-2xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow duration-300"
+      className={`flex flex-col p-7 h-full rounded-2xl border shadow-sm hover:shadow-md transition-shadow duration-300 ${
+        isPlus
+          ? "bg-[#FFF1E6] border-[#FF6A00]/20 text-[#2B211A]"
+          : "bg-card border-border text-foreground"
+      }`}
       whileHover={{ y: -2 }}
       transition={{ duration: 0.25, ease: "easeOut" }}>
       {/* Header — tier name + price, one line, same size logic */}
       <div className="flex items-baseline justify-between gap-4">
-        <h3 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+        <h3 className={`font-heading text-xl font-semibold tracking-tight ${isPlus ? "text-[#2B211A]" : "text-foreground"}`}>
           {tier.name}
         </h3>
         <p className="whitespace-nowrap">
-          <span className="num text-xl text-foreground">${tier.price}</span>
-          <span className="text-sm text-muted-foreground">
+          <span className={`num text-xl ${isPlus ? "text-[#2B211A]" : "text-foreground"}`}>${tier.price}</span>
+          <span className={`text-sm ${isPlus ? "text-[#7B6658]" : "text-muted-foreground"}`}>
             {" "}
             {tier.priceNote}
           </span>
@@ -127,12 +113,12 @@ function TierCard({ tier, onCta }: TierCardProps) {
 
       {/* Inheritance line — quiet, muted, not a bullet, never repeated
        * in full. The base tier gets a factual one-liner instead. */}
-      <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+      <p className={`text-sm mt-3 leading-relaxed ${isPlus ? "text-[#7B6658]" : "text-muted-foreground"}`}>
         {tier.inherits ? `Everything in ${tier.inherits}` : tier.intro}
       </p>
 
       {/* Hairline divider */}
-      <div className="h-px bg-border my-5" aria-hidden="true" />
+      <div className={`h-px my-5 ${isPlus ? "bg-[#FF6A00]/15" : "bg-border"}`} aria-hidden="true" />
 
       {/* Net-new features only — the differentiating content, dominant */}
       <ul className="space-y-2.5 flex-1">
@@ -140,11 +126,11 @@ function TierCard({ tier, onCta }: TierCardProps) {
           const key = typeof f === "string" ? f : `mono-${f.mono}`;
           const body =
             typeof f === "string" ? (
-              <span className="text-sm leading-relaxed text-foreground">
+              <span className={`text-sm leading-relaxed ${isPlus ? "text-[#49382D]" : "text-foreground"}`}>
                 {f}
               </span>
             ) : (
-              <span className="text-sm leading-relaxed text-foreground">
+              <span className={`text-sm leading-relaxed ${isPlus ? "text-[#49382D]" : "text-foreground"}`}>
                 {/* Numbers in mono, same size/weight as surrounding text */}
                 <span className="num">{f.mono}</span>
                 {f.rest}
@@ -153,7 +139,7 @@ function TierCard({ tier, onCta }: TierCardProps) {
           return (
             <li key={key} className="flex items-start gap-2.5">
               <Check
-                className="w-3.5 h-3.5 shrink-0 mt-0.5 text-muted-foreground"
+                className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${isPlus ? "text-primary" : "text-muted-foreground"}`}
                 aria-hidden="true"
               />
               {body}
@@ -166,7 +152,7 @@ function TierCard({ tier, onCta }: TierCardProps) {
       <button
         id={`pricing-cta-${tier.id}`}
         onClick={() => onCta(tier)}
-        className="w-full h-11 mt-7 rounded-full bg-foreground text-background text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.99] cursor-pointer">
+        className={`w-full h-11 mt-7 rounded-lg text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.99] cursor-pointer ${isPlus ? "bg-primary text-white" : "bg-foreground text-background"}`}>
         {tier.cta}
       </button>
     </motion.div>
@@ -238,7 +224,7 @@ export default function PricingSection() {
           variants={containerVariants}
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
-          className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start mt-12">
+          className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch mt-12">
           {TIERS.map((tier) => (
             <motion.div key={tier.id} variants={cardMotion} className="h-full">
               <TierCard tier={tier} onCta={handleCta} />

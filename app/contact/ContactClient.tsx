@@ -1,23 +1,14 @@
 "use client";
 
 import BlurFade from "@/app/components/animations/BlurFade";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Navbar } from "@/app/components/landing/Navbar";
-import Footer from "@/app/footer";
+import { PublicPageShell } from "@/app/components/landing-redesign/PublicPageShell";
 import { ArrowRight, Mail, MessageSquare } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 
 export function ContactClient() {
-  const router = useRouter();
-
-  function handleSignIn() {
-    router.push("/auth");
-  }
-
   return (
-    <div className="relative min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
-      <Navbar onSignIn={handleSignIn} />
+    <PublicPageShell>
 
       <main className="relative z-10 pt-32 pb-24 px-6 max-w-3xl mx-auto w-full">
         <BlurFade delay={0.1}>
@@ -138,8 +129,7 @@ export function ContactClient() {
           </div>
         </BlurFade>
       </main>
-      <Footer />
-    </div>
+    </PublicPageShell>
   );
 }
 

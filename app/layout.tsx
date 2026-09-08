@@ -187,14 +187,11 @@ export default function RootLayout({
             __html: `(function(){try{
   var raw=localStorage.getItem('ft_theme');
   var t=raw?JSON.parse(raw):localStorage.getItem('theme');
-  // Default is dark. Light is only honored when the user picked it
-  // explicitly; "system" still follows the OS preference.
-  var dark=t==='dark'||!t||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+  // Light is the default. Explicit dark and system preferences are honored.
+  var dark=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
   if(dark)document.documentElement.classList.add('dark');
-  // Forced-light public pages (landing + auth) — add the matching
-  // class before paint so the user never sees a dark flash.
-  var p=window.location.pathname;
-  if(p==='/'||p==='/index'||p===''||p==='/auth')document.documentElement.classList.add('forced-landing');
+  else document.documentElement.classList.remove('dark');
+  document.documentElement.classList.remove('forced-landing');
 }catch(e){}})();`,
           }}
         />

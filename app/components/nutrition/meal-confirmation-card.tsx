@@ -10,10 +10,6 @@ interface Props {
   onEdit: () => void;
 
   isLogging?: boolean;
-  /** When true, the user has already saved this meal. The Confirm
-   *  button becomes a non-clickable "Saved ✓" label so the user
-   *  sees the action is complete (and the workout card can still
-   *  be saved for mixed-intent turns). */
   alreadySaved?: boolean;
 }
 
@@ -92,7 +88,7 @@ export default function MealConfirmationCard({
             "hover:bg-foreground/90  transition-colors",
             "disabled:opacity-60 disabled:cursor-not-allowed",
           )}>
-          {alreadySaved ? "Saved ✓" : isLogging ? "Logging…" : "Confirm ✓"}
+          {alreadySaved ? "Saved" : isLogging ? "Logging…" : "Confirm"}
         </button>
         <button
           onClick={onEdit}

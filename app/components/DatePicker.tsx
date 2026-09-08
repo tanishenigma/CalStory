@@ -123,7 +123,7 @@ export default function DatePicker({ onClose }: DatePickerProps) {
           />
           <button
             onClick={onClose}
-            className="w-full mt-2 py-2.5 border border-border rounded-full bg-white/50 bg-foreground text-sm font-semibold text-muted-foreground hover:bg-white hover:bg-foreground transition-colors cursor-pointer ">
+            className="w-full mt-2 py-2.5 border border-border rounded-xl bg-foreground text-background text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-[opacity,transform] cursor-pointer ">
             Cancel
           </button>
         </motion.div>

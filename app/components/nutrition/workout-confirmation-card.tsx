@@ -24,10 +24,6 @@ interface Props {
    */
   fromSavedRoutine?: boolean;
   dirty?: boolean;
-  /** When true, the user has already saved this workout. The Save
-   *  button becomes a non-clickable "Saved ✓" label so the user
-   *  can see the action is complete (and the meal card can still
-   *  be saved for mixed-intent turns). */
   alreadySaved?: boolean;
 }
 
@@ -223,7 +219,7 @@ export default function WorkoutConfirmationCard({
             "hover:bg-white/90 transition-colors",
             "disabled:opacity-60 disabled:cursor-not-allowed",
           )}>
-          {alreadySaved ? "Saved ✓" : isLogging ? "Logging…" : "Save"}
+          {alreadySaved ? "Saved" : isLogging ? "Logging…" : "Save"}
         </button>
         <button
           onClick={onEdit}

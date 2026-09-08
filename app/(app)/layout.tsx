@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import PillNav from "@/app/components/PillNav";
 import BottomNav from "@/app/components/BottomNav";
 import FAB from "@/app/components/FAB";
@@ -39,19 +39,14 @@ function MobilePageShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      {/* key={pathname} ensures AnimatePresence re-mounts the div
-          on each navigation, triggering the exit → enter sequence. */}
-      <motion.div
-        key={pathname}
-        className="w-full will-change-transform"
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2, ease: [0.165, 0.84, 0.44, 1] }}>
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      key={pathname}
+      className="w-full will-change-transform"
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, ease: [0.165, 0.84, 0.44, 1] }}>
+      {children}
+    </motion.div>
   );
 }
 
@@ -62,8 +57,13 @@ export default function AppGroupLayout({
 }) {
   const navStyle = usePrefsStore((s) => s.navbarStyle);
   const chromeHidden = useUiStore((s) => s.chromeHidden);
+  const setChromeHidden = useUiStore((s) => s.setChromeHidden);
   const pathname = usePathname();
   const padLeft = navStyle === "floating" ? "lg:pl-[272px]" : "lg:pl-[88px]";
+
+  useEffect(() => {
+    setChromeHidden(false);
+  }, [pathname, setChromeHidden]);
   return (
     <>
       <div style={{ minHeight: "100dvh" }} className="bg-background">

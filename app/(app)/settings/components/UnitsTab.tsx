@@ -35,7 +35,7 @@ export function UnitsTab({
     setSaving(true);
     await setProfile({ ...profile, weightUnit, heightUnit, volumeUnit });
     setSaving(false);
-    toast("Units saved ✓");
+    toast("Units saved");
   }
 
   return (

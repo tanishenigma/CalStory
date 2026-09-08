@@ -81,11 +81,11 @@ export default function AuthPage() {
               onClick={handleGoogleSignIn}
               disabled={submitting}
               aria-label="Sign in with Google"
-              className="group relative inline-flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-foreground px-6 text-sm font-bold uppercase tracking-widest text-background shadow-lg shadow-black/10 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100">
+              className="group relative inline-flex h-12 w-full items-center justify-center gap-3 rounded-[10px] bg-primary px-6 text-sm font-semibold text-white shadow-sm transition-[transform,opacity,background-color] duration-150 ease-out hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100">
               {submitting ? (
                 <>
                   <span
-                    className="h-4 w-4 rounded-full border-2 border-background/30 border-t-background"
+                    className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white"
                     style={{ animation: "spin 0.7s linear infinite" }}
                     aria-hidden="true"
                   />

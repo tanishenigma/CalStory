@@ -100,7 +100,7 @@ export function ApiKeyCard({ user }: ApiKeyCardProps) {
         setApiKeyHasKey(true);
         setApiKeyPreview(data.preview ?? null);
         setApiKeySuccess(true);
-        toast("API key saved ✓");
+        toast("API key saved");
       }
     } catch {
       setApiKeyError("Network error. Please try again.");

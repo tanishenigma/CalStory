@@ -2,4 +2,4 @@
 allow = []
 
 [sandbox]
-allow_write = ["${HOME}/CalStory/app/components/landing", "${HOME}/CalStory/app/components/progress"]
+allow_write = ["${HOME}/CalStory/app/components/landing", "${HOME}/CalStory/app/components/progress", "/tmp"]

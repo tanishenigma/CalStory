@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { ReactLenis } from "lenis/react";
 import BlurFade from "../animations/BlurFade";
 import { DashboardMock } from "./DashboardMock";
 import { MobileDashboardMock } from "./MobileDashboardMock";
@@ -9,10 +8,6 @@ import { MobileDashboardMock } from "./MobileDashboardMock";
 export const dashboardDark = "/screenshots/dashboard_dark.png";
 export const dashboardLight = "/screenshots/dashboard_light.png";
 
-/**
- * DesktopScreenshotCard — wide 7:5 canvas, renders `DashboardMock`
- * (the desktop-style dashboard with sidebar + grid layout).
- */
 function DesktopScreenshotCard() {
   return (
     <div className="relative w-full aspect-[7/5] overflow-hidden rounded-2xl">
@@ -22,24 +17,28 @@ function DesktopScreenshotCard() {
   );
 }
 
-/**
- * MobileScreenshotCard — phone-shaped (9:19 portrait) canvas,
- * renders `MobileDashboardMock`. This mock mirrors the real
- * CalStory mobile dashboard exactly — logo + streak header,
- * circular day strip, calories card, stacked macro rows, FAB —
- * so on a phone the landing hero previews what the user will
- * actually see when they open the app.
- */
 function MobileScreenshotCard() {
   return (
-    <div className="relative mx-auto w-full max-w-90 aspect-[9/19] overflow-hidden rounded-[28px] border border-border shadow-xl shadow-black/10">
+    <div className="relative mx-auto w-full max-w-68 aspect-[9/16] overflow-hidden rounded-2xl border border-border shadow-sm">
       <MobileDashboardMock />
     </div>
   );
 }
 
 function HeroCopy() {
-  return null;
+  return (
+    <div className="text-left">
+      <h1 className="text-5xl font-bold tracking-tight">
+        Track your <span className="text-primary">nutrition</span>,
+        <br /> no hassle.
+      </h1>
+
+      <p className="mt-6 text-lg text-muted-foreground">
+        CalStory makes tracking calories
+        <br /> and workout simple, fast, and effortless.
+      </p>
+    </div>
+  );
 }
 
 const ContainerScroll = dynamic(
@@ -52,7 +51,7 @@ const ContainerScroll = dynamic(
 
 function MobileLayout() {
   return (
-    <div className="md:hidden py-24 space-y-8 max-w-xl mx-auto text-center px-4">
+    <div className="md:hidden py-12 max-w-xl mx-auto text-center px-4">
       <BlurFade delay={0.15}>
         <MobileScreenshotCard />
       </BlurFade>
@@ -72,11 +71,9 @@ function DesktopLayout() {
 
 export default function HeroScrollSection() {
   return (
-    <ReactLenis root options={{ lerp: 0.08, duration: 1.4, smoothWheel: true }}>
-      <section className="relative w-full z-10 overflow-hidden">
-        <MobileLayout />
-        <DesktopLayout />
-      </section>
-    </ReactLenis>
+    <section className="relative w-full z-10 overflow-hidden">
+      <MobileLayout />
+      <DesktopLayout />
+    </section>
   );
 }
