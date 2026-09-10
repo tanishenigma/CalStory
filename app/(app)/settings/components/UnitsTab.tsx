@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Card } from "@/app/components/ui/card";
-import BlurFade from "@/app/components/animations/BlurFade";
-import { useToast } from "@/app/components/ToastContainer";
 import type { Profile, HeightUnit, WeightUnit, VolumeUnit } from "@/app/types";
 
 interface UnitsTabProps {
@@ -28,128 +25,126 @@ export function UnitsTab({
   setVolumeUnit,
   setProfile,
 }: UnitsTabProps) {
-  const toast = useToast();
   const [saving, setSaving] = useState(false);
 
-  async function saveUnits() {
+  // Auto-save whenever the user changes a unit preference. We skip the
+  // initial render (units match the profile) and any no-op re-render,
+  // so the profile is only persisted when a value actually changes.
+  useEffect(() => {
+    if (
+      weightUnit === profile.weightUnit &&
+      heightUnit === profile.heightUnit &&
+      volumeUnit === profile.volumeUnit
+    ) {
+      return;
+    }
     setSaving(true);
-    await setProfile({ ...profile, weightUnit, heightUnit, volumeUnit });
-    setSaving(false);
-    toast("Units saved");
-  }
+    setProfile({ ...profile, weightUnit, heightUnit, volumeUnit })
+      .catch(() => {})
+      .finally(() => setSaving(false));
+  }, [weightUnit, heightUnit, volumeUnit]);
 
   return (
-    <BlurFade>
-      <Card className="p-6">
-        <div className="text-sm font-bold mb-4">Weight Unit</div>
-        <div className="grid grid-cols-2 gap-3 mb-8">
-          {(
-            [
-              { key: "kg", label: "Kilograms", sub: "kg" },
-              { key: "lbs", label: "Pounds", sub: "lbs" },
-            ] as { key: WeightUnit; label: string; sub: string }[]
-          ).map((u) => (
-            <button
-              key={u.key}
-              onClick={() => setWeightUnit(u.key)}
-              className={`relative p-5 rounded-xl border text-center transition-colors ${
-                weightUnit === u.key
-                  ? "border-transparent bg-foreground text-background"
-                  : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
-              }`}>
-              {weightUnit === u.key && (
-                <motion.div
-                  layoutId="active-weight-unit"
-                  initial={false}
-                  className="absolute inset-0 rounded-xl bg-foreground text-background"
-                  transition={{ type: "spring", stiffness: 320, damping: 28 }}
-                />
-              )}
-              <div className="relative z-10 font-mono text-3xl font-medium mb-1">
-                {u.sub}
-              </div>
-              <div className="relative z-10 text-sm font-semibold">
-                {u.label}
-              </div>
-            </button>
-          ))}
-        </div>
+    <div>
+      <div className="text-sm font-bold mb-4">Weight Unit</div>
+      <div className="grid grid-cols-2 gap-3 mb-8">
+        {(
+          [
+            { key: "kg", label: "Kilograms", sub: "kg" },
+            { key: "lbs", label: "Pounds", sub: "lbs" },
+          ] as { key: WeightUnit; label: string; sub: string }[]
+        ).map((u) => (
+          <button
+            key={u.key}
+            onClick={() => setWeightUnit(u.key)}
+            className={`relative p-5 rounded-xl border text-center transition-colors ${
+              weightUnit === u.key
+                ? "border-transparent bg-foreground text-background"
+                : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
+            }`}>
+            {weightUnit === u.key && (
+              <motion.div
+                layoutId="active-weight-unit"
+                initial={false}
+                className="absolute inset-0 rounded-xl bg-foreground text-background"
+                transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              />
+            )}
+            <div className="relative z-10 font-mono text-3xl font-medium mb-1">
+              {u.sub}
+            </div>
+            <div className="relative z-10 text-sm font-semibold">{u.label}</div>
+          </button>
+        ))}
+      </div>
 
-        <div className="text-sm font-bold mb-4">Height Unit</div>
-        <div className="grid grid-cols-2 gap-3 mb-8">
-          {(
-            [
-              { key: "metric", label: "Centimetres", sub: "cm" },
-              { key: "imperial", label: "Feet & Inches", sub: "ft/in" },
-            ] as { key: HeightUnit; label: string; sub: string }[]
-          ).map((u) => (
-            <button
-              key={u.key}
-              onClick={() => setHeightUnit(u.key)}
-              className={`relative p-5 rounded-xl border text-center transition-colors ${
-                heightUnit === u.key
-                  ? "border-transparent bg-foreground text-background"
-                  : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
-              }`}>
-              {heightUnit === u.key && (
-                <motion.div
-                  layoutId="active-height-unit"
-                  initial={false}
-                  className="absolute inset-0 rounded-xl  bg-foreground text-background"
-                  transition={{ type: "spring", stiffness: 320, damping: 28 }}
-                />
-              )}
-              <div className="relative z-10 font-mono text-3xl font-medium mb-1">
-                {u.sub}
-              </div>
-              <div className="relative z-10 text-sm font-semibold">
-                {u.label}
-              </div>
-            </button>
-          ))}
-        </div>
+      <div className="text-sm font-bold mb-4">Height Unit</div>
+      <div className="grid grid-cols-2 gap-3 mb-8">
+        {(
+          [
+            { key: "metric", label: "Centimetres", sub: "cm" },
+            { key: "imperial", label: "Feet & Inches", sub: "ft/in" },
+          ] as { key: HeightUnit; label: string; sub: string }[]
+        ).map((u) => (
+          <button
+            key={u.key}
+            onClick={() => setHeightUnit(u.key)}
+            className={`relative p-5 rounded-xl border text-center transition-colors ${
+              heightUnit === u.key
+                ? "border-transparent bg-foreground text-background"
+                : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
+            }`}>
+            {heightUnit === u.key && (
+              <motion.div
+                layoutId="active-height-unit"
+                initial={false}
+                className="absolute inset-0 rounded-xl  bg-foreground text-background"
+                transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              />
+            )}
+            <div className="relative z-10 font-mono text-3xl font-medium mb-1">
+              {u.sub}
+            </div>
+            <div className="relative z-10 text-sm font-semibold">{u.label}</div>
+          </button>
+        ))}
+      </div>
 
-        <div className="text-sm font-bold mb-4">Volume Unit</div>
-        <div className="grid grid-cols-2 gap-3 mb-8">
-          {(
-            [
-              { key: "ml", label: "Millilitres / Litres", sub: "ml / L" },
-              { key: "floz", label: "Fluid Ounces", sub: "fl oz" },
-            ] as { key: VolumeUnit; label: string; sub: string }[]
-          ).map((u) => (
-            <button
-              key={u.key}
-              onClick={() => setVolumeUnit(u.key)}
-              className={`relative p-5 rounded-xl border text-center transition-colors ${
-                volumeUnit === u.key
-                  ? "border-transparent bg-foreground text-background"
-                  : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
-              }`}>
-              {volumeUnit === u.key && (
-                <motion.div
-                  layoutId="active-volume-unit"
-                  initial={false}
-                  className="absolute inset-0 rounded-xl bg-foreground text-background"
-                  transition={{ type: "spring", stiffness: 320, damping: 28 }}
-                />
-              )}
-              <div className="relative z-10 font-mono text-2xl font-medium mb-1">
-                {u.sub}
-              </div>
-              <div className="relative z-10 text-sm font-semibold">
-                {u.label}
-              </div>
-            </button>
-          ))}
-        </div>
+      <div className="text-sm font-bold mb-4">Volume Unit</div>
+      <div className="grid grid-cols-2 gap-3 mb-8">
+        {(
+          [
+            { key: "ml", label: "Millilitres / Litres", sub: "ml / L" },
+            { key: "floz", label: "Fluid Ounces", sub: "fl oz" },
+          ] as { key: VolumeUnit; label: string; sub: string }[]
+        ).map((u) => (
+          <button
+            key={u.key}
+            onClick={() => setVolumeUnit(u.key)}
+            className={`relative p-5 rounded-xl border text-center transition-colors ${
+              volumeUnit === u.key
+                ? "border-transparent bg-foreground text-background"
+                : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
+            }`}>
+            {volumeUnit === u.key && (
+              <motion.div
+                layoutId="active-volume-unit"
+                initial={false}
+                className="absolute inset-0 rounded-xl bg-foreground text-background"
+                transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              />
+            )}
+            <div className="relative z-10 font-mono text-2xl font-medium mb-1">
+              {u.sub}
+            </div>
+            <div className="relative z-10 text-sm font-semibold">{u.label}</div>
+          </button>
+        ))}
+      </div>
 
-        <button
-          onClick={saveUnits}
-          disabled={saving}
-          className="w-full py-3.5 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-60">
-          {saving ? "Saving…" : "Save Units"}
-        </button>
-      </Card>
-    </BlurFade>
+      {saving && (
+        <p className="text-center text-xs text-muted-foreground">Saving…</p>
+      )}
+    </div>
   );
 }

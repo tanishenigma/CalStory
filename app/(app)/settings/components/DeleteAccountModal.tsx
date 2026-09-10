@@ -77,7 +77,6 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
       onClose();
 
       router.replace("/");
- 
     } catch (err) {
       const code = err instanceof DeleteAccountError ? err.code : "unknown";
       const msg =
@@ -141,9 +140,10 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
                 id="delete-account-desc"
                 className="text-xs text-muted-foreground mt-1 leading-relaxed">
                 This will permanently delete your CalStory account and{" "}
-                <strong>all</strong> of your data — profile, meals, workouts,
-                weight logs, hydration, and any saved API key. This cannot be
-                undone.
+                <strong>all</strong> associated data, including your profile,
+                meals, workouts, weight logs, hydration data, and billing
+                information.{" "}
+                <strong>Once deleted, this data cannot be recovered.</strong>
               </p>
             </div>
           </div>
@@ -159,7 +159,7 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-red-500 mt-0.5">•</span>
-              Your personal Gemini API key (if stored) will be wiped.
+              Any active subscription will be canceled.
             </li>
           </ul>
 
@@ -189,7 +189,7 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
               <p className="text-xs text-red-600 dark:text-red-400 leading-relaxed">
                 {error}
               </p>
-        
+
               {(errorCode === "reauth-blocked" ||
                 errorCode === "reauth-cancelled") && (
                 <button

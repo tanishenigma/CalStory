@@ -7,14 +7,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/app/components/ui/card";
 import BlurFade from "@/app/components/animations/BlurFade";
 import { kgToLbs, displayHeight } from "@/app/lib/units";
-import type { Profile } from "@/app/types";
+import type { Profile, HeightUnit, WeightUnit, VolumeUnit } from "@/app/types";
 import { MilkIcon } from "lucide-react";
+import { UnitsTab } from "./UnitsTab";
 interface ProfileTabProps {
   user: User | null;
   profile: Profile | null | undefined;
   onEditProfile: () => void;
   onSignOut: () => void;
   onDeleteAccount: () => void;
+  weightUnit: WeightUnit;
+  setWeightUnit: (u: WeightUnit) => void;
+  heightUnit: HeightUnit;
+  setHeightUnit: (u: HeightUnit) => void;
+  volumeUnit: VolumeUnit;
+  setVolumeUnit: (u: VolumeUnit) => void;
+  setProfile: (p: Profile) => Promise<void>;
 }
 
 const GOAL_BADGE: Record<string, string> = {
@@ -84,6 +92,13 @@ export function ProfileTab({
   onEditProfile,
   onSignOut,
   onDeleteAccount,
+  weightUnit,
+  setWeightUnit,
+  heightUnit,
+  setHeightUnit,
+  volumeUnit,
+  setVolumeUnit,
+  setProfile,
 }: ProfileTabProps) {
   const name = profile?.name;
   const goal = profile?.goal ?? "maintain";
@@ -224,31 +239,59 @@ export function ProfileTab({
             </div>
           </div>
 
-          <div className="mt-10">
-            {" "}
-            {user && (
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={onSignOut}
-                  className="w-full py-3.5 rounded-xl border border-destructive text-destructive text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-950 transition-colors">
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
+          {profile && (
+            <div className="mt-10">
+              <UnitsTab
+                profile={profile}
+                weightUnit={weightUnit}
+                setWeightUnit={setWeightUnit}
+                heightUnit={heightUnit}
+                setHeightUnit={setHeightUnit}
+                volumeUnit={volumeUnit}
+                setVolumeUnit={setVolumeUnit}
+                setProfile={setProfile}
+              />
+            </div>
+          )}
         </Card>
       </div>
-      <div>
-        <Card className="transition-all z-200 ease-out  duration-300 ">
-          <CardContent>
+      {user && (
+        <div className="flex flex-1 items-center justify-center gap-3">
+          {/* Sign out */}
+          <button
+            onClick={onSignOut}
+            className="
+        flex-1
+        flex items-center justify-center
+        p-3.5
+ w-full py-3.5 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-60
+      ">
+            Sign out
+          </button>
+
+          {/* Delete account */}
+          <div className="flex-1">
             <button
               onClick={onDeleteAccount}
-              className="w-full flex items-center justify-center py-2.5 rounded-xl gap-2 text-xs font-medium text-muted-foreground hover:text-destructive  ">
-              <Trash2 size={18} /> <span>Delete account</span>
+              className="
+          flex w-full items-center justify-center
+          p-3.5
+          rounded-xl
+          gap-2
+          border border-destructive/30
+          bg-destructive
+          text-white
+          text-sm font-semibold
+          hover:bg-destructive/85
+          hover:border-destructive/50
+          transition-colors
+        ">
+              <Trash2 size={18} />
+              <span>Delete account</span>
             </button>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      )}
     </BlurFade>
   );
 }
