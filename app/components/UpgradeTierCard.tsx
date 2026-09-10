@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { ArrowRight, Crown } from "lucide-react";
 import type { SubscriptionTier } from "@/app/types";
 
@@ -9,6 +10,13 @@ type UpgradeTierCardProps = {
 };
 
 export function UpgradeTierCard({ currentTier }: UpgradeTierCardProps) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 50);
+    return () => clearTimeout(t);
+  }, []);
+
   if (currentTier === "pro") return null;
 
   const isFree = currentTier === "free";
@@ -19,7 +27,10 @@ export function UpgradeTierCard({ currentTier }: UpgradeTierCardProps) {
   const anchor = isFree ? "pricing-cta-plus" : "pricing-cta-pro";
 
   return (
-    <div className="mx-0.5 my-3 rounded-2xl bg-[#FDEDE4] p-4 text-[#bd4b12] shadow-sm">
+    <div
+      className={`mx-0.5 my-3 rounded-2xl bg-[#FDEDE4] p-4 text-[#bd4b12] shadow-sm transition-all duration-300 ease-out ${
+        visible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+      }`}>
       <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#ffd7bd] text-[#d85b18]">
         <Crown size={16} fill="currentColor" />
       </div>
