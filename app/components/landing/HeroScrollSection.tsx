@@ -19,7 +19,10 @@ function DesktopScreenshotCard() {
 
 function MobileScreenshotCard() {
   return (
-    <div className="relative mx-auto w-full max-w-68 aspect-[9/16] overflow-hidden rounded-2xl border border-border shadow-sm">
+    <div
+      className="relative mx-auto aspect-[9/16] w-full max-w-[min(17rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-border shadow-sm pointer-events-none select-none"
+      aria-hidden="true"
+      inert>
       <MobileDashboardMock />
     </div>
   );

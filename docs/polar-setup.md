@@ -47,6 +47,10 @@ User (Browser) ──> Vercel Edge / App Router ──> Firestore (Database)
    - `products:read`
    - `checkouts:write`
    - `subscriptions:read`
+   - `subscriptions:write` (required for prorated plan upgrades)
+   - `customer_sessions:write`
+   - `customer_portal:read`
+   - `customer_portal:write` (required for customer-initiated cancellation)
 4. Copy the generated token string (`polar_oat_...`). You will add this to Vercel in Step 5.
 
 ---

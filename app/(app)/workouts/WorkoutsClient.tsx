@@ -1,15 +1,26 @@
 "use client";
 
 import React from "react";
+import { getIdToken } from "firebase/auth";
 import { useApp, todayLocalKey } from "@/app/context/AppContext";
 import { useAuthStore } from "@/app/store/authStore";
 import { useToast } from "@/app/components/ToastContainer";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
+import { useRouter } from "next/navigation";
 import WeekStrip from "@/app/components/WeekStrip";
 import { Card } from "@/app/components/ui/card";
 import WorkoutForm from "@/app/components/WorkoutForm";
 import AIWorkoutLogger from "@/app/components/nutrition/ai-workout-logger";
-import { Pencil, CopyPlus, Trash2, X, Eye, Sparkles } from "lucide-react";
+import {
+  BarChart3,
+  CopyPlus,
+  Eye,
+  Loader2,
+  Pencil,
+  Sparkles,
+  Trash2,
+  X,
+} from "lucide-react";
 import type { PendingWorkout } from "@/app/types";
 import {
   WORKOUT_METRIC_SCHEMAS,
@@ -23,6 +34,82 @@ function fmtDate(key: string): string {
     weekday: "short",
     month: "short",
     day: "numeric",
+  });
+}
+
+function WorkoutAnalysisCard({
+  analysis,
+  error,
+  isLoading,
+  onClose,
+}: {
+  analysis: string | null;
+  error: string | null;
+  isLoading: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <Card className="mb-8 overflow-hidden border-primary/20 bg-card">
+      <div className="flex items-start justify-between gap-4 border-b border-border px-4 py-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <BarChart3 size={18} />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
+              AI training analysis
+            </div>
+            <h2 className="mt-1 truncate text-base font-bold text-foreground sm:text-lg">
+              Your workout progress
+            </h2>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close workout analysis"
+          className="shrink-0 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground">
+          <X size={18} />
+        </button>
+      </div>
+      <div className="px-4 py-5 sm:px-6 sm:py-6">
+        {isLoading ? (
+          <div className="flex min-h-32 items-center justify-center gap-3 text-sm text-muted-foreground">
+            <Loader2 size={18} className="animate-spin text-primary" />
+            Comparing your recent training…
+          </div>
+        ) : error ? (
+          <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            {error}
+          </div>
+        ) : (
+          <div className="break-words text-sm leading-7 text-foreground/80">
+            {renderWorkoutAnalysis(analysis ?? "")}
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+function renderWorkoutAnalysis(markdown: string): React.ReactNode {
+  return markdown.split(/\r?\n/).map((line, index) => {
+    const heading = line.match(/^#{1,6}\s+(.+)$/);
+    if (heading) {
+      return (
+        <h3
+          key={`heading-${index}`}
+          className="mt-5 first:mt-0 text-sm font-bold text-foreground sm:text-base">
+          {heading[1].trim()}
+        </h3>
+      );
+    }
+    if (!line.trim()) return <div key={`space-${index}`} className="h-2" />;
+    return (
+      <p key={`line-${index}`} className="mt-2 first:mt-0">
+        {line.replace(/^[-*]\s+/, "• ")}
+      </p>
+    );
   });
 }
 
@@ -136,6 +223,7 @@ export default function WorkoutsPage() {
   const { profile, isLoading } = useAuthGuard();
   const { state, deleteWorkout, deleteTemplate } = useApp();
   const { user } = useAuthStore();
+  const router = useRouter();
   const toast = useToast();
   const { selDate, workouts } = state;
   const [showForm, setShowForm] = React.useState(false);
@@ -146,14 +234,79 @@ export default function WorkoutsPage() {
   );
   const [showTemplates, setShowTemplates] = React.useState(false);
   const [viewingTemplate, setViewingTemplate] = React.useState<any>(null);
+  const [showAnalysis, setShowAnalysis] = React.useState(false);
+  const [analysis, setAnalysis] = React.useState<string | null>(null);
+  const [analysisLoading, setAnalysisLoading] = React.useState(false);
+  const [analysisError, setAnalysisError] = React.useState<string | null>(null);
 
   if (isLoading || !profile) return <Spinner variant="workouts" />;
 
   const dayWorkouts = workouts[selDate] || [];
+  const pastWorkouts = Object.entries(workouts)
+    .filter(([date, entries]) => date < selDate && entries.length > 0)
+    .flatMap(([date, entries]) =>
+      entries.map((workout) => ({ date, ...workout })),
+    )
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 20);
 
   function handleDelete(id: string) {
     deleteWorkout(id, selDate);
     toast("Workout removed", "🗑️");
+  }
+
+  async function handleAnalysisClick() {
+    if (showAnalysis) {
+      setShowAnalysis(false);
+      return;
+    }
+
+    setShowTemplates(false);
+    setShowForm(false);
+    setShowAIChat(false);
+    setShowAnalysis(true);
+    setAnalysis(null);
+    setAnalysisError(null);
+    setAnalysisLoading(true);
+
+    try {
+      if (!user) return;
+      const token = await getIdToken(user);
+      const response = await fetch("/api/ai-workout-analysis", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          currentDate: selDate,
+          currentWorkouts: dayWorkouts,
+          pastWorkouts,
+        }),
+      });
+      const data = (await response.json()) as {
+        analysis?: string;
+        error?: string;
+        upgradeRequired?: boolean;
+      };
+      if (!response.ok || !data.analysis) {
+        if (data.upgradeRequired) {
+          router.push("/pricing#pricing");
+          return;
+        }
+        throw new Error(data.error ?? "Unable to analyze your workouts.");
+      }
+      setAnalysis(data.analysis);
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
+      setAnalysisError(
+        error instanceof Error
+          ? error.message
+          : "Unable to analyze your workouts.",
+      );
+    } finally {
+      setAnalysisLoading(false);
+    }
   }
 
   return (
@@ -167,7 +320,15 @@ export default function WorkoutsPage() {
             </h1>{" "}
             {state.savedWorkouts?.length > 0 && (
               <button
-                onClick={() => setShowTemplates(!showTemplates)}
+                onClick={() => {
+                  const next = !showTemplates;
+                  setShowTemplates(next);
+                  if (next) {
+                    setShowForm(false);
+                    setShowAIChat(false);
+                    setShowAnalysis(false);
+                  }
+                }}
                 className="self-start sm:self-auto px-4 h-10 py-2.5 bg-primary-foreground  dark:bg-muted text-foreground dark:text-foreground border border-border rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-background transition-colors active:scale-[0.98]">
                 Saved Routines
               </button>
@@ -188,6 +349,7 @@ export default function WorkoutsPage() {
                     if (!v) {
                       setShowForm(false);
                       setShowTemplates(false);
+                      setShowAnalysis(false);
                     }
                     return !v;
                   });
@@ -204,6 +366,7 @@ export default function WorkoutsPage() {
                 setShowForm(true);
                 setShowTemplates(false);
                 setShowAIChat(false);
+                setShowAnalysis(false);
               }}
               className="px-4 py-2.5 bg-foreground text-background rounded-xl text-xs md:text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
               Log Workout
@@ -211,6 +374,15 @@ export default function WorkoutsPage() {
           </div>
         </div>
       </div>
+      {dayWorkouts.length > 0 && pastWorkouts.length > 0 && (
+        <button
+          type="button"
+          onClick={() => void handleAnalysisClick()}
+          className="mb-6 inline-flex min-h-11 items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 text-xs font-bold text-primary shadow-sm transition-colors hover:bg-primary/10 active:scale-[0.98]">
+          <BarChart3 size={15} />
+          {showAnalysis ? "Hide workout analysis" : "Compare workouts with AI"}
+        </button>
+      )}
       {showTemplates && !showForm && (
         <div className="mb-4 p-4 sm:p-6 bg-card dark:bg-card rounded-[24px] shadow-sm border border-border dark:border-border animate-in slide-in-from-top-4 duration-300">
           <div className="flex justify-between items-center mb-4 sm:mb-6 gap-3">
@@ -264,6 +436,8 @@ export default function WorkoutsPage() {
                         setFormMode("duplicate");
                         setShowForm(true);
                         setShowTemplates(false);
+                        setShowAIChat(false);
+                        setShowAnalysis(false);
                       }}
                       className="px-3 sm:px-4 py-2 bg-foreground text-background rounded-lg text-xs font-bold hover:opacity-90 transition-opacity">
                       Use
@@ -327,6 +501,7 @@ export default function WorkoutsPage() {
             setFormMode("new");
             setShowForm(true);
             setShowAIChat(false);
+            setShowAnalysis(false);
           }}
         />
       )}
@@ -338,6 +513,14 @@ export default function WorkoutsPage() {
             mode={formMode}
           />
         </div>
+      )}
+      {showAnalysis && (
+        <WorkoutAnalysisCard
+          analysis={analysis}
+          error={analysisError}
+          isLoading={analysisLoading}
+          onClose={() => setShowAnalysis(false)}
+        />
       )}
       {dayWorkouts.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-12 text-center gap-2">
@@ -372,6 +555,7 @@ export default function WorkoutsPage() {
                       setEditingWorkout(w);
                       setFormMode("edit");
                       setShowForm(true);
+                      setShowAnalysis(false);
                     }}>
                     <Pencil className="w-4 h-4" />
                   </button>
@@ -381,6 +565,7 @@ export default function WorkoutsPage() {
                       setEditingWorkout(w);
                       setFormMode("duplicate");
                       setShowForm(true);
+                      setShowAnalysis(false);
                     }}>
                     <CopyPlus className="w-4 h-4" />
                   </button>

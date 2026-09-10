@@ -8,6 +8,7 @@ import {
   Home,
   UtensilsCrossed,
   Dumbbell,
+  Sparkles,
   TrendingUp,
   Settings,
 } from "lucide-react";
@@ -27,6 +28,11 @@ const TABS: { href: string; label: string; icon: React.ReactNode }[] = [
     href: "/workouts",
     label: "Workouts",
     icon: <Dumbbell size={21} />,
+  },
+  {
+    href: "/calibra",
+    label: "Ask Calibra",
+    icon: <Sparkles size={21} />,
   },
   {
     href: "/progress",
@@ -82,7 +88,7 @@ export default function BottomNav() {
             </div>
 
             <span
-              className={`text-[11px] font-semibold transition-all duration-200 ${
+              className={`text-[10px] min-[390px]:text-[11px] font-semibold transition-all duration-200 text-center truncate max-w-full px-0.5 ${
                 active ? "text-foreground " : "text-muted-foreground"
               }`}>
               {label}

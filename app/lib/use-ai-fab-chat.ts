@@ -6,6 +6,7 @@ import { uid } from "@/app/context/AppContext";
 import { useApp } from "@/app/context/AppContext";
 import { useAuthStore } from "@/app/store/authStore";
 import { getIdToken } from "firebase/auth";
+import { FREE_DAILY_PROMPT_LIMIT } from "@/app/lib/plan-limits";
 import type {
   ChatMessage,
   WorkoutChatMessage,
@@ -32,6 +33,11 @@ import type {
  * ------------------------------------------------------------------ */
 export type FabIntent = "food" | "workout";
 
+interface PromptUsageSnapshot {
+  used: number;
+  limit: number | null;
+}
+
 export type FabMessage =
   | {
     id: string;
@@ -49,6 +55,7 @@ export type FabMessage =
     workout?: PendingWorkout | null;
     askSaveTemplate?: boolean;
     suggestions?: string[];
+    upgradeRequired?: boolean;
     timestamp: number;
     /** When true, the model reply is a transient informational note
      *  (e.g. "Hmm, I couldn't reach the AI"). It does not block
@@ -147,6 +154,9 @@ export function useAIFabChat({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [promptUsage, setPromptUsage] = useState<PromptUsageSnapshot | null>(
+    null,
+  );
 
   const [pendingIntent, setPendingIntent] = useState<FabIntent | null>(null);
 
@@ -221,6 +231,33 @@ export function useAIFabChat({
     }
     return headers;
   }, [user]);
+
+  const refreshPromptUsage = useCallback(async (): Promise<PromptUsageSnapshot | null> => {
+    if (!user) return null;
+
+    try {
+      const token = await getIdToken(user);
+      const response = await fetch("/api/ai-quota", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) return null;
+      const usage = (await response.json()) as PromptUsageSnapshot;
+      if (
+        typeof usage.used !== "number" ||
+        (usage.limit !== null && typeof usage.limit !== "number")
+      ) {
+        return null;
+      }
+      setPromptUsage(usage);
+      return usage;
+    } catch {
+      return null;
+    }
+  }, [user]);
+
+  useEffect(() => {
+    void refreshPromptUsage();
+  }, [refreshPromptUsage]);
 
   // Fast keyword-based intent detector. The LLM classifier is good
   // for ambiguous natural language, but it sometimes defaults to
@@ -441,7 +478,7 @@ export function useAIFabChat({
   }
 
   const classify = useCallback(
-    async (text: string, history: FabMessage[]): Promise<FabIntent[]> => {
+    async (text: string, history: FabMessage[]): Promise<FabIntent[] | null> => {
       // 1. Heuristic fast-path. Saves a network round-trip and is
       //    immune to the LLM's bias toward "food".
       const heuristic = detectIntentHeuristic(text);
@@ -462,6 +499,13 @@ export function useAIFabChat({
           headers,
           body: JSON.stringify({ message: text, conversationHistory }),
         });
+        if (res.status === 429) {
+          const data = (await res.json()) as {
+            promptUsage?: PromptUsageSnapshot;
+          };
+          if (data.promptUsage) setPromptUsage(data.promptUsage);
+          return null;
+        }
         if (!res.ok) return ["food"];
         const data = (await res.json()) as { intents?: FabIntent[] };
         if (Array.isArray(data.intents) && data.intents.length > 0) {
@@ -533,14 +577,39 @@ export function useAIFabChat({
       if (!trimmed) return;
 
       setError(null);
+      setIsLoading(true);
+
+      // Check the authoritative server-side counter before calling the
+      // classifier. This prevents an exhausted free account from making
+      // any Gemini/classifier request at all.
+      const latestUsage = await refreshPromptUsage();
+      const usage = latestUsage ?? promptUsage;
       const userMsg: FabMessage = {
         id: uid2(),
         role: "user",
         text: trimmed,
         timestamp: Date.now(),
       };
+
+      if (usage && usage.limit !== null && usage.used >= usage.limit) {
+        setMessages((prev) => [
+          ...prev,
+          userMsg,
+          {
+            id: uid2(),
+            role: "model",
+            text: `You’ve used all ${usage.limit} free AI prompts for today. Upgrade to Plus or Pro for unlimited prompts.`,
+            intent: "food",
+            suggestions: [],
+            upgradeRequired: true,
+            timestamp: Date.now(),
+          },
+        ]);
+        setIsLoading(false);
+        return;
+      }
+
       setMessages((prev) => [...prev, userMsg]);
-      setIsLoading(true);
 
       // Snapshot the messages *before* this turn for history.
       let snapshot: FabMessage[] = [];
@@ -558,6 +627,23 @@ export function useAIFabChat({
         //    mixed messages like "I ate 100g chicken and did 10
         //    pushups" run BOTH pipelines in parallel.
         const intents = await classify(trimmed, snapshot);
+
+        if (intents === null) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: uid2(),
+              role: "model",
+              text: `You’ve used all ${FREE_DAILY_PROMPT_LIMIT} free AI prompts for today. Upgrade to Plus or Pro for unlimited prompts.`,
+              intent: "food",
+              suggestions: [],
+              upgradeRequired: true,
+              timestamp: Date.now(),
+            },
+          ]);
+          setIsLoading(false);
+          return;
+        }
 
         // 2. Stamp the intents onto the user message in place.
         setMessages((prev) =>
@@ -580,16 +666,24 @@ export function useAIFabChat({
             });
             const data = (await res.json()) as {
               message: string;
+              error?: string;
               meal: PendingMeal | null;
               suggestions?: string[];
+              promptUsage?: PromptUsageSnapshot;
+              upgradeRequired?: boolean;
             };
+            if (data.promptUsage) setPromptUsage(data.promptUsage);
             const modelMsg: FabMessage = {
               id: uid2(),
               role: "model",
-              text: data.message,
+              text:
+                data.message ??
+                data.error ??
+                "Something went wrong reaching the AI. Please try again.",
               intent: "food",
-              meal: data.meal,
+              meal: data.meal ?? null,
               suggestions: data.suggestions ?? [],
+              upgradeRequired: data.upgradeRequired,
               timestamp: Date.now(),
             };
             setMessages((prev) => [...prev, modelMsg]);
@@ -611,18 +705,26 @@ export function useAIFabChat({
             });
             const data = (await res.json()) as {
               message: string;
+              error?: string;
               workout: PendingWorkout | null;
               askSaveTemplate?: boolean;
               suggestions?: string[];
+              promptUsage?: PromptUsageSnapshot;
+              upgradeRequired?: boolean;
             };
+            if (data.promptUsage) setPromptUsage(data.promptUsage);
             const modelMsg: FabMessage = {
               id: uid2(),
               role: "model",
-              text: data.message,
+              text:
+                data.message ??
+                data.error ??
+                "Something went wrong reaching the AI. Please try again.",
               intent: "workout",
-              workout: data.workout,
+              workout: data.workout ?? null,
               askSaveTemplate: data.askSaveTemplate ?? false,
               suggestions: data.suggestions ?? [],
+              upgradeRequired: data.upgradeRequired,
               timestamp: Date.now(),
             };
             setMessages((prev) => [...prev, modelMsg]);
@@ -650,6 +752,8 @@ export function useAIFabChat({
     [
       classify,
       buildHeaders,
+      promptUsage,
+      refreshPromptUsage,
       userId,
       date,
       pendingIntent,

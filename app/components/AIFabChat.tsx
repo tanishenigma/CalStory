@@ -36,6 +36,7 @@ import { useAuthStore } from "@/app/store/authStore";
 import { useApp } from "@/app/context/AppContext";
 import type { Meal, SavedWorkout } from "@/app/types";
 import { toast } from "sonner";
+import { UpgradePrompt } from "@/app/components/UpgradePrompt";
 
 /* ------------------------------------------------------------------
  * AIFabChat — the panel that opens when the user taps the global FAB.
@@ -934,6 +935,7 @@ function FabMessageBubble({
           message.transient && "opacity-70 italic",
         )}>
         <SafeText text={message.text} />
+        {message.upgradeRequired && <UpgradePrompt />}
       </div>
 
       {message.meal && (

@@ -10,10 +10,14 @@ import {
   Dumbbell,
   TrendingUp,
   Settings,
+  Sparkles,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuthStore } from "@/app/store/authStore";
 import BrandLogo from "@/app/components/BrandLogo";
+import { UpgradeTierCard } from "@/app/components/UpgradeTierCard";
+import { useSubscriptionTier } from "@/app/lib/use-subscription-tier";
+import type { SubscriptionTier } from "@/app/types";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const NAV: {
@@ -24,6 +28,7 @@ const NAV: {
   { href: "/dashboard", label: "Home", Icon: Home },
   { href: "/nutrition", label: "Nutrition", Icon: UtensilsCrossed },
   { href: "/workouts", label: "Workouts", Icon: Dumbbell },
+  { href: "/calibra", label: "Ask Calibra", Icon: Sparkles },
   { href: "/progress", label: "Progress", Icon: TrendingUp },
   { href: "/settings", label: "Settings", Icon: Settings },
 ];
@@ -31,9 +36,11 @@ const NAV: {
 export default function PillNav() {
   const pathname = usePathname();
   const style = usePrefsStore((s) => s.navbarStyle);
+  const { user } = useAuthStore();
+  const { tier } = useSubscriptionTier(user);
 
   if (style === "floating") {
-    return <FloatingSidebar pathname={pathname} />;
+    return <FloatingSidebar pathname={pathname} currentTier={tier} />;
   }
   return <PillNavInner pathname={pathname} />;
 }
@@ -138,7 +145,13 @@ function PillNavInner({ pathname }: { pathname: string }) {
   );
 }
 
-function FloatingSidebar({ pathname }: { pathname: string }) {
+function FloatingSidebar({
+  pathname,
+  currentTier,
+}: {
+  pathname: string;
+  currentTier: SubscriptionTier | null;
+}) {
   const { user } = useAuthStore();
   const { state } = useApp();
   const [mounted, setMounted] = useState(false);
@@ -231,6 +244,10 @@ function FloatingSidebar({ pathname }: { pathname: string }) {
             </Link>
           );
         })}
+
+        {pathname !== "/pricing" && currentTier && (
+          <UpgradeTierCard currentTier={currentTier} />
+        )}
 
         {/* Spacer pushes profile to bottom */}
         <div className="flex-1" />

@@ -5,84 +5,15 @@ import { useRef } from "react";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/store/authStore";
+import { getIdToken } from "firebase/auth";
+import { PLAN_TIERS, type PlanTier } from "@/app/lib/plan-tiers";
+import { toast } from "sonner";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-// ---------------------------------------------------------------------------
-// Polar checkout links — set in .env.local:
-//   NEXT_PUBLIC_POLAR_PLUS_CHECKOUT_LINK, NEXT_PUBLIC_POLAR_PRO_CHECKOUT_LINK
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Tier definitions — Free / Plus / Pro.
-// Each tier lists only its net-new features; the lower tier is inherited
-// via a quiet "Everything in X" line, so the layout shows accumulation
-// instead of repeating full lists at equal weight.
-// ---------------------------------------------------------------------------
-const TIERS = [
-  {
-    id: "free",
-    name: "Free",
-    price: 0,
-    priceNote: "/ forever",
-    // Base tier — its own features are defined explicitly.
-    intro: "The complete base tracker. No card, no trial.",
-    inherits: null,
-    features: [
-      "Unlimited manual food logging",
-      "Full workout tracker (sets × reps × kg)",
-      "Calorie + macro targets",
-      "Weight trend tracking",
-      { mono: "16-week", rest: " streak heatmap" },
-      "TDEE calculator",
-      { mono: "5", rest: " AI meal logs / day" },
-    ],
-    cta: "Start free — no card",
-    polarCheckoutLink: null,
-  },
-  {
-    id: "plus",
-    name: "Plus",
-    price: 7,
-    priceNote: "/ mo",
-    intro: null,
-    inherits: "Free",
-    features: [
-      "Unlimited AI meal logs",
-      "Daily AI progress insights",
-      "Adaptive TDEE recalculation",
-      "Advanced macro split views",
-      "Workout templates + re-log",
-    ],
-    cta: "Get Plus",
-    polarCheckoutLink:
-      process.env.NEXT_PUBLIC_POLAR_PLUS_CHECKOUT_LINK ||
-      "https://buy.polar.sh/polar_cl_o705YWAwROcBAmFgWwhu7IQ73TblaR8U1MlDX1wHvNU",
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: 14,
-    priceNote: "/ mo",
-    intro: null,
-    inherits: "Plus",
-    features: [
-      "Data export (CSV / JSON)",
-      "Priority support",
-      "Early access to features in development",
-    ],
-    cta: "Get Pro",
-    polarCheckoutLink:
-      process.env.NEXT_PUBLIC_POLAR_PRO_CHECKOUT_LINK ||
-      "https://buy.polar.sh/polar_cl_3xXxFPrnqJ0iEa5R4PEO9YABKLXejLF9Sryrf0d5JZ0",
-  },
-] as const;
-
-type Tier = (typeof TIERS)[number];
-
 interface TierCardProps {
-  tier: Tier;
-  onCta: (tier: Tier) => void;
+  tier: PlanTier;
+  onCta: (tier: PlanTier) => void;
 }
 
 function TierCard({ tier, onCta }: TierCardProps) {
@@ -177,19 +108,44 @@ export default function PricingSection() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } },
   };
 
-  async function handleCta(tier: Tier) {
+  async function handleCta(tier: PlanTier) {
     if (tier.id === "free") {
       router.push(user ? "/dashboard" : "/auth");
       return;
     }
-    if (
-      tier.polarCheckoutLink &&
-      !tier.polarCheckoutLink.includes("REPLACE_ME")
-    ) {
-      window.location.href = tier.polarCheckoutLink;
+    if (!user) {
+      router.push("/auth");
       return;
     }
-    router.push(user ? "/dashboard" : "/auth");
+
+    try {
+      const token = await getIdToken(user);
+      const response = await fetch(`/api/checkout?plan=${tier.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = (await response.json()) as {
+        url?: string;
+        error?: string;
+        message?: string;
+        mode?: "already_active" | "upgraded";
+      };
+      if (response.ok && data.mode) {
+        toast.success(data.message ?? "Your subscription is already up to date.");
+        router.push("/settings?tab=billing");
+        return;
+      }
+      if (!response.ok || !data.url) {
+        throw new Error(data.error ?? "Checkout is unavailable right now.");
+      }
+      window.location.assign(data.url);
+    } catch (error) {
+      console.error("[pricing] Checkout failed:", error);
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : "Checkout is unavailable right now. Please try again later.",
+      );
+    }
   }
 
   return (
@@ -225,7 +181,7 @@ export default function PricingSection() {
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
           className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch mt-12">
-          {TIERS.map((tier) => (
+          {PLAN_TIERS.map((tier) => (
             <motion.div key={tier.id} variants={cardMotion} className="h-full">
               <TierCard tier={tier} onCta={handleCta} />
             </motion.div>

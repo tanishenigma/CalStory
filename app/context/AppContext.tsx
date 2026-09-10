@@ -33,7 +33,6 @@ import {
   getWeightLogs,
   deleteWeightLogDB,
   saveFitnessLog,
-  getFitnessLogs,
   saveHydrationLog,
   getHydrationLog,
 } from "@/app/lib/db";
@@ -390,7 +389,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: "SET_PROFILE", payload: profile ?? null });
         // Mirror to the global profile store so marketing-page CTAs
         // and any other consumer converge on the source of truth.
-        useProfileStore.getState().setLive(profile != null);
+        useProfileStore.getState().setLive(profile !== null);
         // Kick off the rest in parallel. We don't await it here so the
         // onboarding → dashboard redirect isn't blocked on 5 reads.
         void hydrateSecondary(user.uid);
@@ -498,7 +497,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: "ADD_MEAL", payload: stamped });
       if (!user) return;
       await Promise.all([
-        saveMeal(user.uid, todayLocalKey(), stamped),
+        saveMeal(user.uid, state.selDate, stamped),
         saveRecentMeal(user.uid, stamped),
       ]);
       const recents = await getRecentMeals(user.uid);

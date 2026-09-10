@@ -88,23 +88,18 @@ const FAQS: Faq[] = [
   {
     q: "Is there a free trial?",
     short:
-      "CalStory has no trial because every feature is already free — there is no premium tier, no paywall, no credit card required. AI food logging runs on a shared quota (~30-50 logs/day) that covers normal use; paste your own Gemini API key in Settings for unlimited AI logs billed to your own Google account.",
+      "CalStory starts free with 5 AI prompts per day. Plus and Pro plans add unlimited prompts and other advanced features.",
     a: (
       <>
         <p>
-          There is no free trial because every feature is already free. CalStory
-          does not have a premium tier, a usage cap on the core logging flow, or
-          a credit-card-required trial period. The entire app — meals, macros,
-          workouts, progress heatmap, streak tracking, TDEE calculator — is free
-          forever.
+          There is no free trial because CalStory starts with a useful free
+          plan. Free accounts get 5 AI prompts per day, and the core meals,
+          macros, workouts, progress and TDEE tools are available without a
+          credit card.
         </p>
         <p>
-          The only feature with a soft limit is AI food logging: the shared
-          Gemini quota covers roughly 30 to 50 AI logs per day, which is enough
-          for most people. If you want unlimited AI logs, paste your personal
-          Gemini API key into <strong>Settings → AI</strong> — usage is billed
-          directly to your Google account and never touches a
-          CalStory-controlled server.
+          Plus and Pro subscribers get unlimited AI prompts, along with the
+          additional features listed on the pricing page.
         </p>
       </>
     ),
@@ -112,14 +107,13 @@ const FAQS: Faq[] = [
   {
     q: "Can I cancel anytime?",
     short:
-      "There is nothing to cancel — CalStory has no subscription, no recurring charges, and no accounts in the billing sense. Your data lives in your own Firebase project (or your self-hosted Postgres), and you can delete it permanently from Settings at any time.",
+      "Plus and Pro subscriptions can be canceled anytime from Settings → Billing. Access continues through the current billing period.",
     a: (
       <>
         <p>
-          There is nothing to cancel because there is nothing to pay for.
-          CalStory does not run a subscription, charge a recurring fee, or store
-          payment information. You cannot be charged by mistake, and there is no
-          &ldquo;auto-renew&rdquo; clause to track.
+          You can cancel a Plus or Pro subscription anytime from Settings →
+          Billing. Access continues through the current billing period, and
+          your account remains available on the free plan afterward.
         </p>
         <p>
           Your data is yours and lives in your own Firebase project (or a

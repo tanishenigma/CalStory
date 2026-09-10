@@ -1,12 +1,39 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { uid } from "@/app/context/AppContext";
 import { useApp } from "@/app/context/AppContext";
 import { useAuthStore } from "@/app/store/authStore";
 import { getIdToken } from "firebase/auth";
-import type { ChatMessage, AIResponse, PendingMeal } from "@/app/types";
+import type {
+  ChatMessage,
+  AIResponse,
+  FoodChatSession,
+  PendingMeal,
+} from "@/app/types";
+
+const FOOD_CHAT_HISTORY_LIMIT = 20;
+
+function foodChatHistoryKey(userId: string) {
+  return `calstory_food_chats_${userId}`;
+}
+
+function loadFoodChatHistory(userId: string): FoodChatSession[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(foodChatHistoryKey(userId));
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? (parsed as FoodChatSession[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function sessionLabel(messages: ChatMessage[]): string {
+  const firstUserMessage = messages.find((message) => message.role === "user");
+  return firstUserMessage?.content.slice(0, 48) || "Meal chat";
+}
 
 /* ------------------------------------------------------------------
  * Initial greeting message shown when the panel opens.
@@ -41,8 +68,34 @@ export function useFoodChat({
   const { user } = useAuthStore();
 
   const [messages, setMessages] = useState<ChatMessage[]>([makeGreeting()]);
+  const [chatId, setChatId] = useState(() => uid());
+  const [chatHistory, setChatHistory] = useState<FoodChatSession[]>(() =>
+    loadFoodChatHistory(userId),
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (messages.length <= 1) return;
+    setChatHistory((previous) => {
+      const nextSession: FoodChatSession = {
+        id: chatId,
+        label: sessionLabel(messages),
+        messages,
+        updatedAt: Date.now(),
+      };
+      const next = [
+        nextSession,
+        ...previous.filter((session) => session.id !== chatId),
+      ].slice(0, FOOD_CHAT_HISTORY_LIMIT);
+      try {
+        localStorage.setItem(foodChatHistoryKey(userId), JSON.stringify(next));
+      } catch {
+        // Local storage may be unavailable or full; the active chat still works.
+      }
+      return next;
+    });
+  }, [chatId, messages, userId]);
 
   // ── Derived state ───────────────────────────────────────────────
 
@@ -107,14 +160,18 @@ export function useFoodChat({
           }),
         });
 
-        const data: AIResponse = await res.json();
+        const data = (await res.json()) as AIResponse & { error?: string };
 
         const modelMsg: ChatMessage = {
           id: uid(),
           role: "model",
-          content: data.message,
-          meal: data.meal,
+          content:
+            data.message ??
+            data.error ??
+            "Something went wrong reaching the AI. Please try again.",
+          meal: data.meal ?? null,
           suggestions: data.suggestions ?? [],
+          upgradeRequired: data.upgradeRequired,
           timestamp: Date.now(),
         };
 
@@ -136,7 +193,7 @@ export function useFoodChat({
         setIsLoading(false);
       }
     },
-    [messages, userId, date],
+    [messages, user, userId, date],
   );
 
   const confirmLog = useCallback(async () => {
@@ -167,7 +224,15 @@ export function useFoodChat({
   }, [pendingMeal, addMeal]);
 
   const reset = useCallback(() => {
+    setChatId(uid());
     setMessages([makeGreeting()]);
+    setError(null);
+    setIsLoading(false);
+  }, []);
+
+  const loadChat = useCallback((session: FoodChatSession) => {
+    setChatId(session.id);
+    setMessages(session.messages);
     setError(null);
     setIsLoading(false);
   }, []);
@@ -178,6 +243,8 @@ export function useFoodChat({
     error,
     pendingMeal,
     pendingSuggestions,
+    chatHistory,
+    loadChat,
     sendMessage,
     confirmLog,
     reset,

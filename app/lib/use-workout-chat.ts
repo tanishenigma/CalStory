@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { uid } from "@/app/context/AppContext";
 import { useApp } from "@/app/context/AppContext";
@@ -9,8 +9,31 @@ import { getIdToken } from "firebase/auth";
 import type {
   WorkoutChatMessage,
   WorkoutAIResponse,
+  WorkoutChatSession,
   PendingWorkout,
 } from "@/app/types";
+
+const WORKOUT_CHAT_HISTORY_LIMIT = 20;
+
+function workoutChatHistoryKey(userId: string) {
+  return `calstory_workout_chats_${userId}`;
+}
+
+function loadWorkoutChatHistory(userId: string): WorkoutChatSession[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(workoutChatHistoryKey(userId));
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? (parsed as WorkoutChatSession[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function sessionLabel(messages: WorkoutChatMessage[]): string {
+  const firstUserMessage = messages.find((message) => message.role === "user");
+  return firstUserMessage?.content.slice(0, 48) || "Workout chat";
+}
 
 function makeGreeting(): WorkoutChatMessage {
   return {
@@ -40,8 +63,37 @@ export function useWorkoutChat({
   const [messages, setMessages] = useState<WorkoutChatMessage[]>([
     makeGreeting(),
   ]);
+  const [chatId, setChatId] = useState(() => uid());
+  const [chatHistory, setChatHistory] = useState<WorkoutChatSession[]>(() =>
+    loadWorkoutChatHistory(userId),
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (messages.length <= 1) return;
+    setChatHistory((previous) => {
+      const nextSession: WorkoutChatSession = {
+        id: chatId,
+        label: sessionLabel(messages),
+        messages,
+        updatedAt: Date.now(),
+      };
+      const next = [
+        nextSession,
+        ...previous.filter((session) => session.id !== chatId),
+      ].slice(0, WORKOUT_CHAT_HISTORY_LIMIT);
+      try {
+        localStorage.setItem(
+          workoutChatHistoryKey(userId),
+          JSON.stringify(next),
+        );
+      } catch {
+        // Local storage may be unavailable or full; the active chat still works.
+      }
+      return next;
+    });
+  }, [chatId, messages, userId]);
 
   // ── Derived state ───────────────────────────────────────────────
   const pendingWorkout = useMemo<PendingWorkout | null>(() => {
@@ -111,15 +163,19 @@ export function useWorkoutChat({
           }),
         });
 
-        const data: WorkoutAIResponse = await res.json();
+        const data = (await res.json()) as WorkoutAIResponse & { error?: string };
 
         const modelMsg: WorkoutChatMessage = {
           id: uid(),
           role: "model",
-          content: data.message,
-          workout: data.workout,
+          content:
+            data.message ??
+            data.error ??
+            "Something went wrong reaching the AI. Please try again.",
+          workout: data.workout ?? null,
           askSaveTemplate: data.askSaveTemplate,
           suggestions: data.suggestions ?? [],
+          upgradeRequired: data.upgradeRequired,
           timestamp: Date.now(),
         };
 
@@ -141,7 +197,7 @@ export function useWorkoutChat({
         setIsLoading(false);
       }
     },
-    [messages, userId, date],
+    [messages, user, userId, date],
   );
 
   /**
@@ -214,7 +270,15 @@ export function useWorkoutChat({
   );
 
   const reset = useCallback(() => {
+    setChatId(uid());
     setMessages([makeGreeting()]);
+    setError(null);
+    setIsLoading(false);
+  }, []);
+
+  const loadChat = useCallback((session: WorkoutChatSession) => {
+    setChatId(session.id);
+    setMessages(session.messages);
     setError(null);
     setIsLoading(false);
   }, []);
@@ -250,6 +314,8 @@ export function useWorkoutChat({
     pendingWorkout,
     askSaveTemplate,
     pendingSuggestions,
+    chatHistory,
+    loadChat,
     sendMessage,
     confirmLog,
     reset,

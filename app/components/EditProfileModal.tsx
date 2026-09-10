@@ -10,7 +10,6 @@ import {
   kgToLbs,
   lbsToKg,
   cmToFtInParts,
-  displayHeight,
 } from "@/app/lib/units";
 import { dobToAge, maxDobIso, minDobIso, ageToDobIso } from "@/app/lib/age";
 import { calcTDEE } from "@/app/lib/tdee";
@@ -158,18 +157,21 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.18, ease: "easeOut" }}
         onClick={handleOverlayClick}
-        className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        className="fixed inset-0 z-[400] flex min-h-[100dvh] items-center justify-center bg-black/40 p-3 backdrop-blur-sm sm:p-4">
         <motion.div
           key="dialog"
           initial={{ opacity: 0, y: 40, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 40, scale: 0.97 }}
           transition={{ type: "spring", stiffness: 280, damping: 28 }}
-          className="w-full max-w-md">
-          <Card className="p-6">
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-profile-title"
+          className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto sm:max-h-[calc(100dvh-2rem)]">
+          <Card className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-5">
-              <div>
-                <div className="text-lg font-bold">Edit profile</div>
+              <div className="min-w-0">
+                <div id="edit-profile-title" className="text-lg font-bold">Edit profile</div>
                 <div className="text-xs text-muted-foreground mt-0.5">
                   Your age is calculated from your date of birth.
                 </div>

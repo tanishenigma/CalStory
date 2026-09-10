@@ -57,3 +57,106 @@
 
 /* High-contrast navigation CTA in either theme. */
 .desktopActions .primaryButton,.mobileMenu .primaryButton{background:#ff6a00;color:#fff}
+
+/* Landing-page responsive polish and the footer reveal. Keep the large-screen
+ * footer reveal intact, but let the footer return to normal document flow at
+ * tablet/mobile widths so its content can grow without covering the page. */
+.page{background:#24231f}
+.pageSurface{box-shadow:0 18px 34px rgba(20,18,15,.12)}
+.footerRevealSpace,.footer{background:#24231f}
+.productPanel,.panelTop,.panelBadge,.quickRow button,.workoutSummary{color:var(--ink)}
+.panelBadge,.adaptiveBadge{flex-shrink:0}
+.storyVisual,.productPanel,.comparison,.reviews,.pricing,.faq,.finalCta{min-width:0;max-width:100%}
+.reviewTop strong{font-size:12px;font-weight:650}
+
+@media (max-width: 900px){
+  .footerRevealSpace{display:none}
+  .footer{position:relative;min-height:0}
+  .footerTop{flex-direction:column;gap:40px}
+  .footerLinks{width:100%;justify-content:space-between}
+}
+
+@media (max-width: 680px){
+  .heroIntro{padding-top:clamp(124px,35vw,140px)}
+  .topHeroCopy h1{font-size:clamp(36px,11vw,43px)}
+  .topHeroCopy>p:not(.eyebrow){font-size:clamp(14px,4.2vw,16px);line-height:1.55}
+  .heroActions{width:100%;gap:12px}
+  .heroActions .primaryButton,.heroActions .textLink{width:100%}
+  .stories{padding-top:clamp(36px,12vw,48px)}
+  .story{gap:32px;padding-block:clamp(52px,16vw,72px)}
+  .storyCopy h2,.sectionHeading h2,.faq h2{font-size:clamp(28px,8.5vw,35px)}
+  .storyCopy>p,.sectionHeading>p,.pricingCopy>p,.faq>div:first-child>p,.finalCta p{font-size:clamp(15px,4.5vw,17px);line-height:1.55}
+  .storyCopy ul{gap:9px;margin-top:22px}
+  .storyCopy li{font-size:13px;align-items:flex-start}
+  .productPanel{padding:clamp(14px,4.5vw,18px);overflow:hidden}
+  .panelTop{gap:8px;padding-bottom:16px;align-items:center}
+  .panelTop h3{font-size:clamp(16px,5.2vw,20px);line-height:1.1}
+  .panelLabel{font-size:8px}
+  .panelBadge,.adaptiveBadge{font-size:clamp(9px,2.8vw,11px);padding:6px 8px}
+  .searchBar{height:42px;padding-inline:10px;gap:8px;font-size:clamp(11px,3.2vw,13px)}
+  .searchBar kbd{display:none}
+  .quickRow{flex-wrap:wrap;padding:10px 0 18px}
+  .quickRow button{flex:1 1 120px;justify-content:center;padding-inline:7px;font-size:10px;white-space:nowrap}
+  .foodRow{grid-template-columns:30px minmax(0,1fr) auto;gap:8px;padding-block:11px}
+  .foodIcon{width:30px;height:30px}
+  .foodRow strong,.exercise strong{font-size:11px}
+  .foodRow small,.exercise small{font-size:9px;line-height:1.25}
+  .foodRow>b{font-size:11px}
+  .macroFooter{padding-top:14px}
+  .macroFooter div{padding-left:8px}
+  .macroFooter div:first-child{padding-left:0}
+  .macroFooter strong{font-size:clamp(10px,3.1vw,13px);white-space:nowrap}
+  .macroFooter span,.metricRow span{font-size:8px}
+  .metricRow{margin-bottom:16px}
+  .metricRow div{padding:10px 7px;min-width:0}
+  .metricRow strong{font-size:clamp(11px,3.8vw,17px);white-space:nowrap}
+  .chartWrap{height:205px;padding-left:32px}
+  .chartWrap svg{height:174px}
+  .chartAxis{height:142px;font-size:8px}
+  .chartLegend{gap:8px;flex-wrap:wrap;font-size:8px;margin-top:-4px}
+  .chartLegend b{margin-left:0}
+  .workoutSummary{gap:8px;padding:10px;margin-bottom:14px}
+  .workoutSummary>div{gap:7px;min-width:0}
+  .workoutSummary button{height:30px;padding-inline:7px;font-size:9px;white-space:nowrap}
+  .workoutSummary strong{font-size:11px}
+  .workoutSummary span small,.personalBest span small{font-size:9px}
+  .setHead,.exercise{grid-template-columns:minmax(0,1.8fr) minmax(0,.85fr) minmax(0,.72fr) minmax(28px,.45fr);column-gap:6px;min-width:0}
+  .setHead{font-size:8px}
+  .exercise{font-size:clamp(9px,2.7vw,11px);padding-block:11px}
+  .personalBest{padding:9px 10px;margin-top:12px}
+  .personalBest strong{font-size:10px}
+  .comparison,.reviews,.pricing,.faq{padding-block:clamp(56px,16vw,80px)}
+  .comparisonRows{margin-top:34px}
+  .problem,.solution{padding:13px 14px;min-height:58px;font-size:13px}
+  .reviewCard{width:min(286px,calc(100vw - 36px));height:auto;min-height:210px;padding:18px}
+  .reviewCard p{font-size:14px;margin-top:20px}
+  .pricingCopy{padding-bottom:8px}
+  .priceCard{min-height:285px;padding:20px}
+  .finalCta{padding:clamp(36px,12vw,48px) 22px;gap:32px}
+  .finalCta h2{font-size:clamp(32px,10vw,40px)}
+  .ctaData{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr)}
+  .ctaData strong{font-size:clamp(13px,4.2vw,15px);white-space:nowrap}
+  .footer{padding-top:56px}
+}
+
+@media (max-width: 380px){
+  .nav{padding-inline:10px 9px}
+  .brand{gap:6px;font-size:14px}
+  .brand .logo{width:24px;height:24px}
+  .panelTop{flex-wrap:wrap}
+  .panelBadge,.adaptiveBadge{margin-left:auto}
+  .trust{padding-inline:10px}
+  .trust span{font-size:9px;gap:5px}
+  .footerLinks{gap:24px}
+  .footerLinks>div{min-width:0}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .pageSurface{box-shadow:none}
+}
+
+.adviceMock{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #ff6a0030;border-radius:10px;background:var(--orangeSoft);padding:11px 12px;margin:-7px 0 20px;color:#bd5000}.adviceMock>div{display:flex;align-items:center;gap:9px}.adviceMock span small{display:block;color:#929298;font-size:10px;margin-top:3px}.adviceMock strong{font-size:11px;color:#bd5000}.adviceMock>b{font:600 9px var(--font-mono);border:1px solid #ff6a0040;border-radius:999px;padding:5px 7px}
+
+/* Dark mode uses a light footer treatment. The reveal underlay must use the
+ * same color or the space below the rounded page surface becomes a black gap. */
+:global(.dark) .page{background:#f1efe9}

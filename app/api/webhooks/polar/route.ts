@@ -20,31 +20,14 @@ import {
   setSubscription,
   clearSubscription,
 } from "@/app/lib/db";
-import type { SubscriptionTier } from "@/app/types";
-
-// ── Product ID → Tier mapping ───────────────────────────────
-// These product IDs come from your Polar dashboard (Products → copy ID).
-// Set them in .env so you can swap sandbox / production without code changes.
-const PRODUCT_TIER_MAP: Record<string, SubscriptionTier> = {
-  ...(process.env.POLAR_PLUS_PRODUCT_ID
-    ? { [process.env.POLAR_PLUS_PRODUCT_ID]: "plus" }
-    : {}),
-  ...(process.env.POLAR_PRO_PRODUCT_ID
-    ? { [process.env.POLAR_PRO_PRODUCT_ID]: "pro" }
-    : {}),
-};
-
-function resolveTier(productId: string): SubscriptionTier {
-  return PRODUCT_TIER_MAP[productId] ?? "free";
-}
+import { resolveStatus, resolveTier } from "@/app/lib/polar-billing";
 
 // ── Helpers ─────────────────────────────────────────────────
 
 function extractUid(
   metadata: Record<string, unknown> | null | undefined,
 ): string | null {
-  if (!metadata) return null;
-  const uid = metadata["firebaseUid"];
+  const uid = metadata?.["firebaseUid"];
   return typeof uid === "string" && uid.length > 0 ? uid : null;
 }
 
@@ -55,7 +38,13 @@ export const POST = Webhooks({
 
   // ── subscription.created ────────────────────────────────
   onSubscriptionCreated: async (payload) => {
-    const { id, customerId, productId, status, metadata } = payload.data;
+    const {
+      id,
+      customerId,
+      productId,
+      status,
+      metadata,
+    } = payload.data;
 
     console.log("[polar/webhook] subscription.created", {
       subscriptionId: id,
@@ -76,7 +65,7 @@ export const POST = Webhooks({
 
     await setSubscription(uid, {
       tier,
-      status: status as "active" | "trialing",
+      status: resolveStatus(status),
       polarSubscriptionId: id,
       polarCustomerId: customerId,
       polarProductId: productId,
@@ -88,7 +77,13 @@ export const POST = Webhooks({
 
   // ── subscription.updated ────────────────────────────────
   onSubscriptionUpdated: async (payload) => {
-    const { id, customerId, productId, status, metadata } = payload.data;
+    const {
+      id,
+      customerId,
+      productId,
+      status,
+      metadata,
+    } = payload.data;
 
     console.log("[polar/webhook] subscription.updated", {
       subscriptionId: id,
@@ -106,11 +101,7 @@ export const POST = Webhooks({
     }
 
     const tier = resolveTier(productId);
-    const normalizedStatus = (
-      ["active", "canceled", "past_due", "trialing", "unpaid"].includes(status)
-        ? status
-        : "active"
-    ) as "active" | "canceled" | "past_due" | "trialing" | "unpaid";
+    const normalizedStatus = resolveStatus(status);
 
     await setSubscription(uid, {
       tier,

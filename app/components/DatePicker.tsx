@@ -50,7 +50,10 @@ export default function DatePicker({ onClose }: DatePickerProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.15, ease: "easeOut" }}
-        className="fixed inset-0 backdrop-blur-sm bg-black/20 flex items-center justify-center z-[500]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="date-picker-title"
+        className="fixed inset-0 z-[500] flex min-h-[100dvh] items-center justify-center bg-black/30 p-3 backdrop-blur-sm sm:p-4"
         onClick={handleOverlayClick}>
         <motion.div
           key="datepicker-card"
@@ -58,8 +61,8 @@ export default function DatePicker({ onClose }: DatePickerProps) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 16, scale: 0.97 }}
           transition={{ duration: 0.22, ease: EASE_OUT_QUART }}
-          className="bg-background rounded-[20px] p-6 shadow-[0_20px_60px_oklch(0_0_0/_0.15)]">
-          <div className="font-bold text-base mb-4 bg-background text-foreground">
+          className="max-h-[calc(100dvh-1.5rem)] w-full max-w-[22rem] overflow-y-auto rounded-3xl border border-border/70 bg-background p-4 shadow-[0_20px_60px_oklch(0_0_0/_0.15)] sm:max-h-[calc(100dvh-2rem)] sm:p-6">
+          <div id="date-picker-title" className="mb-4 text-base font-bold text-foreground">
             Pick a Date
           </div>
           <DayPicker
@@ -75,7 +78,10 @@ export default function DatePicker({ onClose }: DatePickerProps) {
               selected: "text-primary ",
               today: "bg-primary text-white font-bold rounded-full",
               chevron: "fill-primary",
-              day_button: "h-10 w-10 rounded-full transition-colors",
+              day_button: "h-9 w-9 rounded-full transition-colors sm:h-10 sm:w-10",
+              weekday: "w-9 text-center text-[10px] font-semibold uppercase text-muted-foreground sm:w-10",
+              week: "flex w-full",
+              day: "p-0 text-center",
             }}
             components={{
               Dropdown: ({ value, onChange, options }) => {
@@ -104,7 +110,7 @@ export default function DatePicker({ onClose }: DatePickerProps) {
                     </SelectTrigger>
 
                     <SelectContent
-                      className="z-[510] max-h-[250px] p-2 backdrop-blur-md bg-transparent "
+                      className="z-[510] max-h-[min(16rem,50dvh)] max-w-[calc(100vw-2rem)] p-2 backdrop-blur-md bg-background/95"
                       position="popper"
                       sideOffset={4}>
                       {options?.map((option) => (

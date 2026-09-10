@@ -646,7 +646,15 @@ export interface ChatMessage {
   meal?: PendingMeal | null;
 
   suggestions?: string[];
+  upgradeRequired?: boolean;
   timestamp: number;
+}
+
+export interface FoodChatSession {
+  id: string;
+  label: string;
+  messages: ChatMessage[];
+  updatedAt: number;
 }
 
 export interface AIResponse {
@@ -654,6 +662,7 @@ export interface AIResponse {
   message: string;
   meal: PendingMeal | null;
   suggestions: string[];
+  upgradeRequired?: boolean;
 }
 
 // ─── AI Workout Chat ────────────────────────────────────────
@@ -691,6 +700,7 @@ export interface WorkoutAIResponse {
 
   askSaveTemplate: boolean;
   suggestions: string[];
+  upgradeRequired?: boolean;
 }
 
 export interface WorkoutChatMessage {
@@ -700,6 +710,7 @@ export interface WorkoutChatMessage {
   workout?: PendingWorkout | null;
   askSaveTemplate?: boolean;
   suggestions?: string[];
+  upgradeRequired?: boolean;
   timestamp: number;
   /**
    * When true, the workout in this message was loaded from one of the
@@ -708,4 +719,11 @@ export interface WorkoutChatMessage {
    * user edits anything.
    */
   fromSavedRoutine?: boolean;
+}
+
+export interface WorkoutChatSession {
+  id: string;
+  label: string;
+  messages: WorkoutChatMessage[];
+  updatedAt: number;
 }

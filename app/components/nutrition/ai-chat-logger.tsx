@@ -17,12 +17,20 @@ import {
   Calendar,
   RotateCcw,
   CheckCircle2,
+  ArrowLeft,
+  MessageSquare,
 } from "lucide-react";
 import MealConfirmationCard from "@/app/components/nutrition/meal-confirmation-card";
+import { UpgradePrompt } from "@/app/components/UpgradePrompt";
 import { useFoodChat } from "@/app/lib/use-food-chat";
 import { cn } from "@/app/lib/utils";
 import { useApp, todayLocalKey, uid } from "@/app/context/AppContext";
-import type { ChatMessage, PendingMeal, Meal } from "@/app/types";
+import type {
+  ChatMessage,
+  FoodChatSession,
+  PendingMeal,
+  Meal,
+} from "@/app/types";
 import { toast } from "sonner";
 
 /* ------------------------------------------------------------------
@@ -84,6 +92,8 @@ export default function AIChatLogger({
     messages,
     isLoading,
     pendingSuggestions,
+    chatHistory,
+    loadChat,
     sendMessage,
     confirmLog,
     reset,
@@ -97,6 +107,7 @@ export default function AIChatLogger({
     () => new Set(),
   );
   const [showHistory, setShowHistory] = useState(false);
+  const [showChatHistory, setShowChatHistory] = useState(false);
 
   const { state, addMeal } = useApp();
 
@@ -184,42 +195,52 @@ export default function AIChatLogger({
       initial={{ opacity: 0, y: -12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -10, scale: 0.97 }}
-      transition={{ duration: 0.22, ease: [0.165, 0.84, 0.44, 1] }}>
+      transition={{ duration: 0.22, ease: [0.165, 0.84, 0.44, 1] }}
+      className="w-full">
       <div
         className={cn(
-          "mb-8 flex flex-col",
-          "rounded-3xl border border-border/50",
-          "bg-card/60 backdrop-blur-xl",
-          "shadow-[0_2px_8px_oklch(0_0_0/_0.05),0_12px_24px_oklch(0_0_0/_0.06)]",
+          "relative mb-8 flex min-h-[28rem] w-full flex-col sm:min-h-[32rem]",
+          "rounded-3xl border border-border/60 bg-card shadow-[0_12px_30px_oklch(0_0_0/_0.08)]",
           "overflow-hidden",
         )}
         style={{ color: "var(--color-ink)" }}>
         {/* ── Header ─────────────────────────────────────────── */}
-        <div className="relative flex items-center justify-center px-3 sm:px-4 py-3 border-b border-border/60">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/60 px-4 py-3.5 sm:px-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Sparkles size={17} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
+                AI meal logger
+              </p>
+              <h2 id="ai-meal-logger-title" className="truncate text-base font-bold font-heading text-foreground">
+                Log a meal
+              </h2>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
             onClick={reset}
             aria-label="Start a new chat"
-            className="touch-hitbox absolute left-3 w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-subtle hover:text-foreground transition-colors">
+            className="touch-hitbox flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-subtle hover:text-foreground"
+            title="Start a new chat">
             <SquarePen size={14} />
           </button>
-
-          <div className="text-sm font-bold font-heading text-foreground">
-            Log a meal
-          </div>
-
           <button
             type="button"
             onClick={handleClose}
             aria-label="Close"
-            className="touch-hitbox absolute right-3 w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-subtle hover:text-foreground transition-colors">
+            className="touch-hitbox flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-subtle hover:text-foreground">
             <X size={14} />
           </button>
+          </div>
         </div>
 
         {/* ── Body: empty-state greeting OR message thread ────── */}
         {isEmpty ? (
-          <div className="flex flex-col items-center justify-center gap-5 px-5 sm:px-6 py-8 sm:py-9 text-center">
+          <div className="flex flex-col items-center justify-center gap-5 px-5 py-8 text-center sm:px-6 sm:py-9">
             <div className="flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-br from-primary to-primary/70 text-white shadow-sm shrink-0">
               <Sparkles size={19} />
             </div>
@@ -257,7 +278,7 @@ export default function AIChatLogger({
         ) : (
           <div
             ref={scrollRef}
-            className="h-[340px] overflow-y-auto px-3 sm:px-4 py-4 space-y-3"
+            className="h-[min(24rem,50vh)] min-h-[15rem] overflow-y-auto px-3 py-4 space-y-3 sm:px-4"
             data-lenis-prevent>
             {messages.map((msg) => (
               <MessageBubble
@@ -299,7 +320,7 @@ export default function AIChatLogger({
 
         {/* ── Input row ────────────────────────────────────────── */}
         <div
-          className="px-3 sm:px-4 pt-3 space-y-2"
+          className="shrink-0 px-3 pt-3 space-y-2 sm:px-4"
           style={{
             paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
           }}>
@@ -347,10 +368,13 @@ export default function AIChatLogger({
           </div>
 
           {/* ── Log history button ─────────────────────────────── */}
-          <div className="flex items-center justify-start w-full gap-1">
+          <div className="flex w-full flex-wrap items-center justify-start gap-2">
             <button
               type="button"
-              onClick={() => setShowHistory((v) => !v)}
+              onClick={() => {
+                setShowHistory((value) => !value);
+                setShowChatHistory(false);
+              }}
               className={cn(
                 "touch-hitbox flex items-center gap-1.5 px-3 py-2 min-h-[36px] text-xs font-semibold rounded-full border transition-colors",
                 showHistory
@@ -360,17 +384,46 @@ export default function AIChatLogger({
               <History size={13} />
               Log history
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowChatHistory((value) => !value);
+                setShowHistory(false);
+              }}
+              className={cn(
+                "touch-hitbox flex min-h-[36px] items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-colors",
+                showChatHistory
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-border bg-subtle text-foreground/80 hover:border-primary/30 hover:bg-primary/5 hover:text-foreground",
+              )}>
+              <MessageSquare size={13} />
+              Past chats
+            </button>
           </div>
         </div>
       </div>
 
       {/* ── History drawer ─────────────────────────────────────── */}
-      {showHistory && (
-        <MealHistoryDrawer
-          meals={historyMeals}
-          onRepeat={handleRepeatMeal}
-          onClose={() => setShowHistory(false)}
-        />
+      {showHistory && !showChatHistory && (
+        <div className="absolute inset-0 z-20 flex flex-col bg-card">
+          <MealHistoryDrawer
+            meals={historyMeals}
+            onRepeat={handleRepeatMeal}
+            onClose={() => setShowHistory(false)}
+          />
+        </div>
+      )}
+      {showChatHistory && (
+        <div className="absolute inset-0 z-20 flex min-h-0 flex-col bg-card">
+          <FoodChatHistoryDrawer
+            sessions={chatHistory}
+            onSelect={(session) => {
+              loadChat(session);
+              setShowChatHistory(false);
+            }}
+            onClose={() => setShowChatHistory(false)}
+          />
+        </div>
       )}
     </motion.div>
   );
@@ -431,11 +484,18 @@ function MealHistoryDrawer({
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40 shrink-0">
-        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/40 px-3 py-3 sm:px-4">
+        <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-foreground">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Back to AI meal logger"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-subtle hover:text-foreground">
+            <ArrowLeft size={14} />
+          </button>
           <History size={14} className="text-primary" />
-          Log History
+          <span className="truncate">Log history</span>
         </div>
         <button
           type="button"
@@ -445,7 +505,7 @@ function MealHistoryDrawer({
         </button>
       </div>
 
-      <div className="overflow-y-auto flex-1 py-2" data-lenis-prevent>
+      <div className="min-h-0 flex-1 overflow-y-auto py-2" data-lenis-prevent>
         {grouped.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-8 text-center px-4">
             <Utensils size={24} className="text-muted-foreground/40" />
@@ -468,7 +528,7 @@ function MealHistoryDrawer({
                   return (
                     <div
                       key={meal.id}
-                      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-subtle border border-border/60 hover:border-border/80 transition-colors">
+                      className="flex min-w-0 items-center gap-2 rounded-xl border border-border/60 bg-subtle px-2.5 py-2 transition-colors hover:border-border/80 sm:px-3">
                       <Utensils
                         size={12}
                         className={cn(
@@ -476,7 +536,7 @@ function MealHistoryDrawer({
                           mealTimeColors[meal.time] ?? "text-muted-foreground",
                         )}
                       />
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold text-foreground truncate">
                           {meal.name}
                         </p>
@@ -531,6 +591,82 @@ function MealHistoryDrawer({
   );
 }
 
+function FoodChatHistoryDrawer({
+  sessions,
+  onSelect,
+  onClose,
+}: {
+  sessions: FoodChatSession[];
+  onSelect: (session: FoodChatSession) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/40 px-3 py-3 sm:px-4">
+        <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-foreground">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Back to AI meal logger"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-subtle hover:text-foreground">
+            <ArrowLeft size={14} />
+          </button>
+          <MessageSquare size={14} className="shrink-0 text-primary" />
+          <span className="truncate">Past chats</span>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close past chats"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-subtle hover:text-foreground">
+          <X size={14} />
+        </button>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4" data-lenis-prevent>
+        {sessions.length === 0 ? (
+          <div className="flex h-full min-h-40 flex-col items-center justify-center gap-2 px-4 text-center">
+            <MessageSquare size={24} className="text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">
+              Your previous meal chats will appear here.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {sessions.map((session) => {
+              const lastModelMessage = [...session.messages]
+                .reverse()
+                .find((message) => message.role === "model");
+              return (
+                <button
+                  key={session.id}
+                  type="button"
+                  onClick={() => onSelect(session)}
+                  className="flex w-full min-w-0 items-start gap-3 rounded-2xl border border-border/60 bg-subtle p-3 text-left transition-colors hover:border-primary/30 hover:bg-primary/5">
+                  <MessageSquare size={15} className="mt-0.5 shrink-0 text-primary" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-foreground">
+                      {session.label}
+                    </span>
+                    <span className="mt-1 block line-clamp-2 break-words text-xs leading-relaxed text-muted-foreground">
+                      {lastModelMessage?.content ?? "Meal conversation"}
+                    </span>
+                    <time className="mt-2 block text-[10px] font-medium text-muted-foreground/70">
+                      {new Date(session.updatedAt).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </time>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------
  * MessageBubble
  * ------------------------------------------------------------------ */
@@ -561,6 +697,7 @@ function MessageBubble({
             : "bg-subtle border border-border text-ink rounded-tl-sm",
         )}>
         <SafeText text={message.content} />
+        {!isUser && message.upgradeRequired && <UpgradePrompt />}
       </div>
 
       {!isUser && message.meal && !dismissed && (

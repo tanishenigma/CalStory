@@ -4,7 +4,7 @@ import SettingsClient from "./SettingsClient";
 export const metadata: Metadata = {
   title: "Settings",
   description:
-    "CalStory settings — manage your profile, units, theme, navbar style and Gemini API key. Sign out of your account and clear local cached data here.",
+    "CalStory settings — manage your profile, preferences, subscription and billing details.",
   alternates: { canonical: "/settings" },
   robots: { index: false, follow: false },
 };

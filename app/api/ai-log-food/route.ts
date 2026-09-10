@@ -1,12 +1,18 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, type Tool } from "@google/generative-ai";
 import type { AIResponse, ChatMessage } from "@/app/types";
 import { resolveGeminiKey } from "@/app/lib/gemini-key";
 import {
   sanitizeMessage,
   sanitizeHistory,
 } from "@/app/lib/sanitize-input";
+import {
+  authenticateFirebaseRequest,
+  isNextResponse,
+} from "@/app/lib/server-auth";
+import { consumePrompt } from "@/app/lib/ai-quota";
+import { FREE_DAILY_PROMPT_LIMIT } from "@/app/lib/plan-limits";
 
 /* ------------------------------------------------------------------
  * System prompt — instructs Gemini to always return strict JSON.
@@ -45,11 +51,13 @@ Rules:
 - Never return anything outside the JSON object.`;
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const auth = await authenticateFirebaseRequest(req);
+  if (isNextResponse(auth)) return auth;
+
   // ── 1. Parse & validate request body ──────────────────────────
   let body: {
     message: string;
     conversationHistory: ChatMessage[];
-    userId: string;
     date: string;
   };
 
@@ -59,32 +67,53 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { message: rawMessage, conversationHistory: rawHistory = [], userId, date } = body;
+  const {
+    message: rawMessage,
+    conversationHistory: rawHistory = [],
+    date,
+  } = body;
 
   const message = sanitizeMessage(rawMessage ?? "");
   if (!message) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
   }
-  if (!userId?.trim()) {
-    return NextResponse.json({ error: "userId is required" }, { status: 400 });
-  }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return NextResponse.json({ error: "date must be YYYY-MM-DD" }, { status: 400 });
   }
 
-  // Extract the Firebase ID token from the Authorization header (optional).
-  // When present it allows resolveGeminiKey to read the user's personal key
-  // from Firestore via the REST API (authenticated as the calling user).
-  const authHeader = req.headers.get("Authorization");
-  const idToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+  let promptUsage;
+  try {
+    promptUsage = await consumePrompt(auth.uid, auth.idToken);
+  } catch (error) {
+    console.error("[ai-log-food] Prompt quota check failed:", error);
+    return NextResponse.json(
+      { error: "Prompt limit is temporarily unavailable. Please try again." },
+      { status: 503 },
+    );
+  }
 
-  const apiKey = await resolveGeminiKey(userId, idToken);
+  if (!promptUsage.allowed) {
+    return NextResponse.json(
+      {
+        type: "error",
+        message:
+          `You’ve used all ${FREE_DAILY_PROMPT_LIMIT} free AI prompts for today. Upgrade to Plus or Pro for unlimited prompts.`,
+        meal: null,
+        suggestions: [],
+        promptUsage,
+        upgradeRequired: true,
+      },
+      { status: 429 },
+    );
+  }
+
+  const apiKey = await resolveGeminiKey(auth.uid, auth.idToken);
   if (!apiKey) {
     // Graceful degradation: return a friendly error the UI can display
     const fallback: AIResponse = {
       type: "error",
       message:
-        "AI food logging is not configured. Add a Gemini API key in Settings → AI, or ask your admin to set GEMINI_API_KEY.",
+        "AI food logging is not configured yet. Please try again later or contact support.",
       meal: null,
       suggestions: [],
     };
@@ -118,7 +147,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       // Gemini 2.5 replaced `googleSearchRetrieval` with `googleSearch`.
       // The SDK types (v0.24.x) predate this rename; bridge with a cast.
       tools: [
-        { googleSearch: {} } as unknown as import("@google/generative-ai").Tool,
+        { googleSearch: {} } as unknown as Tool,
       ],
     });
 

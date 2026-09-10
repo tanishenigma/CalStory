@@ -146,13 +146,13 @@ function StreakBadge({
   hasLoggedToday: boolean;
 }) {
   return (
-    <div className="flex items-center justify-center gap-1.5 px-2.5 h-14 w-14 rounded-full bg-accent border border-border shadow-md">
+    <div className="flex h-11 w-11 items-center justify-center gap-1 rounded-full border border-border bg-accent px-1.5 shadow-md sm:h-12 sm:w-12 sm:gap-1.5 sm:px-2.5">
       <Flame
-        size={18}
+        size={15}
         className={hasLoggedToday ? "text-primary" : "text-muted-foreground/40"}
         fill={hasLoggedToday ? "currentColor" : "rgba(0,0,0,0.1)"}
       />
-      <span className="text-base font-bold tabular-nums text-foreground">
+      <span className="text-sm font-bold tabular-nums text-foreground sm:text-base">
         {streak}
       </span>
     </div>
@@ -186,7 +186,7 @@ function MobileDayPill({
       disabled={isFuture}
       whileTap={isFuture ? undefined : { scale: 0.94 }}
       className={[
-        "flex flex-col items-center justify-center gap-1 shrink-0 rounded-full p-2 size-12 transition-colors",
+        "flex size-10 shrink-0 flex-col items-center justify-center gap-0.5 rounded-full p-1 transition-colors sm:size-12 sm:gap-1 sm:p-2",
         isFuture ? "opacity-30 cursor-not-allowed" : "cursor-pointer",
         active
           ? "bg-foreground border-2 border-transparent"
@@ -195,14 +195,14 @@ function MobileDayPill({
       aria-pressed={active}>
       <span
         className={[
-          "text-[10px] font-bold tracking-wider uppercase leading-none",
+          "text-[9px] font-bold tracking-wider uppercase leading-none sm:text-[10px]",
           active ? "text-background" : "text-muted-foreground/60",
         ].join(" ")}>
         {label}
       </span>
       <span
         className={[
-          "text-base font-semibold leading-none tabular-nums",
+          "text-sm font-semibold leading-none tabular-nums sm:text-base",
           active ? "text-background" : "text-foreground",
         ].join(" ")}>
         {day}
@@ -223,7 +223,7 @@ function MobileRing({ pct }: { pct: number }) {
   const offset = C * (1 - Math.min(Math.max(pct, 0), 1));
 
   return (
-    <div className="relative w-28 h-28 shrink-0">
+    <div className="relative h-20 w-20 shrink-0 sm:h-24 sm:w-24">
       <svg viewBox="0 0 100 100" className="-rotate-90 w-full h-full">
         <circle
           cx="50"
@@ -271,17 +271,17 @@ function MobileCaloriesCard({
 }) {
   return (
     <div
-      className={`${SURFACE} ${BORDER} rounded-2xl px-5 py-4 flex items-center justify-between gap-4`}>
+      className={`${SURFACE} ${BORDER} flex items-center justify-between gap-2 rounded-2xl px-3 py-3 sm:gap-4 sm:px-5 sm:py-4`}>
       <div className="min-w-0 flex-1">
-        <div className="text-[40px] sm:text-4xl font-extrabold leading-none tracking-tight text-foreground tabular-nums">
+        <div className="text-3xl font-extrabold leading-none tracking-tight text-foreground tabular-nums sm:text-4xl">
           {left}
         </div>
-        <div className="text-xs font-semibold text-muted-foreground mt-1.5 mb-3">
+        <div className="mb-2 mt-1 text-[11px] font-semibold text-muted-foreground sm:mb-3 sm:mt-1.5 sm:text-xs">
           Calories Left
         </div>
         <div
           className={[
-            "inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-full",
+            "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold sm:gap-1.5 sm:px-2 sm:py-1 sm:text-[10px]",
             completed
               ? "bg-primary/15 text-primary"
               : "bg-accent text-muted-foreground",
@@ -319,22 +319,22 @@ function MobileMacroRow({
   return (
     <button
       type="button"
-      className={`${SURFACE} ${BORDER} rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3 ${SURFACE_HOVER} active:scale-[0.99] transition-all cursor-pointer w-full text-left`}>
-      <div className="flex items-center gap-4 min-w-0">
+      className={`${SURFACE} ${BORDER} flex w-full items-center justify-between gap-2 rounded-2xl px-3 py-2.5 text-left transition-all ${SURFACE_HOVER} active:scale-[0.99] cursor-pointer sm:gap-3 sm:px-4 sm:py-3.5`}>
+      <div className="flex min-w-0 items-center gap-2 sm:gap-4">
         <div
-          className="w-12 h-12 rounded-full grid place-items-center shrink-0"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full sm:h-12 sm:w-12"
           style={{
             backgroundColor: `color-mix(in srgb, ${color} 13%, transparent)`,
           }}>
-          <span className="text-2xl leading-none">{emoji}</span>
+          <span className="text-lg leading-none sm:text-2xl">{emoji}</span>
         </div>
-        <span className="text-base font-bold text-foreground truncate">
+        <span className="truncate text-sm font-bold text-foreground sm:text-base">
           <span style={{ color }}>{value}</span>
           <span className="text-muted-foreground">g</span>{" "}
           <span>{label} Left</span>
         </span>
       </div>
-      <ArrowUpRight size={18} className="text-muted-foreground/40 shrink-0" />
+      <ArrowUpRight size={15} className="shrink-0 text-muted-foreground/40 sm:h-[18px] sm:w-[18px]" />
     </button>
   );
 }
@@ -342,21 +342,21 @@ function MobileMacroRow({
 function MobileMealRow({ meal }: { meal: MealDemo }) {
   const Icon = meal.icon;
   return (
-    <div className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-accent/50 transition-colors">
-      <div className="w-10 h-10 rounded-xl bg-accent grid place-items-center shrink-0">
-        <Icon size={17} className="text-muted-foreground" />
+    <div className="flex items-center gap-2 rounded-xl px-2 py-2 transition-colors hover:bg-accent/50 sm:gap-3 sm:px-3 sm:py-3">
+      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-accent sm:h-10 sm:w-10">
+        <Icon size={15} className="text-muted-foreground sm:h-[17px] sm:w-[17px]" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-bold text-foreground truncate">
+        <div className="truncate text-xs font-bold text-foreground sm:text-sm">
           {meal.name}
         </div>
-        <div className="text-[11px] text-muted-foreground">{meal.time}</div>
+        <div className="text-[10px] text-muted-foreground sm:text-[11px]">{meal.time}</div>
       </div>
       <div className="text-right shrink-0">
-        <div className="text-base font-bold text-foreground tabular-nums">
+        <div className="text-sm font-bold text-foreground tabular-nums sm:text-base">
           {meal.cal}
         </div>
-        <div className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-widest">
+        <div className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60 sm:text-[9px]">
           kcal
         </div>
       </div>
@@ -369,10 +369,10 @@ function MobileFab() {
     <motion.button
       type="button"
       aria-label="Add meal"
-      className="absolute bottom-5 right-5 w-14 h-14 rounded-full bg-foreground text-background grid place-items-center shadow-[0_8px_24px_rgba(0,0,0,0.12)] cursor-pointer"
+      className="absolute bottom-4 right-4 grid h-11 w-11 place-items-center rounded-full bg-foreground text-background shadow-[0_8px_24px_rgba(0,0,0,0.12)] cursor-pointer sm:bottom-5 sm:right-5 sm:h-14 sm:w-14"
       animate={{ scale: [1, 1.06, 1] }}
       transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}>
-      <Utensils size={24} strokeWidth={2.4} />
+      <Utensils size={20} strokeWidth={2.4} className="sm:size-6" />
     </motion.button>
   );
 }
@@ -424,10 +424,10 @@ export function MobileDashboardMock() {
       role="img"
       aria-label="Live preview of the CalStory dashboard on mobile">
       {/* ── Mobile-only header: logo + streak ── */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3">
-        <div className="flex items-center gap-2">
-          <MobileBrand size={14} />
-          <span className="font-heading font-bold text-base text-foreground tracking-tight">
+      <div className="flex items-center justify-between px-3 pt-3 pb-2 sm:px-4 sm:pt-4 sm:pb-3">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <MobileBrand size={12} />
+          <span className="font-heading text-sm font-bold tracking-tight text-foreground sm:text-base">
             CalStory
           </span>
         </div>
@@ -435,8 +435,8 @@ export function MobileDashboardMock() {
       </div>
 
       {/* ── Week strip ── */}
-      <div className="px-2 pb-3">
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide px-2 py-1">
+      <div className="px-1.5 pb-2 sm:px-2 sm:pb-3">
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-1.5 py-1 sm:gap-2 sm:px-2">
           {WEEK_DAYS.map((d, i) => (
             <MobileDayPill
               key={d.label}
@@ -452,7 +452,7 @@ export function MobileDashboardMock() {
       </div>
 
       {/* ── Main scrollable content ── */}
-      <div className="flex-1 overflow-y-auto px-4 pb-20 space-y-3">
+      <div className="flex-1 space-y-2 overflow-y-auto px-3 pb-16 sm:space-y-3 sm:px-4 sm:pb-20">
         {/* Calories card */}
         <MobileCaloriesCard left={left} completed={completed} pct={pct} />
 

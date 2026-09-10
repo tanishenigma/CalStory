@@ -8,6 +8,12 @@ import {
   sanitizeMessage,
   sanitizeHistory,
 } from "@/app/lib/sanitize-input";
+import {
+  authenticateFirebaseRequest,
+  isNextResponse,
+} from "@/app/lib/server-auth";
+import { consumePrompt } from "@/app/lib/ai-quota";
+import { FREE_DAILY_PROMPT_LIMIT } from "@/app/lib/plan-limits";
 
 /* ------------------------------------------------------------------
  * System prompt — parses free-form workout descriptions into JSON.
@@ -57,11 +63,13 @@ Parsing rules:
 - Never return anything outside the JSON object`;
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const auth = await authenticateFirebaseRequest(req);
+  if (isNextResponse(auth)) return auth;
+
   // ── 1. Parse & validate ────────────────────────────────────────
   let body: {
     message: string;
     conversationHistory: WorkoutChatMessage[];
-    userId: string;
     date: string;
   };
 
@@ -71,14 +79,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { message: rawMessage, conversationHistory: rawHistory = [], userId, date } = body;
+  const {
+    message: rawMessage,
+    conversationHistory: rawHistory = [],
+    date,
+  } = body;
 
   const message = sanitizeMessage(rawMessage ?? "");
   if (!message) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
-  }
-  if (!userId?.trim()) {
-    return NextResponse.json({ error: "userId is required" }, { status: 400 });
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return NextResponse.json(
@@ -87,18 +96,39 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Extract the Firebase ID token from the Authorization header (optional).
-  const authHeader = req.headers.get("Authorization");
-  const idToken = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : undefined;
+  let promptUsage;
+  try {
+    promptUsage = await consumePrompt(auth.uid, auth.idToken);
+  } catch (error) {
+    console.error("[ai-log-workout] Prompt quota check failed:", error);
+    return NextResponse.json(
+      { error: "Prompt limit is temporarily unavailable. Please try again." },
+      { status: 503 },
+    );
+  }
 
-  const apiKey = await resolveGeminiKey(userId, idToken);
+  if (!promptUsage.allowed) {
+    return NextResponse.json(
+      {
+        type: "error",
+        message:
+          `You’ve used all ${FREE_DAILY_PROMPT_LIMIT} free AI prompts for today. Upgrade to Plus or Pro for unlimited prompts.`,
+        workout: null,
+        askSaveTemplate: false,
+        suggestions: [],
+        promptUsage,
+        upgradeRequired: true,
+      },
+      { status: 429 },
+    );
+  }
+
+  const apiKey = await resolveGeminiKey(auth.uid, auth.idToken);
   if (!apiKey) {
     const fallback: WorkoutAIResponse = {
       type: "error",
       message:
-        "AI workout logging is not configured. Add a Gemini API key in Settings → AI, or ask your admin to set GEMINI_API_KEY.",
+        "AI workout logging is not configured yet. Please try again later or contact support.",
       workout: null,
       askSaveTemplate: false,
       suggestions: [],

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useApp, uid } from "@/app/context/AppContext";
 import { toast } from "sonner";
 import type { MealTime, Meal, RecentMeal } from "@/app/types";
@@ -98,10 +97,14 @@ export default function DetailedMealForm({ onClose }: DetailedMealFormProps) {
   const isValid = name.trim().length > 0 && (parseInt(cal) || 0) > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-sm mx-4 sm:mx-auto bg-card rounded-[24px] p-4 sm:p-6 shadow-xl animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex min-h-[100dvh] items-center justify-center bg-black/40 p-3 backdrop-blur-sm animate-in fade-in duration-200 sm:p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="detailed-meal-form-title"
+        className="max-h-[calc(100dvh-1.5rem)] w-full max-w-sm overflow-y-auto rounded-3xl border border-border/60 bg-card p-4 shadow-xl animate-in zoom-in-95 duration-200 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-[18px] font-bold text-foreground">Log Food</h2>
+          <h2 id="detailed-meal-form-title" className="text-[18px] font-bold text-foreground">Log Food</h2>
           <button
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground transition-colors">

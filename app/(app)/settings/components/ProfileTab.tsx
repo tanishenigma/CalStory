@@ -8,7 +8,6 @@ import { Card, CardContent } from "@/app/components/ui/card";
 import BlurFade from "@/app/components/animations/BlurFade";
 import { kgToLbs, displayHeight } from "@/app/lib/units";
 import type { Profile } from "@/app/types";
-import { ApiKeyCard } from "./ApiKeyCard";
 import { MilkIcon } from "lucide-react";
 interface ProfileTabProps {
   user: User | null;
@@ -91,7 +90,7 @@ export function ProfileTab({
 
   return (
     <BlurFade>
-      <div className="md:flex gap-4 items-start">
+      <div>
         <Card className="p-6 mb-5  w-full">
           <div className="flex items-center gap-4 mb-5">
             <div className="relative">
@@ -238,10 +237,6 @@ export function ProfileTab({
             )}
           </div>
         </Card>
-
-        <div>
-          <ApiKeyCard user={user} />
-        </div>
       </div>
       <div>
         <Card className="transition-all z-200 ease-out  duration-300 ">

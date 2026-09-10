@@ -79,12 +79,9 @@ const FAQS: {
             search box.
           </p>
           <p className="mt-3">
-            CalStory uses Google Gemini under the hood. You can use the shared
-            quota that ships with the app, or paste your own personal Gemini API
-            key in <strong>Settings → AI</strong> to bypass rate limits and keep
-            your prompts inside your own Google Cloud project. The key is stored
-            encrypted in your browser’s local storage and never sent to any
-            CalStory- controlled server.
+            CalStory uses Google Gemini under the hood. Free accounts get 5 AI
+            prompts per day, while Plus and Pro subscribers get unlimited
+            prompts.
           </p>
         </>
       ),
@@ -209,9 +206,8 @@ const FAQS: {
               authenticated user only.
             </li>
             <li>
-              Your Gemini API key (if you choose to use one) is stored encrypted
-              in your browser’s local storage. It is sent directly to Google’s API
-              endpoint from your browser — not to any intermediate server.
+              AI requests are processed through CalStory&apos;s server so plan
+              limits can be applied consistently and securely.
             </li>
             <li>
               We don’t run analytics, ad pixels, or third-party tracking. The only
@@ -238,20 +234,13 @@ const FAQS: {
       a: (
         <>
           <p>
-            Yes — every feature in CalStory is free, with no usage caps on the
-            core flow (logging, macro tracking, workout logging, progress
-            dashboard, streak tracking). There is no premium tier, no “Pro” plan,
-            and no ad-supported variant.
+            CalStory has a free plan with core logging, macro tracking, workout
+            logging, progress tracking and 5 AI prompts per day. Plus and Pro
+            plans add unlimited prompts and advanced features.
           </p>
           <p className="mt-3">
-            The only feature with a soft limit is the{" "}
-            <strong>AI food logging</strong>: the shared Gemini quota that ships
-            with the app is enough for roughly 30–50 AI logs per day per user,
-            which covers most people’s usage. If you log more than that — or if
-            you want your prompts to stay inside your own Google Cloud project —
-            paste your personal Gemini API key into <strong>Settings → AI</strong>
-            . The shared quota is bypassed the moment a personal key is present,
-            and your usage is billed directly to your Google account.
+            Plus and Pro subscribers get unlimited AI prompts and can manage
+            their subscription from Settings → Billing.
           </p>
           <p className="mt-3">
             The repo is open source under a permissive license, so you can

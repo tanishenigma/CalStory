@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useApp } from "@/app/context/AppContext";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
 import { useHydration } from "@/app/hooks/useHydration";
@@ -12,6 +12,11 @@ import { Card, CardContent } from "@/app/components/ui/card";
 import { MEAL_ICONS } from "@/app/lib/constants";
 import { Utensils } from "lucide-react";
 import { TodaySections } from "@/app/components/TodaySections";
+import { useAuthStore } from "@/app/store/authStore";
+import { getIdToken } from "firebase/auth";
+import { useSearchParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 
 const DEFAULT_CAL_TARGET = 2000;
 const PROTEIN_CAL_RATIO = 0.3;
@@ -38,6 +43,44 @@ export default function DashboardPage() {
   const { state, addHydration, removeHydration, setHydrationGoal } = useApp();
   const { selDate, meals, workouts, hydrationLog } = state;
   const hydration = useHydration(hydrationLog, profile?.volumeUnit ?? "ml");
+  const { user } = useAuthStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // When landing from a successful Polar checkout, confirm it server-side
+  // so Firestore is updated immediately (doesn't rely on webhook delivery).
+  useEffect(() => {
+    const welcome = searchParams.get("welcome");
+    const checkoutId = searchParams.get("checkout_id");
+    if (welcome !== "1" || !checkoutId || !user) return;
+
+    // Strip params from URL right away to avoid re-running on refresh
+    router.replace("/dashboard", { scroll: false });
+
+    async function confirmCheckout() {
+      try {
+        const token = await getIdToken(user!);
+        const res = await fetch(
+          `/api/checkout-success?checkout_id=${encodeURIComponent(checkoutId!)}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        const data = (await res.json()) as { ok?: boolean; tier?: string; error?: string };
+        if (data.ok && data.tier) {
+          toast.success(
+            `🎉 Welcome to CalStory ${data.tier.charAt(0).toUpperCase() + data.tier.slice(1)}! Your plan is now active.`,
+            { duration: 6000 },
+          );
+          // Hard-reload so AppContext re-hydrates with the new subscription tier
+          setTimeout(() => window.location.reload(), 1500);
+        }
+      } catch {
+        // Non-critical — webhook will catch up if this fails
+      }
+    }
+
+    void confirmCheckout();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isLoading || !profile) return <Spinner variant="dashboard" />;
 

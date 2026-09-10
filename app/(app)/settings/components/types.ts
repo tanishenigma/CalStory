@@ -1,6 +1,6 @@
 import type { GoalKey, IntensityKey } from "@/app/types";
 
-export type Tab = "profile" | "goals" | "appearance" | "units" | "ai";
+export type Tab = "profile" | "goals" | "appearance" | "units" | "billing";
 
 export interface IntensityOption {
   key: IntensityKey;

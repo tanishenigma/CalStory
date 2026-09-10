@@ -4,7 +4,7 @@ rules_version = '2';
 //
 // Each user can only read/write their own data. The data tree is
 // rooted at /users/{uid} and every sub-collection (meals, workouts,
-// workout_templates, recents) inherits the same per-user boundary
+// workout_templates, recents, prompt_usage) inherits the same per-user boundary
 // via the wildcard `{document=**}` match below.
 //
 // Deploy with:

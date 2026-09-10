@@ -5,16 +5,16 @@ import { useApp, todayLocalKey } from "@/app/context/AppContext";
 import { useToast } from "@/app/components/ToastContainer";
 import { useAuthGuard, Spinner } from "@/app/hooks/useAuthGuard";
 import { useAuthStore } from "@/app/store/authStore";
+import { useRouter } from "next/navigation";
 import WeekStrip from "@/app/components/WeekStrip";
 import InlineFoodSearch from "@/app/components/InlineFoodSearch";
 import ManualFoodEntry from "@/app/components/ManualFoodEntry";
 import AIChatLogger from "@/app/components/nutrition/ai-chat-logger";
-import BlurFade from "@/app/components/animations/BlurFade";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { MEAL_ICONS } from "@/app/lib/constants";
-import { Flame, Utensils, Sliders, Sparkles } from "lucide-react";
-import Link from "next/link";
-import type { PendingMeal } from "@/app/types";
+import { LockKeyhole, Repeat2, Sliders, Sparkles, Utensils } from "lucide-react";
+import { useSubscriptionTier } from "@/app/lib/use-subscription-tier";
+import type { DetailedNutrients, Meal, MealTime, PendingMeal } from "@/app/types";
 
 function fmtDate(key: string): string {
   if (key === todayLocalKey()) return "Today";
@@ -25,10 +25,33 @@ function fmtDate(key: string): string {
   });
 }
 
+function dateOffset(key: string, offset: number): string {
+  const date = new Date(`${key}T12:00:00`);
+  date.setDate(date.getDate() + offset);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function currentMealTime(date = new Date()): MealTime {
+  const hour = date.getHours();
+  if (hour < 12) return "breakfast";
+  if (hour < 17) return "lunch";
+  if (hour < 21) return "dinner";
+  return "snack";
+}
+
+function titleCase(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 export default function NutritionPage() {
   const { profile, isLoading } = useAuthGuard();
-  const { state, deleteMeal } = useApp();
+  const { state, addMeal, deleteMeal } = useApp();
   const { user } = useAuthStore();
+  const router = useRouter();
+  const { isPro, isLoading: isPlanLoading } = useSubscriptionTier(user);
   const toast = useToast();
   const { selDate, meals } = state;
   const [showSearch, setShowSearch] = React.useState(false);
@@ -43,10 +66,33 @@ export default function NutritionPage() {
   if (isLoading || !profile) return <Spinner variant="nutrition" />;
 
   const dayMeals = meals[selDate] || [];
+  const reuseTime = currentMealTime();
+  const yesterdayMeals = meals[dateOffset(selDate, -1)] || [];
+  const yesterdayMeal =
+    selDate === todayLocalKey()
+      ? [...yesterdayMeals].reverse().find((meal) => meal.time === reuseTime)
+      : undefined;
 
   function handleDelete(id: string) {
     deleteMeal(id, selDate);
     toast("Meal removed", "🗑️");
+  }
+
+  async function handleReuseYesterday() {
+    if (!yesterdayMeal) return;
+    if (!isPro) {
+      router.push("/pricing#pricing");
+      return;
+    }
+
+    const copiedMeal: Meal = {
+      ...yesterdayMeal,
+      id: `reuse-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      savedDate: todayLocalKey(),
+      time: reuseTime,
+    };
+    await addMeal(copiedMeal);
+    toast(`${titleCase(reuseTime)} reused from yesterday`, "↻");
   }
 
   // Aggregate macros and micronutrients
@@ -56,11 +102,12 @@ export default function NutritionPage() {
       acc.p += meal.p || 0;
       acc.c += meal.c || 0;
       acc.f += meal.f || 0;
-      if (meal.nutrients) {
-        Object.keys(meal.nutrients).forEach((k) => {
-          const key = k as keyof import("@/app/types").DetailedNutrients;
+      const nutrients = meal.nutrients;
+      if (nutrients) {
+        Object.keys(nutrients).forEach((k) => {
+          const key = k as keyof DetailedNutrients;
           acc.nutrients[key] =
-            (acc.nutrients[key] || 0) + (meal.nutrients![key] || 0);
+            (acc.nutrients[key] || 0) + (nutrients[key] || 0);
         });
       }
       return acc;
@@ -92,9 +139,6 @@ export default function NutritionPage() {
     selenium: 55, // mcg
   };
 
-  const getPct = (val: number, target: number) =>
-    Math.min(100, Math.round((val / target) * 100));
-
   return (
     <>
       <WeekStrip />
@@ -107,17 +151,32 @@ export default function NutritionPage() {
             {fmtDate(selDate)}
           </div>
           <div className="flex flex-wrap gap-2">
+            {yesterdayMeal && (
+              <button
+                type="button"
+                onClick={() => void handleReuseYesterday()}
+                disabled={isPlanLoading}
+                className={`px-3.5 py-2.5 rounded-xl text-xs md:text-sm font-bold shadow-sm transition-colors active:scale-[0.98] flex items-center gap-1.5 ${
+                  isPro
+                    ? "bg-card text-foreground border border-border hover:bg-background"
+                    : "bg-card text-muted-foreground border border-border hover:text-foreground"
+                }`}>
+                {isPro ? <Repeat2 size={14} /> : <LockKeyhole size={13} />}
+                {isPro
+                  ? `Reuse yesterday's ${reuseTime}`
+                  : `Reuse ${reuseTime} · Pro`}
+              </button>
+            )}
             {/* Log with AI — leftmost in the button group */}
             <button
               id="btn-log-with-ai"
               onClick={() => {
-                setShowAIChat((v) => {
-                  if (!v) {
-                    setShowSearch(false);
-                    setShowRecipeForm(false);
-                  }
-                  return !v;
-                });
+                const next = !showAIChat;
+                setShowAIChat(next);
+                if (next) {
+                  setShowSearch(false);
+                  setShowRecipeForm(false);
+                }
               }}
               className="px-4 py-2.5 bg-card text-ink dark:text-foreground  hover:bg-primary/10 dark:hover:bg-primary/20  rounded-xl text-xs md:text-sm font-bold shadow-sm transition-colors active:scale-[0.98] flex items-center gap-1.5">
               <Sparkles size={14} className="text-primary" />
@@ -125,8 +184,10 @@ export default function NutritionPage() {
             </button>
             <button
               onClick={() => {
-                setShowRecipeForm(!showRecipeForm);
+                const next = !showRecipeForm;
+                setShowRecipeForm(next);
                 setShowSearch(false);
+                setShowAIChat(false);
               }}
               className="px-4 py-2.5 bg-foreground text-background rounded-xl text-xs md:text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
               {showRecipeForm ? "Cancel" : "Log Food"}

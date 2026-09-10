@@ -178,9 +178,8 @@ const ANSWERS: ReadonlyArray<ReactNode> = [
       breakdown in seconds.
     </p>
     <p>
-      The core flow is free with no usage caps. AI logging has a shared daily
-      quota that covers most people; paste a personal Gemini API key into
-      Settings if you want unlimited usage billed to your own Google account.
+      The core flow is free. Free accounts get 5 AI prompts per day, while
+      Plus and Pro subscribers get unlimited prompts.
     </p>
   </>,
 ];

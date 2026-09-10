@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 
 function MobilePageShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isCalibra = pathname === "/calibra";
   const [isMobile, setIsMobile] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -35,13 +36,17 @@ function MobilePageShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   if (!isMobile || reducedMotion) {
-    return <div className="w-full">{children}</div>;
+    return (
+      <div className={`w-full ${isCalibra ? "flex h-full min-h-0 flex-1 flex-col" : ""}`}>
+        {children}
+      </div>
+    );
   }
 
   return (
     <motion.div
       key={pathname}
-      className="w-full will-change-transform"
+      className={`w-full will-change-transform ${isCalibra ? "flex h-full min-h-0 flex-1 flex-col" : ""}`}
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, ease: [0.165, 0.84, 0.44, 1] }}>
@@ -59,6 +64,7 @@ export default function AppGroupLayout({
   const chromeHidden = useUiStore((s) => s.chromeHidden);
   const setChromeHidden = useUiStore((s) => s.setChromeHidden);
   const pathname = usePathname();
+  const isCalibra = pathname === "/calibra";
   const padLeft = navStyle === "floating" ? "lg:pl-[272px]" : "lg:pl-[88px]";
 
   useEffect(() => {
@@ -66,12 +72,14 @@ export default function AppGroupLayout({
   }, [pathname, setChromeHidden]);
   return (
     <>
-      <div style={{ minHeight: "100dvh" }} className="bg-background">
+      <div
+        className={`bg-background ${isCalibra ? "flex h-dvh overflow-hidden" : "min-h-screen"}`}>
         {!chromeHidden && <PillNav />}
         <main
           style={{ paddingBottom: "96px" }}
-          className={`${padLeft} pb-0 min-h-screen transition-[padding] duration-300`}>
-          <div className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
+          className={`${padLeft} pb-0 transition-[padding] duration-300 ${isCalibra ? "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden" : "min-h-screen"}`}>
+          <div
+            className={`w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 ${isCalibra ? "flex h-full min-h-0 flex-1 flex-col" : ""}`}>
             <MobilePageShell>{children}</MobilePageShell>
           </div>
         </main>

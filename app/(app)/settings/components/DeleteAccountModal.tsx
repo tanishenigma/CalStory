@@ -102,7 +102,7 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
           // Click on backdrop closes, but only when not in-flight.
           if (e.target === e.currentTarget && !deleting) onClose();
         }}
-        className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center"
+        className="fixed inset-0 z-[300] flex min-h-[100dvh] items-end justify-center p-3 sm:items-center sm:p-4"
         style={{
           background: "oklch(0.2272 0.0049 173.9454 / 0.55)",
           backdropFilter: "blur(8px)",
@@ -118,7 +118,7 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
           aria-modal="true"
           aria-labelledby="delete-account-title"
           aria-describedby="delete-account-desc"
-          className="bg-card text-ink w-full sm:max-w-120 sm:rounded-2xl rounded-t-[22px] shadow-xl p-6 sm:p-7"
+          className="max-h-[calc(100dvh-1.5rem)] w-full overflow-y-auto rounded-t-[22px] bg-card p-4 text-ink shadow-xl sm:max-h-[calc(100dvh-2rem)] sm:max-w-120 sm:rounded-2xl sm:p-7"
           style={{
             maxHeight: "92vh",
             overflowY: "auto",

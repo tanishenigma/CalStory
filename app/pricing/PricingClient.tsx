@@ -7,7 +7,7 @@ import { PublicPageShell } from "@/app/components/landing-redesign/PublicPageShe
 const FAQ_ITEMS = [
   {
     q: "Is CalStory really free?",
-    a: "Yes — core calorie tracking, full workout logging, macro targets, and 5 AI meal logs per day are all free with no credit card required.",
+    a: "Yes — core calorie tracking, full workout logging, macro targets, and 5 AI prompts per day are free with no credit card required.",
   },
   {
     q: "What counts as an AI meal log?",
