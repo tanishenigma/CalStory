@@ -205,7 +205,6 @@ function FloatingSidebar({
             </h1>
           </Link>
         </div>
-
         {/* Shared indicator — hides itself when no nav item is active (e.g. on /settings) */}
         {indicator && (
           <motion.div
@@ -219,7 +218,6 @@ function FloatingSidebar({
             className="absolute left-3 right-3 rounded-xl bg-foreground pointer-events-none"
           />
         )}
-
         {/* Nav items — exclude Settings */}
         {filteredNav.map(({ href, label, Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
@@ -244,14 +242,11 @@ function FloatingSidebar({
             </Link>
           );
         })}
-
-        {pathname !== "/pricing" && currentTier && (
-          <UpgradeTierCard currentTier={currentTier} />
-        )}
-
         {/* Spacer pushes profile to bottom */}
         <div className="flex-1" />
-
+        {pathname !== "/pricing" && currentTier && (
+          <UpgradeTierCard currentTier={currentTier} />
+        )}{" "}
         {/* Profile card */}
         <Link
           href="/settings"

@@ -490,7 +490,7 @@ export default function AskAIAdvice() {
           )}
 
           {upgradeRequired && (
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 ">
               <p className="text-sm font-bold text-foreground">
                 Ask Calibra is included with Plus and Pro.
               </p>
