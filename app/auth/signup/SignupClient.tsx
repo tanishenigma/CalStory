@@ -9,25 +9,22 @@ import { PageSkeleton } from "@/app/components/PageSkeleton";
 import BrandLogo from "@/app/components/BrandLogo";
 import { useAuthStore } from "@/app/store/authStore";
 import { useApp } from "@/app/context/AppContext";
-import {
-  signInWithGoogle,
-  signInWithEmail,
-  sendPasswordResetEmail,
-} from "@/app/lib/auth";
+import { signUpWithEmail, signInWithGoogle } from "@/app/lib/auth";
 import { toast } from "sonner";
 
-export default function AuthPage() {
+export default function SignupClient() {
   const router = useRouter();
   const { user, loading } = useAuthStore();
   const { state } = useApp();
   const [submitting, setSubmitting] = useState(false);
 
   // ── Email / password form state ────────────────────────────────────
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [emailSubmitting, setEmailSubmitting] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     if (loading && !user) return;
@@ -52,62 +49,52 @@ export default function AuthPage() {
           ? String((err as { code: unknown }).code)
           : "";
       if (code === "auth/popup-closed-by-user") return;
-      toast.error("Could not sign in with Google. Please try again.");
-      console.error("[auth] signInWithGoogle failed", err);
+      toast.error("Could not sign up with Google. Please try again.");
+      console.error("[auth/signup] signInWithGoogle failed", err);
       setSubmitting(false);
     }
   }
 
-  async function handleEmailSignIn(e: React.FormEvent) {
+  async function handleEmailSignUp(e: React.FormEvent) {
     e.preventDefault();
     if (emailSubmitting) return;
+
+    const trimmedUsername = username.trim();
+    if (trimmedUsername.length < 3) {
+      toast.warning("Username must be at least 3 characters.");
+      return;
+    }
+    if (password.length < 6) {
+      toast.warning("Password must be at least 6 characters.");
+      return;
+    }
+    if (password !== confirm) {
+      toast.warning("Passwords do not match.");
+      return;
+    }
+
     setEmailSubmitting(true);
     try {
-      await signInWithEmail(email.trim(), password);
+      await signUpWithEmail(email.trim(), password, trimmedUsername);
       router.push("/dashboard");
     } catch (err) {
       const code =
         err && typeof err === "object" && "code" in err
           ? String((err as { code: unknown }).code)
           : "";
-      if (code === "auth/invalid-credential") {
-        toast.error("Invalid email or password.");
-      } else if (code === "auth/user-not-found") {
-        toast.error("No account found with that email.");
-      } else if (code === "auth/wrong-password") {
-        toast.error("Incorrect password. Please try again.");
-      } else if (code === "auth/too-many-requests") {
-        toast.error("Too many attempts. Please wait a moment and try again.");
+      if (code === "auth/email-already-in-use") {
+        toast.error("An account already exists with that email.");
       } else if (code === "auth/invalid-email") {
         toast.error("Please enter a valid email address.");
+      } else if (code === "auth/weak-password") {
+        toast.error("Password is too weak. Use at least 6 characters.");
+      } else if (code === "auth/too-many-requests") {
+        toast.error("Too many attempts. Please wait a moment and try again.");
       } else {
-        toast.error("Could not sign in. Please try again.");
+        toast.error("Could not create account. Please try again.");
       }
-      console.error("[auth] signInWithEmail failed", err);
+      console.error("[auth/signup] signUpWithEmail failed", err);
       setEmailSubmitting(false);
-    }
-  }
-
-  async function handleForgotPassword() {
-    if (resetSent) return;
-    if (!email.trim()) {
-      toast.warning("Enter your email first.");
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(email.trim());
-      setResetSent(true);
-      toast.success("Password reset email sent. Check your inbox.");
-    } catch (err) {
-      const code =
-        err && typeof err === "object" && "code" in err
-          ? String((err as { code: unknown }).code)
-          : "";
-      if (code === "auth/user-not-found") {
-        toast.error("No account found with that email.");
-      } else {
-        toast.error("Could not send reset email. Please try again.");
-      }
     }
   }
 
@@ -131,10 +118,10 @@ export default function AuthPage() {
             {/* Heading */}
             <div className="space-y-2 text-center">
               <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
-                Hey There,
+                Create Account
               </h1>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Sign in to track your calories, workouts, and progress.
+                Start tracking your calories, workouts, and progress.
               </p>
             </div>
 
@@ -143,7 +130,7 @@ export default function AuthPage() {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={submitting}
-              aria-label="Sign in with Google"
+              aria-label="Sign up with Google"
               className="group relative inline-flex h-12 w-full items-center justify-center gap-3 rounded-[10px] bg-primary px-6 text-sm font-semibold text-white shadow-sm transition-[transform,opacity,background-color] duration-150 ease-out hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100">
               {submitting ? (
                 <>
@@ -173,17 +160,37 @@ export default function AuthPage() {
 
             {/* Email / password card */}
             <form
-              onSubmit={handleEmailSignIn}
+              onSubmit={handleEmailSignUp}
               className="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-4">
+              {/* Username */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="signup-username"
+                  className="text-sm font-medium text-foreground">
+                  Username
+                </label>
+                <input
+                  id="signup-username"
+                  type="text"
+                  autoComplete="username"
+                  placeholder="yourname"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  minLength={3}
+                  className="h-11 w-full rounded-[10px] border border-border bg-subtle px-3.5 text-sm text-foreground placeholder:text-muted-foreground/70 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+
               {/* Email */}
               <div className="space-y-1.5">
                 <label
-                  htmlFor="auth-email"
+                  htmlFor="signup-email"
                   className="text-sm font-medium text-foreground">
                   Email
                 </label>
                 <input
-                  id="auth-email"
+                  id="signup-email"
                   type="email"
                   autoComplete="email"
                   placeholder="name@example.com"
@@ -197,16 +204,16 @@ export default function AuthPage() {
               {/* Password */}
               <div className="space-y-1.5">
                 <label
-                  htmlFor="auth-password"
+                  htmlFor="signup-password"
                   className="text-sm font-medium text-foreground">
                   Password
                 </label>
                 <div className="relative">
                   <input
-                    id="auth-password"
+                    id="signup-password"
                     type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    placeholder="At least 6 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -224,14 +231,23 @@ export default function AuthPage() {
                 </div>
               </div>
 
-              {/* Forgot password */}
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-sm text-foreground underline-offset-2 hover:text-primary hover:underline">
-                  {resetSent ? "Reset sent" : "Forgot password?"}
-                </button>
+              {/* Confirm password */}
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="signup-confirm"
+                  className="text-sm font-medium text-foreground">
+                  Confirm password
+                </label>
+                <input
+                  id="signup-confirm"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="Repeat password"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  required
+                  className="h-11 w-full rounded-[10px] border border-border bg-subtle px-3.5 text-sm text-foreground placeholder:text-muted-foreground/70 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
               </div>
 
               {/* Submit */}
@@ -246,21 +262,21 @@ export default function AuthPage() {
                       style={{ animation: "spin 0.7s linear infinite" }}
                       aria-hidden="true"
                     />
-                    <span>Signing in…</span>
+                    <span>Creating account…</span>
                   </>
                 ) : (
-                  <span>Sign In with Email</span>
+                  <span>Create Account</span>
                 )}
               </button>
             </form>
 
-            {/* Sign up link */}
+            {/* Sign in link */}
             <p className="text-center text-sm text-muted-foreground">
-              Need an account?{" "}
+              Already have an account?{" "}
               <Link
-                href="/auth/signup"
+                href="/auth"
                 className="font-semibold text-foreground underline-offset-2 hover:text-primary hover:underline">
-                Sign Up
+                Sign In
               </Link>
             </p>
 
@@ -294,7 +310,6 @@ export default function AuthPage() {
 
       {/* ── Right column: cover image, desktop only ── */}
       <div className="relative hidden lg:block m-4 rounded-2xl overflow-hidden">
-        {/* Ambient overlay so image doesn't compete with dark UI */}
         <div
           className="absolute inset-0 z-10 pointer-events-none"
           style={{
@@ -312,7 +327,6 @@ export default function AuthPage() {
           className="object-cover object-center"
         />
 
-        {/* Optional tagline over the image */}
         <div className="absolute bottom-8 left-8 right-8 z-20">
           <p className="font-heading text-xl font-bold text-ink leading-snug drop-shadow-sm">
             Every meal logged.

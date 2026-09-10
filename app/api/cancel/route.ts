@@ -15,7 +15,8 @@ const polar = new Polar({
 });
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://calstory.app";
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+  "https://calstory.app";
 
 interface FirestoreSubscriptionDocument {
   fields?: {
@@ -29,7 +30,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (isNextResponse(auth)) return auth;
 
   if (!process.env.POLAR_ACCESS_TOKEN) {
-    return NextResponse.json({ error: "Billing not configured" }, { status: 503 });
+    return NextResponse.json(
+      { error: "Billing not configured" },
+      { status: 503 },
+    );
   }
 
   try {
@@ -39,10 +43,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       { headers: { Authorization: `Bearer ${auth.idToken}` } },
     );
     if (fsRes.status === 404) {
-      return NextResponse.json({ error: "No active subscription found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "No active subscription found" },
+        { status: 404 },
+      );
     }
     if (!fsRes.ok) {
-      return NextResponse.json({ error: "Could not read subscription" }, { status: 502 });
+      return NextResponse.json(
+        { error: "Could not read subscription" },
+        { status: 502 },
+      );
     }
 
     const doc = (await fsRes.json()) as FirestoreSubscriptionDocument;
@@ -50,7 +60,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const customerId = doc.fields?.polarCustomerId?.stringValue;
 
     if (!subscriptionId || !customerId) {
-      return NextResponse.json({ error: "No active subscription found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "No active subscription found" },
+        { status: 404 },
+      );
     }
 
     // 2. Create a short-lived customer session token
@@ -69,15 +82,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
       ok: true,
       cancelAtPeriodEnd: cancelled.cancelAtPeriodEnd,
-      currentPeriodEnd: cancelled.currentPeriodEnd instanceof Date
-        ? cancelled.currentPeriodEnd.toISOString()
-        : null,
+      currentPeriodEnd:
+        cancelled.currentPeriodEnd instanceof Date
+          ? cancelled.currentPeriodEnd.toISOString()
+          : null,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[cancel] Failed to cancel subscription:", message);
     return NextResponse.json(
-      { error: "Failed to cancel subscription. Try again or use the billing portal." },
+      {
+        error:
+          "Failed to cancel subscription. Try again or use the billing portal.",
+      },
       { status: 500 },
     );
   }

@@ -1,6 +1,10 @@
 import type { UserCredential, User, Unsubscribe } from "firebase/auth";
 import {
   signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail as fbSendPasswordResetEmail,
+  updateProfile as fbUpdateProfile,
   signOut as fbSignOut,
   onAuthStateChanged,
   setPersistence,
@@ -27,6 +31,26 @@ if (typeof window !== "undefined") {
 
 export const signInWithGoogle = (): Promise<UserCredential> =>
   signInWithPopup(auth, googleProvider);
+
+export const signInWithEmail = (
+  email: string,
+  password: string,
+): Promise<UserCredential> => signInWithEmailAndPassword(auth, email, password);
+
+export const signUpWithEmail = async (
+  email: string,
+  password: string,
+  username?: string,
+): Promise<UserCredential> => {
+  const cred = await createUserWithEmailAndPassword(auth, email, password);
+  if (username) {
+    await fbUpdateProfile(cred.user, { displayName: username });
+  }
+  return cred;
+};
+
+export const sendPasswordResetEmail = (email: string): Promise<void> =>
+  fbSendPasswordResetEmail(auth, email);
 
 export const signOut = (): Promise<void> => fbSignOut(auth);
 
