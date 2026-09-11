@@ -351,6 +351,97 @@ export default function AskAIAdvice() {
   const userName =
     state.profile?.name?.trim() || user?.displayName?.split(" ")[0] || "";
 
+  // True only while the conversation has nothing but the welcome message.
+  const isEmptyState = messages.length === 1;
+
+  // Shared between the centered empty state and the bottom-pinned bar.
+  const inputBar = (
+    <>
+      {attachment && (
+        <div className="mb-2 flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-3 py-2 text-xs">
+          <img
+            src={attachment.dataUrl}
+            alt="Attachment preview"
+            className="h-10 w-10 rounded-lg object-cover"
+          />
+          <span className="min-w-0 flex-1 truncate text-muted-foreground">
+            {attachment.fileName}
+          </span>
+          <button
+            type="button"
+            onClick={() => setAttachment(null)}
+            aria-label="Remove attachment"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-card hover:text-foreground">
+            <X size={15} />
+          </button>
+        </div>
+      )}
+      {attachmentError && (
+        <p className="mb-2 text-xs text-destructive">{attachmentError}</p>
+      )}
+
+      <form
+        onSubmit={(event) => void askQuestion(event)}
+        className="rounded-3xl border border-border bg-card p-2 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-colors focus-within:border-primary/50 focus-within:shadow-[0_2px_16px_rgba(0,0,0,0.09)]">
+        <textarea
+          ref={inputRef}
+          value={question}
+          onChange={(event) => setQuestion(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              void askQuestion();
+            }
+          }}
+          rows={1}
+          maxLength={2000}
+          placeholder="Ask anything about your health and fitness…"
+          className="max-h-36 min-h-10 w-full resize-none bg-transparent px-3 py-2 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
+          aria-label="Message Calibra"
+        />
+        <div className="flex items-center justify-between gap-2 px-1.5 pt-1">
+          <div className="flex items-center gap-0.5">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(event) => {
+                void handleFile(event.target.files?.[0]);
+                event.target.value = "";
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading}
+              aria-label="Upload image"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50">
+              <ImagePlus size={16} />
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={isLoading || (!question.trim() && !attachment)}
+              aria-label="Send message"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30">
+              {isLoading ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <Send size={15} />
+              )}
+            </button>
+          </div>
+        </div>
+      </form>
+      <p className="mt-2 flex items-center justify-center gap-1 text-center text-[10px] text-muted-foreground">
+        <Check size={11} /> AI can make mistakes. Check important advice and
+        seek professional care when needed.
+      </p>
+    </>
+  );
+
   return (
     <section className="relative flex h-full min-h-0 flex-col">
       {" "}
@@ -439,163 +530,98 @@ export default function AskAIAdvice() {
           </aside>
         </>
       )}
-      <div className="min-h-96 flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-        <div className="mx-auto flex max-w-4xl flex-col gap-6">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : ""}`}>
-              {message.role === "assistant" && (
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
-                  <BrandLogo />
+      {isEmptyState ? (
+        <div className="flex flex-1 min-h-0 flex-col items-center justify-center px-4 sm:px-6">
+          <div className="w-full max-w-2xl text-center">
+            <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
+              <BrandLogo />
+            </div>
+            <h2 className="text-xl font-bold text-foreground sm:text-2xl">
+              Hey — I'm Calibra, your CalStory coach.
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
+              Ask me about lifting, eating habits, recovery, or share a meal or
+              exercise photo for a quick read.
+            </p>
+          </div>
+          <div className="mt-6 w-full max-w-3xl sm:mt-8">{inputBar}</div>
+        </div>
+      ) : (
+        <>
+          <div className="min-h-96 flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+            <div className="mx-auto flex max-w-4xl flex-col gap-6">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : ""}`}>
+                  {message.role === "assistant" && (
+                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
+                      <BrandLogo />
+                    </div>
+                  )}
+                  <div
+                    className={`flex min-w-0 max-w-[85%] flex-col gap-1 sm:max-w-[75%] ${message.role === "user" ? "items-end" : "items-start"}`}>
+                    {message.attachment && (
+                      <img
+                        src={message.attachment.dataUrl}
+                        alt="Attached for AI review"
+                        className="max-h-56 w-auto max-w-full rounded-2xl border border-border object-cover"
+                      />
+                    )}
+                    {message.role === "assistant" ? (
+                      <div className="whitespace-pre-wrap text-[15px] leading-7 text-foreground">
+                        <SafeText text={message.content} />
+                      </div>
+                    ) : (
+                      <div className="whitespace-pre-wrap rounded-2xl rounded-tr-md bg-muted px-4 py-2.5 text-[15px] leading-6 text-foreground">
+                        {message.content}
+                      </div>
+                    )}
+                    <p className="px-0.5 text-[10px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                      {formatMessageTime(message.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              {isLoading && (
+                <div className="flex gap-3">
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
+                    <Flame size={13} fill="currentColor" />
+                  </div>
+                  <div className="flex items-center gap-2 pt-1 text-sm text-muted-foreground">
+                    <Loader2 size={15} className="animate-spin text-primary" />
+                    Thinking through it…
+                  </div>
                 </div>
               )}
-              <div
-                className={`flex min-w-0 max-w-[85%] flex-col gap-1 sm:max-w-[75%] ${message.role === "user" ? "items-end" : "items-start"}`}>
-                {message.attachment && (
-                  <img
-                    src={message.attachment.dataUrl}
-                    alt="Attached for AI review"
-                    className="max-h-56 w-auto max-w-full rounded-2xl border border-border object-cover"
-                  />
-                )}
-                {message.role === "assistant" ? (
-                  // No bubble — plain text on the page background, the
-                  // way ChatGPT/Claude render assistant replies.
-                  <div className="whitespace-pre-wrap text-[15px] leading-7 text-foreground">
-                    <SafeText text={message.content} />
+
+              {upgradeRequired && (
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 ">
+                  <p className="text-sm font-bold text-foreground">
+                    Ask Calibra is included with Plus and Pro.
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Upgrade for unlimited coach conversations and image reviews.
+                  </p>
+                  <div className="mt-3">
+                    <UpgradePrompt label="Upgrade to Plus" />
                   </div>
-                ) : (
-                  <div className="whitespace-pre-wrap rounded-2xl rounded-tr-md bg-muted px-4 py-2.5 text-[15px] leading-6 text-foreground">
-                    {message.content}
-                  </div>
-                )}
-                <p className="px-0.5 text-[10px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-                  {formatMessageTime(message.createdAt)}
+                </div>
+              )}
+              {error && (
+                <p className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                  {error}
                 </p>
-              </div>
+              )}
+              <div ref={messagesEndRef} />
             </div>
-          ))}
-
-          {isLoading && (
-            <div className="flex gap-3">
-              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
-                <Flame size={13} fill="currentColor" />
-              </div>
-              <div className="flex items-center gap-2 pt-1 text-sm text-muted-foreground">
-                <Loader2 size={15} className="animate-spin text-primary" />
-                Thinking through it…
-              </div>
-            </div>
-          )}
-
-          {upgradeRequired && (
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 ">
-              <p className="text-sm font-bold text-foreground">
-                Ask Calibra is included with Plus and Pro.
-              </p>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Upgrade for unlimited coach conversations and image reviews.
-              </p>
-              <div className="mt-3">
-                <UpgradePrompt label="Upgrade to Plus" />
-              </div>
-            </div>
-          )}
-          {error && (
-            <p className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-              {error}
-            </p>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
-      <div className="shrink-0 px-4 pb-4 pt-2 sm:px-6">
-        <div className="mx-auto min-w-0 max-w-3xl">
-          {attachment && (
-            <div className="mb-2 flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-3 py-2 text-xs">
-              <img
-                src={attachment.dataUrl}
-                alt="Attachment preview"
-                className="h-10 w-10 rounded-lg object-cover"
-              />
-              <span className="min-w-0 flex-1 truncate text-muted-foreground">
-                {attachment.fileName}
-              </span>
-              <button
-                type="button"
-                onClick={() => setAttachment(null)}
-                aria-label="Remove attachment"
-                className="rounded-lg p-1.5 text-muted-foreground hover:bg-card hover:text-foreground">
-                <X size={15} />
-              </button>
-            </div>
-          )}
-          {attachmentError && (
-            <p className="mb-2 text-xs text-destructive">{attachmentError}</p>
-          )}
-
-          <form
-            onSubmit={(event) => void askQuestion(event)}
-            className="rounded-3xl border border-border bg-card p-2 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-colors focus-within:border-primary/50 focus-within:shadow-[0_2px_16px_rgba(0,0,0,0.09)]">
-            <textarea
-              ref={inputRef}
-              value={question}
-              onChange={(event) => setQuestion(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey) {
-                  event.preventDefault();
-                  void askQuestion();
-                }
-              }}
-              rows={1}
-              maxLength={2000}
-              placeholder="Ask anything about your health and fitness…"
-              className="max-h-36 min-h-10 w-full resize-none bg-transparent px-3 py-2 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
-              aria-label="Message Calibra"
-            />
-            <div className="flex items-center justify-between gap-2 px-1.5 pt-1">
-              <div className="flex items-center gap-0.5">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={(event) => {
-                    void handleFile(event.target.files?.[0]);
-                    event.target.value = "";
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isLoading}
-                  aria-label="Upload image"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50">
-                  <ImagePlus size={16} />
-                </button>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  type="submit"
-                  disabled={isLoading || (!question.trim() && !attachment)}
-                  aria-label="Send message"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30">
-                  {isLoading ? (
-                    <Loader2 size={15} className="animate-spin" />
-                  ) : (
-                    <Send size={15} />
-                  )}
-                </button>
-              </div>
-            </div>
-          </form>
-          <p className="mt-2 flex items-center justify-center gap-1 text-center text-[10px] text-muted-foreground">
-            <Check size={11} /> AI can make mistakes. Check important advice and
-            seek professional care when needed.
-          </p>
-        </div>
-      </div>
+          </div>
+          <div className="shrink-0 px-4 pb-4 pt-2 sm:px-6">
+            <div className="mx-auto min-w-0 max-w-3xl">{inputBar}</div>
+          </div>
+        </>
+      )}
     </section>
   );
 }

@@ -131,7 +131,7 @@ export default function SignupClient() {
               onClick={handleGoogleSignIn}
               disabled={submitting}
               aria-label="Sign up with Google"
-              className="group relative inline-flex h-12 w-full items-center justify-center gap-3 rounded-[10px] bg-primary px-6 text-sm font-semibold text-white shadow-sm transition-[transform,opacity,background-color] duration-150 ease-out hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100">
+              className="group relative inline-flex h-12 w-full items-center justify-center gap-3 rounded-[10px] bg-foreground px-6 text-sm font-semibold text-background shadow-sm transition-[transform,opacity,background-color] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100">
               {submitting ? (
                 <>
                   <span
@@ -254,7 +254,7 @@ export default function SignupClient() {
               <button
                 type="submit"
                 disabled={emailSubmitting}
-                className="inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-primary px-6 text-sm font-semibold text-white shadow-sm transition-[transform,opacity,background-color] duration-150 ease-out hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
+                className="inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-foreground px-6 text-sm font-semibold text-background shadow-sm transition-[transform,opacity,background-color] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
                 {emailSubmitting ? (
                   <>
                     <span

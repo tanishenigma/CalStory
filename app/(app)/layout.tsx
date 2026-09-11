@@ -37,7 +37,8 @@ function MobilePageShell({ children }: { children: React.ReactNode }) {
 
   if (!isMobile || reducedMotion) {
     return (
-      <div className={`w-full ${isCalibra ? "flex h-full min-h-0 flex-1 flex-col" : ""}`}>
+      <div
+        className={`w-full ${isCalibra ? "flex h-full min-h-0 flex-1 flex-col" : ""}`}>
         {children}
       </div>
     );
@@ -76,10 +77,18 @@ export default function AppGroupLayout({
         className={`bg-background ${isCalibra ? "flex h-dvh overflow-hidden" : "min-h-screen"}`}>
         {!chromeHidden && <PillNav />}
         <main
-          style={{ paddingBottom: "96px" }}
-          className={`${padLeft} pb-0 transition-[padding] duration-300 ${isCalibra ? "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden" : "min-h-screen"}`}>
+          style={isCalibra ? undefined : { paddingBottom: "96px" }}
+          className={`${padLeft} transition-[padding] duration-300 ${
+            isCalibra
+              ? "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden pb-24 lg:pb-0"
+              : "min-h-screen pb-0"
+          }`}>
           <div
-            className={`w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 ${isCalibra ? "flex h-full min-h-0 flex-1 flex-col" : ""}`}>
+            className={`w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 ${
+              isCalibra
+                ? "flex h-full min-h-0 flex-1 flex-col"
+                : "py-6 lg:py-10 "
+            }`}>
             <MobilePageShell>{children}</MobilePageShell>
           </div>
         </main>
