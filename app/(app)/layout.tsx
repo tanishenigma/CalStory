@@ -35,21 +35,18 @@ function MobilePageShell({ children }: { children: React.ReactNode }) {
     window.scrollTo(0, 0);
   }, [pathname]);
 
-  if (!isMobile || reducedMotion) {
-    return (
-      <div
-        className={`w-full ${isCalibra ? "flex h-full min-h-0 flex-1 flex-col" : ""}`}>
-        {children}
-      </div>
-    );
-  }
+  // Always render the same element type (motion.div) regardless of breakpoint
+  // so React reconciles the tree instead of unmounting/remounting when the
+  // viewport crosses the mobile breakpoint. Remounting would reset the child's
+  // local state (e.g. the Calibra chat messages). The animation is only applied
+  // on mobile to preserve the existing page-transition feel.
+  const isAnimated = isMobile && !reducedMotion;
 
   return (
     <motion.div
-      key={pathname}
-      className={`w-full will-change-transform ${isCalibra ? "flex h-full min-h-0 flex-1 flex-col" : ""}`}
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
+      className={`w-full ${isCalibra ? "flex h-full min-h-0 flex-1 flex-col" : ""}`}
+      initial={isAnimated ? { opacity: 0, y: 6 } : false}
+      animate={isAnimated ? { opacity: 1, y: 0 } : false}
       transition={{ duration: 0.2, ease: [0.165, 0.84, 0.44, 1] }}>
       {children}
     </motion.div>

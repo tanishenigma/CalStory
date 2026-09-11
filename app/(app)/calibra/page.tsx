@@ -56,6 +56,12 @@ function newId(): string {
 
 async function compressImage(file: File): Promise<Attachment> {
   const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+  // Diagnose the incoming file so uploads are visible and easier to debug.
+  console.warn(
+    "[calibra] Image selected: " +
+      `name=${file.name} type=${file.type} size=${file.size}`,
+  );
+
   if (!allowedTypes.has(file.type)) {
     throw new Error("Please attach a JPG, PNG, or WebP image.");
   }
@@ -63,33 +69,72 @@ async function compressImage(file: File): Promise<Attachment> {
     throw new Error("Please choose an image smaller than 10 MB.");
   }
 
-  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const element = new Image();
-    element.onload = () => resolve(element);
-    element.onerror = () => reject(new Error("That image could not be read."));
-    element.src = URL.createObjectURL(file);
+  // Read the file as a data URL first so we can inspect the bytes on failure.
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("That image could not be read."));
+    reader.readAsDataURL(file);
   });
+
+  // Decode the raw bytes with createImageBitmap, which throws descriptive
+  // errors instead of a silent Image.onerror. If it fails, the file's declared
+  // MIME type may be wrong or the bytes may not be a real image (e.g. a saved
+  // API error response). Check magic bytes so we can tell the user exactly
+  // what happened.
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch (decodeError) {
+    const message =
+      decodeError instanceof Error ? decodeError.message : String(decodeError);
+    const header = dataUrl.slice(0, 40);
+    console.error(
+      "[calibra] Failed to decode image: " +
+        `name=${file.name} type=${file.type} size=${file.size} ` +
+        `header=${header} error=${message}`,
+    );
+    // Real images have recognizable magic bytes in their base64 header:
+    // PNG   -> iVBOR
+    // JPEG  -> /9j/
+    // WebP  -> UklGR
+    const isRealImage =
+      header.includes("iVBOR") ||
+      header.includes("/9j/") ||
+      header.includes("UklGR");
+    throw new Error(
+      isRealImage
+        ? "That image could not be read."
+        : "This file isn't a valid image. It may be corrupted or was saved from an error response.",
+    );
+  }
 
   try {
     const maxDimension = 1280;
     const scale = Math.min(
       1,
-      maxDimension / Math.max(image.width, image.height),
+      maxDimension / Math.max(bitmap.width, bitmap.height),
     );
     const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(image.width * scale));
-    canvas.height = Math.max(1, Math.round(image.height * scale));
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
     const context = canvas.getContext("2d");
     if (!context) throw new Error("Image processing is unavailable.");
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
 
+    const compressed = canvas.toDataURL("image/jpeg", 0.78);
+    console.warn(
+      "[calibra] Image compressed: " +
+        `name=${file.name} originalSize=${file.size} ` +
+        `compressedBytes=${compressed.length}`,
+    );
     return {
-      dataUrl: canvas.toDataURL("image/jpeg", 0.78),
+      dataUrl: compressed,
       mimeType: "image/jpeg",
       fileName: file.name,
     };
   } finally {
-    URL.revokeObjectURL(image.src);
+    bitmap.close?.();
   }
 }
 
@@ -198,7 +243,10 @@ export default function AskAIAdvice() {
       updatedAt: Date.now(),
       messages: messages.map((message) => ({
         ...message,
-        attachment: undefined,
+        // Keep the attachment so the image is still visible when the chat is
+        // reopened from history. Images are stored in the data URL already
+        // compressed to JPEG (max 1280px, 0.78 quality) to stay within
+        // localStorage limits.
       })),
     };
     setSavedChats((current) => {
@@ -225,7 +273,9 @@ export default function AskAIAdvice() {
     setAttachmentError(null);
     try {
       setAttachment(await compressImage(file));
+      console.warn("[calibra] Attachment ready:", file.name);
     } catch (fileError) {
+      console.error("[calibra] Attach failed:", fileError);
       setAttachment(null);
       setAttachmentError(
         fileError instanceof Error
@@ -524,7 +574,7 @@ export default function AskAIAdvice() {
             </div>
             {savedChats.length > 0 && (
               <p className="shrink-0 border-t border-border/70 px-5 py-3 text-[11px] text-muted-foreground">
-                History is saved on this device. Images are not stored.
+                History is saved on this device.
               </p>
             )}
           </aside>
@@ -537,7 +587,7 @@ export default function AskAIAdvice() {
               <BrandLogo />
             </div>
             <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-              Hey — I'm Calibra, your CalStory coach.
+              I'm Calibra , your CalStory coach.
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
               Ask me about lifting, eating habits, recovery, or share a meal or

@@ -41,7 +41,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const topic = "general";
   const question = sanitizeMessage(body.question ?? "");
   if (!question) {
-    return NextResponse.json({ error: "question is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "question is required" },
+      { status: 400 },
+    );
   }
 
   let imagePart:
@@ -57,6 +60,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const match = body.image.dataUrl.match(
       /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/,
     );
+    console.log("[ai-advice] Image received:", {
+      mimeType: body.image.mimeType ?? "unknown",
+      dataUrlLength: body.image.dataUrl.length,
+      base64Length: match?.[2].length ?? 0,
+      user: auth.uid,
+    });
     if (
       !match ||
       !allowedMimeTypes.has(body.image.mimeType ?? match[1]) ||

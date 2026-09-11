@@ -537,7 +537,7 @@ export default function AskAIAdvice() {
               <BrandLogo />
             </div>
             <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-              Hey — I'm Calibra, your CalStory coach.
+              I'm Calibra, your CalStory coach.
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
               Ask me about lifting, eating habits, recovery, or share a meal or
