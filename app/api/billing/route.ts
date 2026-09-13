@@ -89,15 +89,7 @@ async function reconcileSubscription(
   if (!polarSubscription) return storedSubscription;
 
   const subscription = toAppSubscription(polarSubscription);
-  const isDifferent =
-    !storedSubscription ||
-    storedSubscription.polarSubscriptionId !== subscription.polarSubscriptionId ||
-    storedSubscription.polarProductId !== subscription.polarProductId ||
-    storedSubscription.status !== subscription.status;
-
-  if (isDifferent) {
-    await writeSubscription(uid, idToken, subscription);
-  }
+  await writeSubscription(uid, idToken, subscription);
 
   return subscription;
 }
