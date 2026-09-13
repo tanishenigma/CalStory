@@ -67,6 +67,23 @@ Detailed setup guide: [`docs/polar-setup.md`](docs/polar-setup.md)
 | `NEXT_PUBLIC_POLAR_PLUS_CHECKOUT_LINK` | Client | Direct checkout link for the Plus CTA |
 | `NEXT_PUBLIC_POLAR_PRO_CHECKOUT_LINK` | Client | Direct checkout link for the Pro CTA |
 
+#### Required Polar access-token scopes
+
+`POLAR_ACCESS_TOKEN` must be an Organization Access Token created in the same
+Polar environment as the app. Grant these scopes:
+
+- `products:read` — read configured products
+- `checkouts:write` — create checkout sessions
+- `subscriptions:read` — read active subscriptions
+- `subscriptions:write` — upgrade subscriptions with proration
+- `customers:read` — recover customers from older checkouts by email
+- `customer_sessions:write` — create billing portal sessions
+- `customer_portal:read` — read portal subscriptions and orders
+- `customer_portal:write` — cancel subscriptions from the billing portal
+
+Use a production token with `POLAR_SERVER=production` for the deployed app,
+and a separate sandbox token with `POLAR_SERVER=sandbox` for local testing.
+
 #### How to get the Polar Checkout Links
 
 The `NEXT_PUBLIC_POLAR_*_CHECKOUT_LINK` variables use **Checkout Links** generated in Polar:
