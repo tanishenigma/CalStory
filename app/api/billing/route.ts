@@ -9,6 +9,7 @@ import { getPromptUsage } from "@/app/lib/ai-quota";
 import { writeSubscription } from "@/app/lib/server-firestore";
 import {
   findActivePolarSubscriptions,
+  createPolarCustomerSession,
   isoDate,
   polar,
   selectPreferredSubscription,
@@ -131,28 +132,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       });
     }
 
-    let billingSubscription = subscription;
-    let session;
-    try {
-      session = await polar.customerSessions.create({
-        externalCustomerId: auth.uid,
-        returnUrl: `${SITE_URL}/settings?tab=billing`,
-      });
-    } catch (firstError) {
-      // Recover stale customer IDs after a Polar sandbox/production
-      // migration by finding the current production subscription via the
-      // Firebase UID used as externalCustomerId.
-      const activeSubscriptions = await findActivePolarSubscriptions(auth.uid);
-      const current = selectPreferredSubscription(activeSubscriptions);
-      if (!current) throw firstError;
-
-      billingSubscription = toAppSubscription(current);
-      await writeSubscription(auth.uid, auth.idToken, billingSubscription);
-      session = await polar.customerSessions.create({
-        externalCustomerId: auth.uid,
-        returnUrl: `${SITE_URL}/settings?tab=billing`,
-      });
-    }
+    const billingSubscription = subscription;
+    const session = await createPolarCustomerSession(
+      auth.uid,
+      auth.email,
+      `${SITE_URL}/settings?tab=billing`,
+    );
 
     const [subscriptionPage, orderPage] = await Promise.all([
       polar.customerPortal.subscriptions.list(

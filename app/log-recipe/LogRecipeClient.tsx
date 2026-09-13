@@ -644,9 +644,23 @@ function Field({
   compact?: boolean;
   children: React.ReactNode;
 }) {
+  const fieldId = `recipe-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const child = React.Children.only(children);
+  const isInput = React.isValidElement(child) && child.type === "input";
+  const control = isInput
+    ? React.cloneElement(
+        child as React.ReactElement<{
+          id?: string;
+          "aria-label"?: string;
+        }>,
+        { id: fieldId, "aria-label": label },
+      )
+    : children;
+
   return (
     <div>
       <label
+        htmlFor={isInput ? fieldId : undefined}
         className={`flex items-baseline justify-between font-bold uppercase tracking-wider text-muted-foreground ${compact ? "text-[9px] mb-1" : "text-[10px] mb-1.5"}`}>
         <span>{label}</span>
         {hint && (
@@ -655,7 +669,7 @@ function Field({
           </span>
         )}
       </label>
-      {children}
+      {control}
     </div>
   );
 }

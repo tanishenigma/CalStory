@@ -9,6 +9,37 @@ export const polar = new Polar({
   server: (process.env.POLAR_SERVER ?? "production") as "sandbox" | "production",
 });
 
+export async function createPolarCustomerSession(
+  uid: string,
+  email: string | undefined,
+  returnUrl: string,
+) {
+  try {
+    return await polar.customerSessions.create({
+      externalCustomerId: uid,
+      returnUrl,
+    });
+  } catch (externalIdError) {
+    if (!email) throw externalIdError;
+
+    // Older checkouts may not have stored Firebase UID as Polar's external ID.
+    // Email is returned by Firebase's verified accounts:lookup response and is
+    // the stable migration key for those existing Polar customers.
+    const customers = await polar.customers.list({
+      email,
+      active: true,
+      limit: 100,
+    });
+    const customer = customers.result.items[0];
+    if (!customer) throw externalIdError;
+
+    return polar.customerSessions.create({
+      customerId: customer.id,
+      returnUrl,
+    });
+  }
+}
+
 const PRODUCT_TIER_MAP: Record<string, SubscriptionTier> = {
   ...(process.env.POLAR_PLUS_PRODUCT_ID
     ? { [process.env.POLAR_PLUS_PRODUCT_ID]: "plus" }

@@ -4,7 +4,7 @@ import { cn } from "@/app/lib/utils";
 
 export default function BrandLogo({
   className,
-  alt = "CalStory",
+  alt = "",
 }: {
   className?: string;
   alt?: string;

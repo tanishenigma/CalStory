@@ -96,9 +96,9 @@ export function ExpenditureChanges() {
     <div>
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <div className="p-4 border-b border-border">
-          <h3 className="font-bold text-foreground">
+          <h2 className="font-bold text-foreground">
             Expenditure Changes
-          </h3>
+          </h2>
         </div>
         <div className="divide-y divide-border divide-border">
           {expenditureChanges.map((item, idx) => (

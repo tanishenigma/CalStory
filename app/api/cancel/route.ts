@@ -5,6 +5,7 @@ import {
   authenticateFirebaseRequest,
   isNextResponse,
 } from "@/app/lib/server-auth";
+import { createPolarCustomerSession } from "@/app/lib/polar-billing";
 
 // Reads stored subscription from Firestore via REST (same pattern as billing/route.ts)
 const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/databases/(default)/documents`;
@@ -67,10 +68,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     // 2. Create a short-lived customer session token
-    const session = await polar.customerSessions.create({
-      externalCustomerId: auth.uid,
-      returnUrl: `${SITE_URL}/settings?tab=billing`,
-    });
+    const session = await createPolarCustomerSession(
+      auth.uid,
+      auth.email,
+      `${SITE_URL}/settings?tab=billing`,
+    );
 
     // 3. Cancel the subscription via the customer portal API
     //    This sets cancelAtPeriodEnd = true (graceful cancel, not immediate revoke)

@@ -48,6 +48,7 @@ User (Browser) ──> Vercel Edge / App Router ──> Firestore (Database)
    - `checkouts:write`
    - `subscriptions:read`
    - `subscriptions:write` (required for prorated plan upgrades)
+   - `customers:read` (required to recover customers from older checkouts)
    - `customer_sessions:write`
    - `customer_portal:read`
    - `customer_portal:write` (required for customer-initiated cancellation)

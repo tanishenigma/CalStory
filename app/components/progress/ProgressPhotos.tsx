@@ -6,9 +6,9 @@ export function ProgressPhotos() {
   return (
     <Card className="mb-8 p-0 overflow-hidden">
       <div className="p-4 border-b border-border">
-        <h3 className="font-bold text-foreground">
+        <h2 className="font-bold text-foreground">
           Progress Photos
-        </h3>
+        </h2>
       </div>
       <CardContent className="p-6">
         <div className="bg-background rounded-2xl h-40 flex flex-col items-center justify-center mb-4 border border-dashed border-border">

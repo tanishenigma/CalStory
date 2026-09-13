@@ -104,7 +104,7 @@ export function WeightHistory() {
       <div className="p-4 border-b border-border flex items-center justify-between bg-card">
         <div className="flex items-center gap-2">
           <Scale size={16} className="text-muted-foreground" />
-          <h3 className="font-bold text-foreground">Weight History</h3>
+          <h2 className="font-bold text-foreground">Weight History</h2>
         </div>
         <button
           onClick={() => setAdding((v) => !v)}

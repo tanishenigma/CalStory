@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 export interface AuthenticatedRequest {
   uid: string;
+  email?: string;
   idToken: string;
 }
 
@@ -16,7 +17,10 @@ const ALLOWED_ORIGINS = new Set([
 // and the final AI request), so avoid paying that network round-trip every
 // time. This is intentionally short-lived; revocation is still picked up on
 // the next cache miss.
-const verificationCache = new Map<string, { uid: string; expiresAt: number }>();
+const verificationCache = new Map<
+  string,
+  { uid: string; email?: string; expiresAt: number }
+>();
 const TOKEN_CACHE_TTL_MS = 60_000;
 
 function assertAllowedOrigin(url: string): void {
@@ -28,9 +32,11 @@ function assertAllowedOrigin(url: string): void {
 
 export async function verifyFirebaseToken(
   idToken: string,
-): Promise<{ uid: string } | null> {
+): Promise<{ uid: string; email?: string } | null> {
   const cached = verificationCache.get(idToken);
-  if (cached && cached.expiresAt > Date.now()) return { uid: cached.uid };
+  if (cached && cached.expiresAt > Date.now()) {
+    return { uid: cached.uid, email: cached.email };
+  }
   if (cached) verificationCache.delete(idToken);
 
   const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
@@ -50,15 +56,17 @@ export async function verifyFirebaseToken(
     if (!response.ok) return null;
 
     const data = (await response.json()) as {
-      users?: Array<{ localId: string }>;
+      users?: Array<{ localId: string; email?: string }>;
     };
-    const uid = data.users?.[0]?.localId;
+    const user = data.users?.[0];
+    const uid = user?.localId;
     if (!uid) return null;
     verificationCache.set(idToken, {
       uid,
+      email: user.email,
       expiresAt: Date.now() + TOKEN_CACHE_TTL_MS,
     });
-    return { uid };
+    return { uid, email: user.email };
   } catch {
     return null;
   }
@@ -81,7 +89,7 @@ export async function authenticateFirebaseRequest(
     );
   }
 
-  return { uid: verified.uid, idToken };
+  return { uid: verified.uid, email: verified.email, idToken };
 }
 
 export function isNextResponse(
