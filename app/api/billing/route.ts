@@ -77,13 +77,6 @@ async function reconcileSubscription(
 ): Promise<Subscription | null> {
   if (!process.env.POLAR_ACCESS_TOKEN) return storedSubscription;
 
-  // Webhooks keep this document current. Reading Polar on every billing page
-  // load made the page depend on several extra provider requests and caused
-  // production failures when Polar's environment/config did not match. Only
-  // use the provider lookup to recover a subscription that has no local
-  // record (for example, a delayed or missed webhook).
-  if (storedSubscription) return storedSubscription;
-
   const activeSubscriptions = await findActivePolarSubscriptions(uid);
   const polarSubscription = selectPreferredSubscription(activeSubscriptions);
   if (!polarSubscription) return storedSubscription;
@@ -142,7 +135,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     let session;
     try {
       session = await polar.customerSessions.create({
-        customerId: billingSubscription.polarCustomerId,
+        externalCustomerId: auth.uid,
         returnUrl: `${SITE_URL}/settings?tab=billing`,
       });
     } catch (firstError) {
@@ -156,7 +149,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       billingSubscription = toAppSubscription(current);
       await writeSubscription(auth.uid, auth.idToken, billingSubscription);
       session = await polar.customerSessions.create({
-        customerId: billingSubscription.polarCustomerId,
+        externalCustomerId: auth.uid,
         returnUrl: `${SITE_URL}/settings?tab=billing`,
       });
     }

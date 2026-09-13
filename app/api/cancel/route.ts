@@ -68,7 +68,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // 2. Create a short-lived customer session token
     const session = await polar.customerSessions.create({
-      customerId,
+      externalCustomerId: auth.uid,
       returnUrl: `${SITE_URL}/settings?tab=billing`,
     });
 
