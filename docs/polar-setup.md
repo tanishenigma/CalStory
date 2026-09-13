@@ -126,6 +126,7 @@ Since CalStory is hosted directly on Vercel, all environment variables must be c
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | All | `https://calstory.app` (or your Vercel domain) |
 | `POLAR_ACCESS_TOKEN` | Production/Preview | Server-side org token (`polar_oat_...`) |
+| `POLAR_SERVER` | Production/Preview | Set to `production`; local sandbox can use `sandbox` |
 | `POLAR_WEBHOOK_SECRET` | Production/Preview | Signing secret (`whsec_...`) |
 | `POLAR_PLUS_PRODUCT_ID` | Production/Preview | Product ID for Plus tier (`prod_...`) |
 | `POLAR_PRO_PRODUCT_ID` | Production/Preview | Product ID for Pro tier (`prod_...`) |

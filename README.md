@@ -60,6 +60,7 @@ Detailed setup guide: [`docs/polar-setup.md`](docs/polar-setup.md)
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | Client/Server | Canonical app domain (e.g. `https://calstory.app`) |
 | `POLAR_ACCESS_TOKEN` | Server | Org access token — Settings → Access Tokens in Polar |
+| `POLAR_SERVER` | Server | `production` for deployed app; `sandbox` for local testing |
 | `POLAR_WEBHOOK_SECRET` | Server | Signing secret for webhook validation |
 | `POLAR_PLUS_PRODUCT_ID` | Server | Product ID for the Plus plan |
 | `POLAR_PRO_PRODUCT_ID` | Server | Product ID for the Pro plan |

@@ -579,11 +579,11 @@ export function useAIFabChat({
       setError(null);
       setIsLoading(true);
 
-      // Check the authoritative server-side counter before calling the
-      // classifier. This prevents an exhausted free account from making
-      // any Gemini/classifier request at all.
-      const latestUsage = await refreshPromptUsage();
-      const usage = latestUsage ?? promptUsage;
+      // The domain endpoints perform the authoritative atomic quota check.
+      // Re-fetching quota here added another Firebase-auth + two Firestore
+      // requests before every message. Use the local snapshot only as a fast
+      // UI guard; stale snapshots are handled by the endpoint's 429 response.
+      const usage = promptUsage;
       const userMsg: FabMessage = {
         id: uid2(),
         role: "user",

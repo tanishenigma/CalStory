@@ -84,12 +84,16 @@ async function readDocument(
 async function listCollection(
   path: string,
   idToken: string,
+  options: { pageSize?: number; orderBy?: string } = {},
 ): Promise<FirestoreDocument[]> {
   const documents: FirestoreDocument[] = [];
   let pageToken = "";
 
   for (let page = 0; page < 10; page += 1) {
-    const params = new URLSearchParams({ pageSize: "1000" });
+    const params = new URLSearchParams({
+      pageSize: String(options.pageSize ?? 1000),
+    });
+    if (options.orderBy) params.set("orderBy", options.orderBy);
     if (pageToken) params.set("pageToken", pageToken);
     const response = await fetch(`${FIRESTORE_BASE}/${path}?${params}`, {
       headers: { Authorization: `Bearer ${idToken}` },
@@ -117,6 +121,9 @@ async function readDatedCollection<T>(
   const days = await listCollection(
     `users/${pathSegment(uid)}/${collectionName}`,
     idToken,
+    // Advice only needs recent context. Loading every historical day and
+    // then listing every nested item was an unbounded N+1 request pattern.
+    { pageSize: 30, orderBy: "__name__ desc" },
   );
   const entries = await Promise.all(
     days.map(async (dayDocument) => {
@@ -124,6 +131,7 @@ async function readDatedCollection<T>(
       const items = await listCollection(
         `users/${pathSegment(uid)}/${collectionName}/${pathSegment(date)}/${collectionName === "meals" ? "items" : "sessions"}`,
         idToken,
+        { pageSize: 100 },
       );
       return [date, items.map((item) => decodeDocument<T>(item))] as const;
     }),

@@ -11,7 +11,7 @@ const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${process.e
 
 const polar = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN ?? "",
-  server: (process.env.POLAR_SERVER ?? "sandbox") as "sandbox" | "production",
+  server: (process.env.POLAR_SERVER ?? "production") as "sandbox" | "production",
 });
 
 const SITE_URL =

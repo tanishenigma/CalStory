@@ -10,7 +10,7 @@ import type { Subscription, SubscriptionTier } from "@/app/types";
 
 const polar = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN ?? "",
-  server: (process.env.POLAR_SERVER ?? "sandbox") as "sandbox" | "production",
+  server: (process.env.POLAR_SERVER ?? "production") as "sandbox" | "production",
 });
 
 const PRODUCT_TIER_MAP: Record<string, SubscriptionTier> = {

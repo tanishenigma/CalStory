@@ -35,7 +35,7 @@ async function getStoredSubscription(
   idToken: string,
 ): Promise<Subscription | null> {
   const response = await fetch(
-    `${FIRESTORE_BASE}/users/${uid}/subscription/active`,
+    `${FIRESTORE_BASE}/users/${encodeURIComponent(uid)}/subscription/active`,
     { headers: { Authorization: `Bearer ${idToken}` } },
   );
   if (response.status === 404) return null;
@@ -76,6 +76,13 @@ async function reconcileSubscription(
   storedSubscription: Subscription | null,
 ): Promise<Subscription | null> {
   if (!process.env.POLAR_ACCESS_TOKEN) return storedSubscription;
+
+  // Webhooks keep this document current. Reading Polar on every billing page
+  // load made the page depend on several extra provider requests and caused
+  // production failures when Polar's environment/config did not match. Only
+  // use the provider lookup to recover a subscription that has no local
+  // record (for example, a delayed or missed webhook).
+  if (storedSubscription) return storedSubscription;
 
   const activeSubscriptions = await findActivePolarSubscriptions(uid);
   const polarSubscription = selectPreferredSubscription(activeSubscriptions);
@@ -125,17 +132,42 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       });
     }
 
+    // The Firestore record is enough to render the current plan. If Polar is
+    // temporarily unavailable or not configured in the deployment, keep the
+    // billing screen usable and omit provider-only portal/order details.
     if (!process.env.POLAR_ACCESS_TOKEN) {
-      return NextResponse.json(
-        { error: "Billing provider is not configured", promptUsage },
-        { status: 503 },
-      );
+      return NextResponse.json({
+        plan: subscription.tier,
+        status: subscription.status,
+        subscription: null,
+        orders: [],
+        portalUrl: null,
+        promptUsage,
+      });
     }
 
-    const session = await polar.customerSessions.create({
-      customerId: subscription.polarCustomerId,
-      returnUrl: `${SITE_URL}/settings?tab=billing`,
-    });
+    let billingSubscription = subscription;
+    let session;
+    try {
+      session = await polar.customerSessions.create({
+        customerId: billingSubscription.polarCustomerId,
+        returnUrl: `${SITE_URL}/settings?tab=billing`,
+      });
+    } catch (firstError) {
+      // Recover stale customer IDs after a Polar sandbox/production
+      // migration by finding the current production subscription via the
+      // Firebase UID used as externalCustomerId.
+      const activeSubscriptions = await findActivePolarSubscriptions(auth.uid);
+      const current = selectPreferredSubscription(activeSubscriptions);
+      if (!current) throw firstError;
+
+      billingSubscription = toAppSubscription(current);
+      await writeSubscription(auth.uid, auth.idToken, billingSubscription);
+      session = await polar.customerSessions.create({
+        customerId: billingSubscription.polarCustomerId,
+        returnUrl: `${SITE_URL}/settings?tab=billing`,
+      });
+    }
 
     const [subscriptionPage, orderPage] = await Promise.all([
       polar.customerPortal.subscriptions.list(
@@ -149,7 +181,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     ]);
 
     const polarSubscription = subscriptionPage.result.items.find(
-      (item) => item.id === subscription.polarSubscriptionId,
+      (item) => item.id === billingSubscription.polarSubscriptionId,
     ) ?? subscriptionPage.result.items[0];
 
     return NextResponse.json({

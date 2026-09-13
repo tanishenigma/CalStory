@@ -9,9 +9,7 @@ import {
   authenticateFirebaseRequest,
   isNextResponse,
 } from "@/app/lib/server-auth";
-import { getPromptUsage } from "@/app/lib/ai-quota";
 import { resolveGeminiKey } from "@/app/lib/gemini-key";
-import { FREE_DAILY_PROMPT_LIMIT } from "@/app/lib/plan-limits";
 
 /* ------------------------------------------------------------------
  * /api/ai-classify
@@ -85,33 +83,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const message = sanitizeMessage(rawMessage ?? "");
   if (!message) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
-  }
-
-  // Keep the classifier behind the same daily entitlement check as the
-  // logging routes. This closes the small race between the client's quota
-  // preflight and this request, and prevents Gemini from being called after
-  // a free user has used all prompts.
-  let promptUsage;
-  try {
-    promptUsage = await getPromptUsage(auth.uid, auth.idToken);
-  } catch (error) {
-    console.error("[ai-classify] Prompt quota check failed:", error);
-    return NextResponse.json(
-      { error: "Prompt limit is temporarily unavailable. Please try again." },
-      { status: 503 },
-    );
-  }
-
-  if (promptUsage.limit !== null && promptUsage.used >= promptUsage.limit) {
-    return NextResponse.json(
-      {
-        error:
-          `You’ve used all ${FREE_DAILY_PROMPT_LIMIT} free AI prompts for today. Upgrade to Plus or Pro for unlimited prompts.`,
-        promptUsage,
-        upgradeRequired: true,
-      },
-      { status: 429 },
-    );
   }
 
   // Use the same personal-key-first, shared-key-fallback resolver as the

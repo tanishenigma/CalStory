@@ -3,7 +3,10 @@ import type { Subscription as AppSubscription, SubscriptionTier } from "@/app/ty
 
 export const polar = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN ?? "",
-  server: (process.env.POLAR_SERVER ?? "sandbox") as "sandbox" | "production",
+  // Local development explicitly sets POLAR_SERVER=sandbox. Production must
+  // not silently talk to Polar's sandbox when the variable is omitted on a
+  // hosting provider.
+  server: (process.env.POLAR_SERVER ?? "production") as "sandbox" | "production",
 });
 
 const PRODUCT_TIER_MAP: Record<string, SubscriptionTier> = {
