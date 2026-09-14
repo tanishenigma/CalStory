@@ -215,7 +215,7 @@ export default function WorkoutConfirmationCard({
           disabled={isLogging || alreadySaved}
           className={cn(
             "flex-1 py-2.5 rounded-xl font-bold text-sm",
-            "bg-white text-primary",
+            "bg-white text-black",
             "hover:bg-white/90 transition-colors",
             "disabled:opacity-60 disabled:cursor-not-allowed",
           )}>

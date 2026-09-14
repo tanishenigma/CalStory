@@ -20,8 +20,8 @@
   /* Semantic aliases used by Tailwind utilities */
   --color-foreground: oklch(0.2272 0.0049 173.9454);
   --color-background: oklch(0.9658 0.0028 128.4929);
-  --color-muted-foreground: oklch(0.45 0.0138 285.9385);
-  --color-primary: oklch(0.53 0.18 49.4698);
+  --color-muted-foreground: oklch(0.5517 0.0138 285.9385);
+  --color-primary: oklch(0.7173 0.1906 49.4698);
   --color-card: oklch(1 0 0);
   --color-accent: oklch(0.9674 0.0013 286.3752);
   --color-subtle: oklch(0.9833 0.0025 165.0767);
@@ -408,12 +408,12 @@ html.lenis body {
   --card-foreground: oklch(0.2272 0.0049 173.9454);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2272 0.0049 173.9454);
-  --primary: oklch(0.53 0.18 49.4698);
+  --primary: oklch(0.7173 0.1906 49.4698);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.9276 0.0058 264.5313);
   --secondary-foreground: oklch(0.2272 0.0049 173.9454);
   --muted: oklch(0.9674 0.0013 286.3752);
-  --muted-foreground: oklch(0.45 0.0138 285.9385);
+  --muted-foreground: oklch(0.5517 0.0138 285.9385);
   --accent: oklch(0.9674 0.0013 286.3752);
   --accent-foreground: oklch(0.2272 0.0049 173.9454);
   --destructive: oklch(0.6368 0.2078 25.3313);

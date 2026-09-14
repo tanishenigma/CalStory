@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import AIFabChat from "@/app/components/AIFabChat";
-import { Flame, Sparkles, X } from "lucide-react";
+import { Flame, X } from "lucide-react";
 
 export default function FAB() {
   const pathname = usePathname();
@@ -68,11 +68,11 @@ export default function FAB() {
       <button
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close quick log" : "Open quick log"}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-foreground text-background shadow-[0_8px_24px_oklch(0.2272_0.0049_173.9454/_0.28)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-none ">
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_8px_24px_oklch(0.7173_0.1906_49.4698/_0.35)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-none ">
         <div className="relative w-6 h-6">
           <Flame
             size={22}
-            className={`absolute inset-0 m-auto transition-all duration-200 fill-accent ${
+            className={`absolute inset-0 m-auto transition-all duration-200 fill-white ${
               open
                 ? "opacity-0 scale-75 rotate-90 blur-md"
                 : "opacity-100 scale-100 rotate-0 blur-0"
