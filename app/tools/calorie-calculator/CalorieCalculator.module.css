@@ -387,11 +387,11 @@
 
 .tone_bulk .targetValue,
 .tone_bulk.targetValue {
-  color: oklch(0.7173 0.1906 49.4698); /* primary orange */
+  color: #ff8904; /* primary orange */
 }
 .tone_bulk .targetLabel,
 .tone_bulk.targetLabel {
-  color: oklch(0.7173 0.1906 49.4698);
+  color: #ff8904;
 }
 
 .tone_maintain .targetValue,

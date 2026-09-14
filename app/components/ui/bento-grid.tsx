@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useRef, useEffect, useCallback, useState, ReactNode } from "react";
+import React, { useRef, useEffect, useCallback, useState } from "react";
+import type { ReactNode } from "react";
 import { gsap } from "gsap";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/app/lib/utils";
@@ -8,7 +9,7 @@ import "./bento-grid.css";
 
 const DEFAULT_PARTICLE_COUNT = 12;
 const DEFAULT_SPOTLIGHT_RADIUS = 300;
-const DEFAULT_GLOW_COLOR = "254, 119, 2"; // CalStory primary orange rgb
+const DEFAULT_GLOW_COLOR = "255, 137, 4"; // CalStory primary orange rgb
 const MOBILE_BREAKPOINT = 768;
 
 const createParticleElement = (x: number, y: number, color: string) => {

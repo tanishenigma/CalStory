@@ -68,7 +68,7 @@ export default function FAB() {
       <button
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close quick log" : "Open quick log"}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_8px_24px_oklch(0.7173_0.1906_49.4698/_0.35)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-none ">
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_8px_24px_rgb(255_137_4_/_0.35)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-none ">
         <div className="relative w-6 h-6">
           <Flame
             size={22}

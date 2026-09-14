@@ -105,7 +105,7 @@ export function CalorieVsTdeeChart({
           label: "Calorie Intake",
           data: data.map((d) => d.intake),
           borderColor: "#EA580C",
-          backgroundColor: "oklch(0.7173 0.1906 49.4698 / 0.2)",
+          backgroundColor: "rgb(255 137 4 / 0.2)",
           fill: true,
           tension: 0.4,
           pointRadius: 0,
@@ -154,23 +154,23 @@ export function CalorieVsTdeeChart({
           },
         },
         tooltip: {
-          backgroundColor: (context) =>
+          backgroundColor: (_context) =>
             document.documentElement.classList.contains("dark")
               ? "rgba(23, 23, 23, 0.95)"
               : "rgba(255, 255, 255, 0.98)",
-          titleColor: (context) =>
+          titleColor: (_context) =>
             document.documentElement.classList.contains("dark")
               ? "rgba(255, 255, 255, 0.95)"
               : "rgba(23, 23, 23, 0.95)",
           titleFont: { family: "DM Mono", size: 11, weight: "bold" },
-          bodyColor: (context) =>
+          bodyColor: (_context) =>
             document.documentElement.classList.contains("dark")
               ? "rgba(255, 255, 255, 0.9)"
               : "rgba(23, 23, 23, 0.85)",
           bodyFont: { family: "DM Mono", size: 13 },
           padding: 10,
           cornerRadius: 8,
-          borderColor: (context) =>
+          borderColor: (_context) =>
             document.documentElement.classList.contains("dark")
               ? "rgba(255, 255, 255, 0.15)"
               : "rgba(0, 0, 0, 0.12)",
@@ -190,7 +190,7 @@ export function CalorieVsTdeeChart({
             display: false,
           },
           ticks: {
-            color: (context) =>
+            color: (_context) =>
               document.documentElement.classList.contains("dark")
                 ? "oklch(1 0 0 / 0.35)"
                 : "oklch(0.5517 0.0138 285.9385 / 0.6)",
@@ -204,13 +204,13 @@ export function CalorieVsTdeeChart({
         },
         y: {
           grid: {
-            color: (context) =>
+            color: (_context) =>
               document.documentElement.classList.contains("dark")
                 ? "oklch(1 0 0 / 0.06)"
                 : "oklch(0.5517 0.0138 285.9385 / 0.15)",
           },
           ticks: {
-            color: (context) =>
+            color: (_context) =>
               document.documentElement.classList.contains("dark")
                 ? "oklch(1 0 0 / 0.35)"
                 : "oklch(0.5517 0.0138 285.9385 / 0.6)",

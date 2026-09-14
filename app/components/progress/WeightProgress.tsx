@@ -228,7 +228,7 @@ export function WeightProgress() {
           label: "Trend",
           data: trendWindow,
           borderColor: "#EA580C",
-          backgroundColor: "oklch(0.7173 0.1906 49.4698 / 0.12)",
+          backgroundColor: "rgb(255 137 4 / 0.12)",
           borderWidth: 2.5,
           tension: 0.35,
           pointRadius: 0,
