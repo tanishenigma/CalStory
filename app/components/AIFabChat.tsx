@@ -21,6 +21,7 @@ import {
   Calendar,
   RotateCcw,
   CheckCircle2,
+  Trash2,
 } from "lucide-react";
 import MealConfirmationCard from "@/app/components/nutrition/meal-confirmation-card";
 import WorkoutConfirmationCard from "@/app/components/nutrition/workout-confirmation-card";
@@ -110,9 +111,9 @@ export default function AIFabChat({ onClose }: Props) {
     sendMessage,
     confirmLog,
     editPending,
-    discardPending,
     reset,
     switchSession,
+    deleteSession,
   } = useAIFabChat({ date, userId });
 
   const [inputValue, setInputValue] = useState("");
@@ -220,6 +221,49 @@ export default function AIFabChat({ onClose }: Props) {
     return all;
   }, [state.meals]);
 
+  const quickActions = useMemo(() => {
+    type QuickAction = (typeof QUICK_ACTIONS)[number];
+    const foodCounts = new Map<string, number>();
+    const workoutCounts = new Map<string, number>();
+
+    Object.values(state.meals)
+      .flat()
+      .forEach((meal) => {
+        const name = meal.name.trim();
+        if (name) foodCounts.set(name, (foodCounts.get(name) ?? 0) + 1);
+      });
+    Object.values(state.workouts)
+      .flat()
+      .forEach((workout) => {
+        const name = workout.name.trim();
+        if (name) workoutCounts.set(name, (workoutCounts.get(name) ?? 0) + 1);
+      });
+
+    const frequentFoods = [...foodCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(([name]) => ({
+        label: name,
+        icon: Utensils,
+        prefill: `Log ${name}`,
+      }));
+    const frequentWorkouts = [...workoutCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(([name]) => ({
+        label: name,
+        icon: Dumbbell,
+        prefill: `Log workout: ${name}`,
+      }));
+
+    const personalized = [
+      ...frequentFoods,
+      ...frequentWorkouts,
+    ] as QuickAction[];
+    if (personalized.length === 0) return QUICK_ACTIONS;
+    return [...personalized, ...QUICK_ACTIONS].slice(0, 4);
+  }, [state.meals, state.workouts]);
+
   return (
     /*
      * The outer wrapper has a **fixed** height so the panel never
@@ -272,6 +316,13 @@ export default function AIFabChat({ onClose }: Props) {
             className="touch-hitbox w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-subtle hover:text-foreground transition-colors">
             <SquarePen size={14} />
           </button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close quick log"
+            className="touch-hitbox w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-subtle hover:text-foreground transition-colors">
+            <X size={14} />
+          </button>
         </div>
       </div>
 
@@ -300,6 +351,7 @@ export default function AIFabChat({ onClose }: Props) {
               <SessionDrawer
                 sessions={sessions}
                 onSwitch={handleSwitchSession}
+                onDelete={deleteSession}
                 onClose={() => setActiveDrawer(null)}
               />
             )}
@@ -329,7 +381,7 @@ export default function AIFabChat({ onClose }: Props) {
               </div>
 
               <div className="flex flex-wrap justify-center gap-2 w-full">
-                {QUICK_ACTIONS.map((action) => {
+                {quickActions.map((action) => {
                   const Icon = action.icon;
                   return (
                     <button
@@ -368,8 +420,6 @@ export default function AIFabChat({ onClose }: Props) {
                   }
                   onEditFood={() => handleEditIntent("food")}
                   onEditWorkout={() => handleEditIntent("workout")}
-                  onDiscardFood={() => discardPending("food")}
-                  onDiscardWorkout={() => discardPending("workout")}
                   isLogging={isLogging}
                   alreadySaved={
                     m.role === "model" && m.intent
@@ -434,9 +484,9 @@ export default function AIFabChat({ onClose }: Props) {
               }}
               placeholder={
                 pendingWorkout
-                  ? "Adjust the workout or log it →"
+                  ? "Adjust the workout or log it"
                   : pendingMeal
-                    ? "Adjust the meal or log it →"
+                    ? "Adjust the meal or log it"
                     : "Type a message…"
               }
               disabled={isLoading}
@@ -768,10 +818,12 @@ function TemplateDrawer({
 function SessionDrawer({
   sessions,
   onSwitch,
+  onDelete,
   onClose,
 }: {
   sessions: ChatSession[];
   onSwitch: (s: ChatSession) => void;
+  onDelete: (id: string) => void;
   onClose: () => void;
 }) {
   function formatTime(ts: number): string {
@@ -815,41 +867,51 @@ function SessionDrawer({
         ) : (
           <div className="px-3 py-1 space-y-1.5">
             {sessions.map((session) => (
-              <button
+              <div
                 key={session.id}
-                type="button"
-                onClick={() => onSwitch(session)}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-subtle border border-border/60 hover:border-primary/30 hover:bg-primary/5 transition-all duration-150 group text-left">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <MessageSquare size={13} className="text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-foreground truncate max-w-[190px]">
-                      {session.label}
-                    </p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <Clock size={9} className="text-muted-foreground/60" />
-                      <p className="text-[10px] text-muted-foreground">
-                        {formatTime(session.updatedAt)} ·{" "}
-                        {
-                          session.messages.filter((m) => m.role === "user")
-                            .length
-                        }{" "}
-                        message
-                        {session.messages.filter((m) => m.role === "user")
-                          .length !== 1
-                          ? "s"
-                          : ""}
+                className="flex items-center gap-1 rounded-xl border border-border/60 bg-subtle px-3 py-2.5 transition-all duration-150 hover:border-primary/30 hover:bg-primary/5">
+                <button
+                  type="button"
+                  onClick={() => onSwitch(session)}
+                  className="flex min-w-0 flex-1 items-center justify-between text-left">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <MessageSquare size={13} className="text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-foreground truncate max-w-[190px]">
+                        {session.label}
                       </p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Clock size={9} className="text-muted-foreground/60" />
+                        <p className="text-[10px] text-muted-foreground">
+                          {formatTime(session.updatedAt)} ·{" "}
+                          {
+                            session.messages.filter((m) => m.role === "user")
+                              .length
+                          }{" "}
+                          message
+                          {session.messages.filter((m) => m.role === "user")
+                            .length !== 1
+                            ? "s"
+                            : ""}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <ChevronRight
-                  size={14}
-                  className="text-muted-foreground group-hover:text-primary shrink-0 transition-colors"
-                />
-              </button>
+                  <ChevronRight
+                    size={14}
+                    className="text-muted-foreground group-hover:text-primary shrink-0 transition-colors"
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDelete(session.id)}
+                  aria-label={`Delete chat: ${session.label}`}
+                  className="shrink-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                  <Trash2 size={13} />
+                </button>
+              </div>
             ))}
           </div>
         )}
@@ -867,8 +929,6 @@ function FabMessageBubble({
   onConfirmWorkout,
   onEditFood,
   onEditWorkout,
-  onDiscardFood,
-  onDiscardWorkout,
   isLogging,
   alreadySaved,
 }: {
@@ -877,8 +937,6 @@ function FabMessageBubble({
   onConfirmWorkout: (saveAsTemplate: boolean) => void;
   onEditFood: () => void;
   onEditWorkout: () => void;
-  onDiscardFood: () => void;
-  onDiscardWorkout: () => void;
   isLogging: boolean;
   alreadySaved?: boolean;
 }) {
@@ -947,16 +1005,6 @@ function FabMessageBubble({
             isLogging={isLogging}
             alreadySaved={alreadySaved}
           />
-          {!alreadySaved && (
-            <button
-              type="button"
-              onClick={onDiscardFood}
-              disabled={isLogging}
-              aria-label="Discard this meal estimate"
-              className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-black/40 hover:bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed">
-              ×
-            </button>
-          )}
         </div>
       )}
 
@@ -970,16 +1018,6 @@ function FabMessageBubble({
             isLogging={isLogging}
             alreadySaved={alreadySaved}
           />
-          {!alreadySaved && (
-            <button
-              type="button"
-              onClick={onDiscardWorkout}
-              disabled={isLogging}
-              aria-label="Discard this workout estimate"
-              className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-black/40 hover:bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed">
-              ×
-            </button>
-          )}
         </div>
       )}
     </div>

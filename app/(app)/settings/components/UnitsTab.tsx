@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import type { Profile, HeightUnit, WeightUnit, VolumeUnit } from "@/app/types";
 
 interface UnitsTabProps {
@@ -25,8 +26,6 @@ export function UnitsTab({
   setVolumeUnit,
   setProfile,
 }: UnitsTabProps) {
-  const [saving, setSaving] = useState(false);
-
   // Auto-save whenever the user changes a unit preference. We skip the
   // initial render (units match the profile) and any no-op re-render,
   // so the profile is only persisted when a value actually changes.
@@ -38,16 +37,17 @@ export function UnitsTab({
     ) {
       return;
     }
-    setSaving(true);
-    setProfile({ ...profile, weightUnit, heightUnit, volumeUnit })
-      .catch(() => {})
-      .finally(() => setSaving(false));
+    toast.promise(setProfile({ ...profile, weightUnit, heightUnit, volumeUnit }), {
+      loading: "Saving unit preferences…",
+      success: "Unit preferences saved",
+      error: "Could not save unit preferences",
+    });
   }, [weightUnit, heightUnit, volumeUnit]);
 
   return (
     <div>
-      <div className="text-sm font-bold mb-4">Weight Unit</div>
-      <div className="grid grid-cols-2 gap-3 mb-8">
+      <div className="mb-2 text-sm font-bold">Weight Unit</div>
+      <div className="mb-5 grid grid-cols-2 gap-3">
         {(
           [
             { key: "kg", label: "Kilograms", sub: "kg" },
@@ -57,7 +57,7 @@ export function UnitsTab({
           <button
             key={u.key}
             onClick={() => setWeightUnit(u.key)}
-            className={`relative p-5 rounded-xl border text-center transition-colors ${
+              className={`relative min-h-[5.5rem] rounded-xl border p-3 text-center transition-colors ${
               weightUnit === u.key
                 ? "border-transparent bg-foreground text-background"
                 : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
@@ -70,16 +70,16 @@ export function UnitsTab({
                 transition={{ type: "spring", stiffness: 320, damping: 28 }}
               />
             )}
-            <div className="relative z-10 font-mono text-3xl font-medium mb-1">
+            <div className="relative z-10 mb-0.5 font-mono text-2xl font-medium">
               {u.sub}
             </div>
-            <div className="relative z-10 text-sm font-semibold">{u.label}</div>
+            <div className="relative z-10 text-xs font-semibold sm:text-sm">{u.label}</div>
           </button>
         ))}
       </div>
 
-      <div className="text-sm font-bold mb-4">Height Unit</div>
-      <div className="grid grid-cols-2 gap-3 mb-8">
+      <div className="mb-2 text-sm font-bold">Height Unit</div>
+      <div className="mb-5 grid grid-cols-2 gap-3">
         {(
           [
             { key: "metric", label: "Centimetres", sub: "cm" },
@@ -89,7 +89,7 @@ export function UnitsTab({
           <button
             key={u.key}
             onClick={() => setHeightUnit(u.key)}
-            className={`relative p-5 rounded-xl border text-center transition-colors ${
+              className={`relative min-h-[5.5rem] rounded-xl border p-3 text-center transition-colors ${
               heightUnit === u.key
                 ? "border-transparent bg-foreground text-background"
                 : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
@@ -102,16 +102,16 @@ export function UnitsTab({
                 transition={{ type: "spring", stiffness: 320, damping: 28 }}
               />
             )}
-            <div className="relative z-10 font-mono text-3xl font-medium mb-1">
+            <div className="relative z-10 mb-0.5 font-mono text-2xl font-medium">
               {u.sub}
             </div>
-            <div className="relative z-10 text-sm font-semibold">{u.label}</div>
+            <div className="relative z-10 text-xs font-semibold sm:text-sm">{u.label}</div>
           </button>
         ))}
       </div>
 
-      <div className="text-sm font-bold mb-4">Volume Unit</div>
-      <div className="grid grid-cols-2 gap-3 mb-8">
+      <div className="mb-2 text-sm font-bold">Volume Unit</div>
+      <div className="mb-5 grid grid-cols-2 gap-3">
         {(
           [
             { key: "ml", label: "Millilitres / Litres", sub: "ml / L" },
@@ -121,7 +121,7 @@ export function UnitsTab({
           <button
             key={u.key}
             onClick={() => setVolumeUnit(u.key)}
-            className={`relative p-5 rounded-xl border text-center transition-colors ${
+              className={`relative min-h-[5.5rem] rounded-xl border p-3 text-center transition-colors ${
               volumeUnit === u.key
                 ? "border-transparent bg-foreground text-background"
                 : "border-foreground/10 hover:border-foreground dark:border-foreground/10 dark:hover:border-foreground"
@@ -134,17 +134,14 @@ export function UnitsTab({
                 transition={{ type: "spring", stiffness: 320, damping: 28 }}
               />
             )}
-            <div className="relative z-10 font-mono text-2xl font-medium mb-1">
+            <div className="relative z-10 mb-0.5 font-mono text-2xl font-medium">
               {u.sub}
             </div>
-            <div className="relative z-10 text-sm font-semibold">{u.label}</div>
+            <div className="relative z-10 text-xs font-semibold sm:text-sm">{u.label}</div>
           </button>
         ))}
       </div>
 
-      {saving && (
-        <p className="text-center text-xs text-muted-foreground">Saving…</p>
-      )}
     </div>
   );
 }

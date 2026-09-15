@@ -129,7 +129,7 @@ export function useAIFabChat({
   date: string;
   userId: string;
 }) {
-  const { addMeal, addWorkout, saveTemplate } = useApp();
+  const { addMeal, addWorkout, addHydration, saveTemplate } = useApp();
   const { user } = useAuthStore();
 
   // ── Session management ────────────────────────────────────────────
@@ -591,6 +591,30 @@ export function useAIFabChat({
         timestamp: Date.now(),
       };
 
+      // Water is a first-class daily logging action. Handle clear water
+      // entries locally so they update hydration and the food-log streak
+      // without manufacturing a zero-calorie meal card.
+      const waterMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*(ml|milliliters?|l|liters?|oz)?\b/i);
+      const mentionsWorkout = /\b(workout|push[- ]?ups?|pull[- ]?ups?|squat|run|ran|lift|reps?|sets?)\b/i.test(trimmed);
+      if (/\b(water|hydration)\b/i.test(trimmed) && !mentionsWorkout) {
+        const amount = waterMatch ? Number(waterMatch[1]) : 250;
+        const unit = waterMatch?.[2]?.toLowerCase();
+        const ml = unit?.startsWith("l") ? Math.round(amount * 1000)
+          : unit?.startsWith("oz") ? Math.round(amount * 29.5735)
+          : Math.round(amount);
+        if (Number.isFinite(ml) && ml > 0 && ml <= 5000) {
+          setMessages((prev) => [...prev, userMsg]);
+          await addHydration(ml);
+          setMessages((prev) => [...prev, {
+            id: uid2(), role: "model", intent: "food",
+            text: `Logged ${ml} ml of water 💧 Your daily logging streak is active.`,
+            suggestions: ["Log a meal", "Log workout"], timestamp: Date.now(),
+          }]);
+          setIsLoading(false);
+          return;
+        }
+      }
+
       if (usage && usage.limit !== null && usage.used >= usage.limit) {
         setMessages((prev) => [
           ...prev,
@@ -759,6 +783,7 @@ export function useAIFabChat({
       pendingIntent,
       toFoodHistory,
       toWorkoutHistory,
+      addHydration,
     ],
   );
 
@@ -780,6 +805,17 @@ export function useAIFabChat({
           p: pendingMeal.p,
           c: pendingMeal.c,
           f: pendingMeal.f,
+          ...(pendingMeal.fiber !== undefined || pendingMeal.sugar !== undefined ||
+          pendingMeal.saturatedFat !== undefined || pendingMeal.sodium !== undefined
+            ? {
+                nutrients: {
+                  fiber: pendingMeal.fiber,
+                  sugar: pendingMeal.sugar,
+                  saturatedFat: pendingMeal.saturatedFat,
+                  sodium: pendingMeal.sodium,
+                },
+              }
+            : {}),
         };
         await addMeal(meal);
         toast.success(`"${meal.name}" logged! 🎉`);
@@ -973,6 +1009,17 @@ export function useAIFabChat({
     });
   }, [currentSessionId]);
 
+  const deleteSession = useCallback((sessionId: string) => {
+    setSessions((prev) => prev.filter((session) => session.id !== sessionId));
+    if (sessionId !== currentSessionId) return;
+    setCurrentSessionId(uid2());
+    setMessages([makeGreeting()]);
+    setError(null);
+    setIsLoading(false);
+    setPendingIntent(null);
+    setConfirmedIntents(new Set());
+  }, [currentSessionId]);
+
   // Auto-scroll the message thread.
   const lastMessageIdRef = useRef<string | null>(null);
   useEffect(() => {
@@ -997,6 +1044,7 @@ export function useAIFabChat({
     discardPending,
     reset,
     switchSession,
+    deleteSession,
   };
 }
 

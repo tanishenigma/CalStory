@@ -46,7 +46,7 @@ const welcomeMessage: ChatMessage = {
   id: "welcome",
   role: "assistant",
   content:
-    "Hey — I’m Calibra, your CalStory coach. Ask me about lifting, eating habits, recovery, or share a meal or exercise photo for a quick read.",
+    "Hey — I’m Coach, your CalStory coach. Ask me about lifting, eating habits, recovery, or share a meal or exercise photo for a quick read.",
   createdAt: Date.now(),
 };
 
@@ -188,10 +188,7 @@ export default function AskAIAdvice() {
     const firstUserMessage = messages.find(
       (message) => message.role === "user",
     );
-    const title = (firstUserMessage?.content || "New Calibra chat").slice(
-      0,
-      52,
-    );
+    const title = (firstUserMessage?.content || "New Coach chat").slice(0, 52);
     const session: SavedChat = {
       id: sessionId,
       title,
@@ -397,7 +394,7 @@ export default function AskAIAdvice() {
           maxLength={2000}
           placeholder="Ask anything about your health and fitness…"
           className="max-h-36 min-h-10 w-full resize-none bg-transparent px-3 py-2 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
-          aria-label="Message Calibra"
+          aria-label="Message Coach"
         />
         <div className="flex items-center justify-between gap-2 px-1.5 pt-1">
           <div className="flex items-center gap-0.5">
@@ -537,7 +534,7 @@ export default function AskAIAdvice() {
               <BrandLogo />
             </div>
             <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-              I'm Calibra, your CalStory coach.
+              I'm your CalStory Coach.
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
               Ask me about lifting, eating habits, recovery, or share a meal or
@@ -599,7 +596,7 @@ export default function AskAIAdvice() {
               {upgradeRequired && (
                 <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 ">
                   <p className="text-sm font-bold text-foreground">
-                    Ask Calibra is included with Plus and Pro.
+                    Ask Coach is included with Plus and Pro.
                   </p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     Upgrade for unlimited coach conversations and image reviews.

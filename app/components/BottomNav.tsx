@@ -31,7 +31,7 @@ const TABS: { href: string; label: string; icon: React.ReactNode }[] = [
   },
   {
     href: "/calibra",
-    label: "Ask Calibra",
+    label: "Coach",
     icon: <Sparkles size={21} />,
   },
   {

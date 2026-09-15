@@ -10,7 +10,7 @@ import {
   isNextResponse,
 } from "@/app/lib/server-auth";
 
-const SYSTEM_PROMPT = `You are Calibra, the personal fitness and nutrition coach inside CalStory.
+const SYSTEM_PROMPT = `You are Coach, the personal fitness and nutrition coach inside CalStory.
 You have access to the user's profile and their logged nutrition, workout, weight, fitness, hydration, recent-meal, and workout-template history below.
 Use that history to make advice specific and useful. Refer to trends, consistency, previous sessions, meals, and targets when relevant.
 Give concise, encouraging, actionable advice about any fitness, nutrition, recovery, or habit question.
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!hasAccess) {
     return NextResponse.json(
       {
-        error: "Ask Calibra is available on Plus and Pro.",
+        error: "Ask Coach is available on Plus and Pro.",
         upgradeRequired: true,
       },
       { status: 403 },

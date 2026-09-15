@@ -75,13 +75,25 @@ export default function DatePicker({ onClose }: DatePickerProps) {
             startMonth={new Date(2000, 0)}
             endMonth={new Date()}
             classNames={{
-              selected: "text-primary ",
-              today: "bg-primary text-white font-bold rounded-full",
-              chevron: "fill-primary",
-              day_button: "h-9 w-9 rounded-full transition-colors sm:h-10 sm:w-10",
-              weekday: "w-9 text-center text-[10px] font-semibold uppercase text-muted-foreground sm:w-10",
-              week: "flex w-full",
-              day: "p-0 text-center",
+              root: "w-full",
+              months: "w-full",
+              month: "w-full",
+              month_caption: "flex h-10 items-center justify-between",
+              caption_label: "flex items-center gap-1",
+              nav: "flex items-center gap-1",
+              button_previous: "h-8 w-8 rounded-full text-primary transition-colors hover:bg-primary/10",
+              button_next: "h-8 w-8 rounded-full text-primary transition-colors hover:bg-primary/10",
+              month_grid: "w-full border-collapse",
+              weekdays: "grid grid-cols-7",
+              weekday: "w-auto text-center text-[10px] font-semibold uppercase text-muted-foreground",
+              week: "grid w-full grid-cols-7",
+              day: "flex items-center justify-center p-0 text-center",
+              day_button: "h-9 w-9 rounded-full text-sm transition-colors hover:bg-primary/10 sm:h-10 sm:w-10",
+              selected: "bg-primary font-bold text-white hover:bg-primary",
+              today: "font-bold text-primary",
+              outside: "text-muted-foreground/50",
+              disabled: "cursor-not-allowed text-muted-foreground/50",
+              chevron: "fill-current",
             }}
             components={{
               Dropdown: ({ value, onChange, options }) => {
@@ -129,7 +141,7 @@ export default function DatePicker({ onClose }: DatePickerProps) {
           />
           <button
             onClick={onClose}
-            className="w-full mt-2 py-2.5 border border-border rounded-xl bg-foreground text-background text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-[opacity,transform] cursor-pointer ">
+            className="mt-5 w-full rounded-full bg-foreground py-3 text-sm font-semibold text-background transition-[opacity,transform] hover:opacity-90 active:scale-[0.98]">
             Cancel
           </button>
         </motion.div>

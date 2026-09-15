@@ -6,6 +6,8 @@ import { useApp } from "@/app/context/AppContext";
 export function useStreak() {
   const { state } = useApp();
   const meals = state?.meals || {};
+  const hydrationLog = state?.hydrationLog;
+  const hydrationLogs = state?.hydrationLogs || {};
 
   return useMemo(() => {
     let currentStreak = 0;
@@ -20,17 +22,20 @@ export function useStreak() {
       const day = String(d.getDate()).padStart(2, "0");
       const key = `${year}-${month}-${day}`;
 
-      const hasMeals = meals[key] && meals[key].length > 0;
+      const hasMeals = Boolean(meals[key]?.length);
+      const waterForDay = hydrationLogs[key] ?? (hydrationLog?.date === key ? hydrationLog : null);
+      const hasWater = Boolean(waterForDay?.entries.length);
+      const isActive = hasMeals || hasWater;
       
-      if (i === 0 && !hasMeals) {
+      if (i === 0 && !isActive) {
          continue;
       }
-      if (hasMeals) {
+      if (isActive) {
          currentStreak++;
       } else {
          break;
       }
     }
     return currentStreak;
-  }, [meals]);
+  }, [meals, hydrationLog, hydrationLogs]);
 }

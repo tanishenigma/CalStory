@@ -32,6 +32,7 @@ export default function WeekStrip() {
   const { state, setDate } = useApp();
   const [showPicker, setShowPicker] = useState<boolean>(false);
   const [weekOffset, setWeekOffset] = useState<number>(0);
+  const [mobileOffset, setMobileOffset] = useState<number>(0);
   const stripRef = useRef<HTMLDivElement>(null);
 
   const streak = useStreak();
@@ -39,6 +40,7 @@ export default function WeekStrip() {
 
   useEffect(() => {
     setWeekOffset(0);
+    setMobileOffset(0);
   }, [state.selDate]);
 
   useEffect(() => {
@@ -46,20 +48,42 @@ export default function WeekStrip() {
     if (!el) return;
     const raf = requestAnimationFrame(() => {
       if (stripRef.current) {
-        stripRef.current.scrollLeft = stripRef.current.scrollWidth;
+        stripRef.current.scrollLeft = 0;
       }
     });
     return () => cancelAnimationFrame(raf);
   }, [state.selDate, weekOffset]);
 
   const days = getMondayWeek(state.selDate, weekOffset);
+  const selectedDate = new Date(`${state.selDate}T12:00:00`);
+  const mobileStartDate = new Date(selectedDate);
+  mobileStartDate.setDate(selectedDate.getDate() - 1 + mobileOffset);
+  const mobileDays = Array.from({ length: 5 }, (_, index) => {
+    const day = new Date(mobileStartDate);
+    day.setDate(mobileStartDate.getDate() + index);
+    return day;
+  });
+  const dateKey = (day: Date) =>
+    `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+  const mobileVisibleKeys = new Set(mobileDays.map(dateKey));
+  const desktopVisibleKeys = new Set(days.map(dateKey));
+  const renderDays = [...days, ...mobileDays]
+    .filter(
+      (day, index, all) =>
+        all.findIndex((candidate) => dateKey(candidate) === dateKey(day)) === index,
+    )
+    .sort((a, b) => a.getTime() - b.getTime());
 
-  const lastDayKey = `${days[6].getFullYear()}-${String(days[6].getMonth() + 1).padStart(2, "0")}-${String(days[6].getDate()).padStart(2, "0")}`;
+  const lastDayKey = dateKey(days[6]);
+  const mobileLastDayKey = dateKey(mobileDays[4]);
   const disableNextWeek = lastDayKey >= today;
+  const disableNextMobileWindow = mobileLastDayKey >= today;
 
   const hasLoggedToday =
     (state.meals[today] || []).length > 0 ||
-    (state.workouts[today] || []).length > 0;
+    (state.workouts[today] || []).length > 0 ||
+    Boolean(state.hydrationLogs[today]?.entries.length) ||
+    Boolean(state.hydrationLog?.date === today && state.hydrationLog.entries.length);
 
   return (
     <>
@@ -101,23 +125,29 @@ export default function WeekStrip() {
         </div>
 
         {/* Week Strip row: Nav, Strip, Calendar, (Streak on desktop only) */}
-        <div className="flex justify-between lg:justify-around items-center w-full gap-2  ">
+        <div className="flex items-center w-full gap-2">
           <div
             ref={stripRef}
-            className="flex items-center gap-2 lg:gap-3 overflow-x-auto scrollbar-hide   ">
-            <div className="hidden lg:flex items-center gap-1.5 flex-shrink-0  ">
+            className="flex min-w-0 flex-1 items-center justify-between gap-1 overflow-hidden scrollbar-hide pr-2 lg:gap-3 lg:pr-0">
+            <div className="flex shrink-0 items-center gap-1">
               <button
-                onClick={() => setWeekOffset((w) => w - 1)}
-                className="w-10 h-10 rounded-xl border border-border bg-card flex items-center justify-center text-muted-foreground hover:bg-background transition-colors cursor-pointer shadow-sm"
+                onClick={() => {
+                  setWeekOffset((w) => w - 1);
+                  setMobileOffset((offset) => offset - 1);
+                }}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-background lg:h-10 lg:w-10 lg:rounded-xl"
                 title="Previous week"
                 aria-label="Previous week">
                 <ChevronLeft size={18} />
               </button>
 
               <button
-                onClick={() => setWeekOffset((w) => w + 1)}
-                disabled={disableNextWeek}
-                className="w-10 h-10 rounded-xl border border-border bg-card flex items-center justify-center text-muted-foreground hover:bg-background transition-colors cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => {
+                  setWeekOffset((w) => w + 1);
+                  setMobileOffset((offset) => offset + 1);
+                }}
+                disabled={disableNextWeek && disableNextMobileWindow}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-background disabled:cursor-not-allowed disabled:opacity-50 lg:h-10 lg:w-10 lg:rounded-xl"
                 title="Next week"
                 aria-label="Next week">
                 <ChevronRight size={18} />
@@ -127,14 +157,17 @@ export default function WeekStrip() {
             {/* Days Strip */}
             {/* Both mobile and desktop: circular buttons, fixed-size */}
             <div className="flex gap-2 lg:gap-3 flex-nowrap shrink-0 items-center ">
-              {days.map((d, i) => {
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+              {renderDays.map((d) => {
+                const key = dateKey(d);
+                const dayIndex = (d.getDay() + 6) % 7;
                 const isFuture = key > today;
                 const isToday = key === today;
                 const isSel = key === state.selDate && !isToday;
                 const hasData =
                   (state.meals[key] || []).length > 0 ||
-                  (state.workouts[key] || []).length > 0;
+                  (state.workouts[key] || []).length > 0 ||
+                  Boolean(state.hydrationLogs[key]?.entries.length) ||
+                  Boolean(state.hydrationLog?.date === key && state.hydrationLog.entries.length);
 
                 return (
                   <motion.button
@@ -154,20 +187,25 @@ export default function WeekStrip() {
                      * so backgrounds + borders render fully. */
                     whileTap={isFuture ? undefined : { scale: 0.94 }}
                     className={[
-                      "flex flex-col items-center justify-center gap-1 border-2 shrink-0 rounded-full p-2",
-                      "size-12 lg:size-14",
+                      "flex flex-col items-center justify-center gap-1 border-2 shrink-0 rounded-full p-2 transition-transform duration-150 ease-out",
+                      "size-11 lg:size-14",
+                      mobileVisibleKeys.has(key) && desktopVisibleKeys.has(key)
+                        ? "flex"
+                        : mobileVisibleKeys.has(key)
+                          ? "flex lg:hidden"
+                          : "hidden lg:flex",
                       isFuture
                         ? "opacity-20 cursor-not-allowed"
                         : "cursor-pointer",
                       isToday && "bg-foreground border-transparent",
                       isSel &&
                         !isToday &&
-                        "border-black border-dotted bg-foreground/5 dark:border-subtle",
+                        "border-primary border-dotted bg-foreground/5",
                       !isSel && !isToday && "border-transparent",
                       !isToday &&
                         !isSel &&
                         !isFuture &&
-                        "bg-transparent hover:bg-foreground/20 opacity-40",
+                        "bg-transparent hover:bg-foreground/20 hover:opacity-80 hover:scale-105 opacity-40",
                     ]
 
                       .filter(Boolean)
@@ -178,7 +216,7 @@ export default function WeekStrip() {
                           "text-[10px] font-bold tracking-wider uppercase leading-none",
                           isToday ? "text-background" : "text-muted-foreground",
                         ].join(" ")}>
-                        {DAY_LABELS[i]}
+                        {DAY_LABELS[dayIndex]}
                       </span>
                       <span
                         className={[

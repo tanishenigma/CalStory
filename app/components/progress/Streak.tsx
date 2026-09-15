@@ -8,6 +8,8 @@ import { useApp } from "@/app/context/AppContext";
 export function Streak() {
   const { state } = useApp();
   const meals = state?.meals || {};
+  const hydrationLog = state?.hydrationLog;
+  const hydrationLogs = state?.hydrationLogs || {};
 
   // Calculate streak
   let currentStreak = 0;
@@ -25,15 +27,16 @@ export function Streak() {
 
     // A day counts only if at least one meal was actually saved on that date
     // (not backdated). Meals without savedDate are old data — count them as valid.
-    const hasMeals = (meals[key] ?? []).some(
-      (m) => !m.savedDate || m.savedDate === key,
-    );
+    const hasMeals = (meals[key] ?? []).length > 0;
+    const waterForDay = hydrationLogs[key] ?? (hydrationLog?.date === key ? hydrationLog : null);
+    const hasWater = Boolean(waterForDay?.entries.length);
+    const isActive = hasMeals || hasWater;
 
-    if (i === 0 && !hasMeals) {
+    if (i === 0 && !isActive) {
       // Today is not logged yet, but streak isn't broken
       continue;
     }
-    if (hasMeals) {
+    if (isActive) {
       currentStreak++;
     } else {
       break;
@@ -51,9 +54,7 @@ export function Streak() {
 
     return {
       dayStr: d.toLocaleDateString("en-IN", { weekday: "short" }).charAt(0),
-      isActive: (meals[key] ?? []).some(
-        (m) => !m.savedDate || m.savedDate === key,
-      ),
+      isActive: (meals[key] ?? []).length > 0 || Boolean((hydrationLogs[key] ?? (hydrationLog?.date === key ? hydrationLog : null))?.entries.length),
     };
   });
 

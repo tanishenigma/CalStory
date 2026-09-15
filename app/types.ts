@@ -526,6 +526,8 @@ export interface AppState {
   fitnessLogs: Record<string, FitnessLog>;
   /** Today's hydration log, or null if not yet loaded. */
   hydrationLog: HydrationLog | null;
+  /** Hydration records keyed by local calendar date. */
+  hydrationLogs: Record<string, HydrationLog>;
 }
 
 // ─── Context ───────────────────────────────────────────────
@@ -633,6 +635,10 @@ export interface PendingMeal {
   p: number;
   c: number;
   f: number;
+  fiber?: number;
+  sugar?: number;
+  saturatedFat?: number;
+  sodium?: number;
   time: MealTime;
   aiComment?: string;
 }

@@ -34,7 +34,7 @@ export const PLAN_TIERS = [
       "Adaptive TDEE recalculation",
       "Advanced macro split views",
       "Workout templates + re-log",
-      "Ask Calibra for lifting + eating advice",
+      "Ask Coach for lifting + eating advice",
     ] as Array<string | { mono: string; rest: string }>,
     cta: "Get Plus",
   },

@@ -36,6 +36,10 @@ The JSON must exactly match this TypeScript type:
     "p": number,           // protein in grams (integer)
     "c": number,           // carbohydrates in grams (integer)
     "f": number,           // fat in grams (integer)
+    "fiber": number,       // dietary fiber in grams (integer)
+    "sugar": number,       // total sugar in grams (integer)
+    "saturatedFat": number, // saturated fat in grams (integer)
+    "sodium": number,      // sodium in milligrams (integer)
     "time": "breakfast" | "lunch" | "dinner" | "snack",
     "aiComment": string    // brief note about data source / confidence
   } | null,
@@ -45,7 +49,9 @@ The JSON must exactly match this TypeScript type:
 Rules:
 - Infer meal time from context clues (e.g. "for breakfast" → breakfast). Default to "lunch".
 - If the user describes multiple foods, treat them as one combined meal entry.
+- If the user asks to adjust, edit, remove, or add to a previously described meal, use the conversation context to update that same meal and return a fresh complete confirmation estimate. Preserve the original foods unless the user explicitly removes or replaces them.
 - If the food is ambiguous or you need more info, set type to "clarification" and meal to null.
+- Always include fiber, sugar, saturatedFat, and sodium in a confirmation when they can be reasonably estimated; use 0 when unavailable.
 - If the message is not food-related, set type to "error" and meal to null.
 - suggestions should be short (≤ 30 chars each), relevant follow-up foods or drinks.
 - Never return anything outside the JSON object.`;

@@ -12,9 +12,19 @@ import ManualFoodEntry from "@/app/components/ManualFoodEntry";
 import AIChatLogger from "@/app/components/nutrition/ai-chat-logger";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { MEAL_ICONS } from "@/app/lib/constants";
-import { LockKeyhole, Repeat2, Sliders, Sparkles, Utensils } from "lucide-react";
+import {
+  LockKeyhole,
+  Repeat2,
+  Sliders,
+  Sparkles,
+  Utensils,
+} from "lucide-react";
 import { useSubscriptionTier } from "@/app/lib/use-subscription-tier";
-import type { DetailedNutrients, Meal, MealTime, PendingMeal } from "@/app/types";
+import type {
+  DetailedNutrients,
+  Meal,
+  MealTime,
+} from "@/app/types";
 
 function fmtDate(key: string): string {
   if (key === todayLocalKey()) return "Today";
@@ -59,9 +69,40 @@ export default function NutritionPage() {
   const [showDetailedBreakdown, setShowDetailedBreakdown] =
     React.useState(false);
   const [showAIChat, setShowAIChat] = React.useState(false);
-  const [prefillMeal, setPrefillMeal] = React.useState<PendingMeal | null>(
-    null,
-  );
+  const aiLoggerRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (!showAIChat) return;
+    requestAnimationFrame(() =>
+      aiLoggerRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      }),
+    );
+  }, [showAIChat]);
+  const [showTargetPercent, setShowTargetPercent] = React.useState(false);
+
+  React.useEffect(() => {
+    try {
+      setShowTargetPercent(
+        sessionStorage.getItem("calstory-target-display-percent") === "1",
+      );
+    } catch {
+      // Memory-only fallback is fine when storage is unavailable.
+    }
+  }, []);
+
+  function toggleTargetDisplay() {
+    setShowTargetPercent((current) => {
+      const next = !current;
+      try {
+        sessionStorage.setItem(
+          "calstory-target-display-percent",
+          next ? "1" : "0",
+        );
+      } catch {}
+      return next;
+    });
+  }
 
   if (isLoading || !profile) return <Spinner variant="nutrition" />;
 
@@ -201,22 +242,17 @@ export default function NutritionPage() {
         <ManualFoodEntry
           onClose={() => {
             setShowRecipeForm(false);
-            setPrefillMeal(null);
           }}
-          initialMeal={prefillMeal ?? undefined}
         />
       )}
       {showAIChat && user && (
-        <AIChatLogger
-          onClose={() => setShowAIChat(false)}
-          date={selDate}
-          userId={user.uid}
-          onEditMeal={(meal) => {
-            setPrefillMeal(meal);
-            setShowAIChat(false);
-            setShowRecipeForm(true);
-          }}
-        />
+        <div ref={aiLoggerRef}>
+          <AIChatLogger
+            onClose={() => setShowAIChat(false)}
+            date={selDate}
+            userId={user.uid}
+          />
+        </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -225,7 +261,7 @@ export default function NutritionPage() {
           <h2 className="text-sm font-bold text-ink mb-6 flex items-center gap-2">
             Energy Summary
             <span className="text-[10px] uppercase text-muted-foreground opacity-60 tracking-wider ml-auto">
-              Target ➔
+              Target
             </span>
           </h2>
           <div className="flex justify-between items-center gap-2 overflow-x-hidden pb-2 px-2 sm:px-4 md:px-0 md:gap-0">
@@ -261,7 +297,7 @@ export default function NutritionPage() {
           <h2 className="text-sm font-bold text-ink mb-6 flex items-center gap-2">
             Targets
             <span className="text-[10px] uppercase text-muted-foreground opacity-60 tracking-wider ml-auto">
-              Consumed ➔
+              Consumed
             </span>
           </h2>
           <div className="space-y-4">
@@ -271,6 +307,8 @@ export default function NutritionPage() {
               max={calTarget}
               unit="kcal"
               color="bg-blue-500"
+              showPercent={showTargetPercent}
+              onToggle={toggleTargetDisplay}
             />
             <TargetRow
               label="Protein"
@@ -278,6 +316,8 @@ export default function NutritionPage() {
               max={pTarget}
               unit="g"
               color="bg-red-500"
+              showPercent={showTargetPercent}
+              onToggle={toggleTargetDisplay}
             />
             <TargetRow
               label="Carbs"
@@ -285,6 +325,8 @@ export default function NutritionPage() {
               max={cTarget}
               unit="g"
               color="bg-primary"
+              showPercent={showTargetPercent}
+              onToggle={toggleTargetDisplay}
             />
             <TargetRow
               label="Fat"
@@ -292,6 +334,8 @@ export default function NutritionPage() {
               max={fTarget}
               unit="g"
               color="bg-yellow-500"
+              showPercent={showTargetPercent}
+              onToggle={toggleTargetDisplay}
             />
           </div>
         </Card>
@@ -611,6 +655,8 @@ function TargetRow({
   unit,
   color,
   fill,
+  showPercent,
+  onToggle,
 }: {
   label: string;
   current: number;
@@ -618,10 +664,16 @@ function TargetRow({
   unit: string;
   color?: string;
   fill?: string;
+  showPercent: boolean;
+  onToggle: () => void;
 }) {
-  const pct = Math.min(100, Math.round((current / max) * 100));
+  const pct = max > 0 ? Math.min(100, Math.round((current / max) * 100)) : 0;
   return (
-    <div className="flex items-center gap-4">
+    <button
+      type="button"
+      onClick={onToggle}
+      title="Toggle target display"
+      className="flex w-full items-center gap-4 text-left transition-opacity hover:opacity-80">
       <div className="w-16 sm:w-20 text-xs font-bold text-foreground">
         {label}
       </div>
@@ -633,11 +685,10 @@ function TargetRow({
       </div>
       <div className="w-24 sm:w-32 text-right text-xs">
         <span className="font-bold text-foreground">
-          {Math.round(current)} / {max} {unit}
+          {showPercent ? `${pct}%` : `${Math.round(current)} / ${max} ${unit}`}
         </span>
-        <span className="ml-2 font-bold text-muted-foreground">{pct}%</span>
       </div>
-    </div>
+    </button>
   );
 }
 

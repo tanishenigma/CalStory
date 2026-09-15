@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { cn } from "@/app/lib/utils";
 import type { PendingMeal } from "@/app/types";
 
@@ -27,6 +27,7 @@ export default function MealConfirmationCard({
   isLogging = false,
   alreadySaved = false,
 }: Props) {
+  const [showDetails, setShowDetails] = useState(false);
   return (
     <div
       className={cn(
@@ -52,6 +53,24 @@ export default function MealConfirmationCard({
             {meal.time}
           </div>
         </div>
+      </div>
+
+      <div className="px-5 pb-3">
+        <button
+          type="button"
+          onClick={() => setShowDetails((open) => !open)}
+          aria-expanded={showDetails}
+          className="text-[11px] font-semibold text-white/80 underline-offset-2 transition-colors hover:text-white hover:underline">
+          {showDetails ? "Hide detailed breakdown" : "View detailed breakdown"}
+        </button>
+        {showDetails && (
+          <div className="mt-2 grid grid-cols-2 gap-1.5 rounded-xl bg-black/10 p-2 text-[11px] text-white/85">
+            <span>Fiber <b className="text-white">{meal.fiber ?? 0}g</b></span>
+            <span>Sugar <b className="text-white">{meal.sugar ?? 0}g</b></span>
+            <span>Sat. fat <b className="text-white">{meal.saturatedFat ?? 0}g</b></span>
+            <span>Sodium <b className="text-white">{meal.sodium ?? 0}mg</b></span>
+          </div>
+        )}
       </div>
 
       {/* ── Macro pills ─────────────────────────────────────── */}
@@ -85,7 +104,7 @@ export default function MealConfirmationCard({
           className={cn(
             "flex-1 py-2.5 rounded-xl font-bold text-sm",
             "bg-white text-black",
-            "hover:bg-foreground/90  transition-colors",
+            "hover:bg-black hover:text-white transition-colors",
             "disabled:opacity-60 disabled:cursor-not-allowed",
           )}>
           {alreadySaved ? "Saved" : isLogging ? "Logging…" : "Confirm"}

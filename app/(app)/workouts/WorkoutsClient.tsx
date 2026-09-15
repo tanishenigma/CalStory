@@ -14,14 +14,18 @@ import AIWorkoutLogger from "@/app/components/nutrition/ai-workout-logger";
 import {
   BarChart3,
   CopyPlus,
+  Dumbbell,
   Eye,
   Loader2,
+  LockKeyhole,
   Pencil,
   Sparkles,
+  Bookmark,
   Trash2,
   X,
 } from "lucide-react";
 import type { PendingWorkout } from "@/app/types";
+import { useSubscriptionTier } from "@/app/lib/use-subscription-tier";
 import {
   WORKOUT_METRIC_SCHEMAS,
   type MetricKey,
@@ -225,9 +229,11 @@ export default function WorkoutsPage() {
   const { user } = useAuthStore();
   const router = useRouter();
   const toast = useToast();
+  const { tier, isLoading: isPlanLoading } = useSubscriptionTier(user);
   const { selDate, workouts } = state;
   const [showForm, setShowForm] = React.useState(false);
   const [showAIChat, setShowAIChat] = React.useState(false);
+  const aiLoggerRef = React.useRef<HTMLDivElement>(null);
   const [editingWorkout, setEditingWorkout] = React.useState<any>(null);
   const [formMode, setFormMode] = React.useState<"new" | "edit" | "duplicate">(
     "new",
@@ -238,6 +244,13 @@ export default function WorkoutsPage() {
   const [analysis, setAnalysis] = React.useState<string | null>(null);
   const [analysisLoading, setAnalysisLoading] = React.useState(false);
   const [analysisError, setAnalysisError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!showAIChat) return;
+    requestAnimationFrame(() =>
+      aiLoggerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+  }, [showAIChat]);
 
   if (isLoading || !profile) return <Spinner variant="workouts" />;
 
@@ -256,6 +269,11 @@ export default function WorkoutsPage() {
   }
 
   async function handleAnalysisClick() {
+    if (isPlanLoading) return;
+    if (tier === "free" || !tier) {
+      router.push("/pricing#pricing");
+      return;
+    }
     if (showAnalysis) {
       setShowAnalysis(false);
       return;
@@ -318,6 +336,13 @@ export default function WorkoutsPage() {
             <h1 className="my-4 sm:my-8 text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
               Workouts
             </h1>{" "}
+          </div>
+        </div>
+        <div className="flex flex-col sm:items-end gap-3">
+          <div className="text-xs font-semibold text-muted-foreground">
+            {fmtDate(selDate)}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {state.savedWorkouts?.length > 0 && (
               <button
                 onClick={() => {
@@ -329,17 +354,11 @@ export default function WorkoutsPage() {
                     setShowAnalysis(false);
                   }
                 }}
-                className="self-start sm:self-auto px-4 h-10 py-2.5 bg-primary-foreground  dark:bg-muted text-foreground dark:text-foreground border border-border rounded-xl text-xs md:text-sm font-bold shadow-sm hover:bg-background transition-colors active:scale-[0.98]">
-                Saved Routines
+                className="flex items-center justify-center gap-1.5 self-start rounded-xl border border-border bg-primary-foreground px-4 py-2.5 text-xs font-bold text-foreground shadow-sm transition-colors hover:bg-background active:scale-[0.98] dark:bg-muted dark:text-foreground md:text-sm">
+                {showTemplates ? <X size={14} /> : <Bookmark size={14} />}
+                {showTemplates ? "Cancel" : "Saved Routines"}
               </button>
             )}
-          </div>
-        </div>
-        <div className="flex flex-col sm:items-end gap-3">
-          <div className="text-xs font-semibold text-muted-foreground">
-            {fmtDate(selDate)}
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {/* Log with AI — blue accent, left of primary Log Workout button */}
             {user && (
               <button
@@ -361,6 +380,11 @@ export default function WorkoutsPage() {
             )}
             <button
               onClick={() => {
+                if (showForm) {
+                  setShowForm(false);
+                  setEditingWorkout(null);
+                  return;
+                }
                 setEditingWorkout(null);
                 setFormMode("new");
                 setShowForm(true);
@@ -368,8 +392,9 @@ export default function WorkoutsPage() {
                 setShowAIChat(false);
                 setShowAnalysis(false);
               }}
-              className="px-4 py-2.5 bg-foreground text-background rounded-xl text-xs md:text-sm font-bold shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
-              Log Workout
+              className="flex items-center justify-center gap-1.5 rounded-xl bg-foreground px-4 py-2.5 text-xs font-bold text-background shadow-sm transition-opacity hover:opacity-90 active:scale-[0.98] md:text-sm">
+              {showForm ? <X size={14} /> : <Dumbbell size={14} />}
+              {showForm ? "Cancel" : "Log Workout"}
             </button>
           </div>
         </div>
@@ -381,6 +406,7 @@ export default function WorkoutsPage() {
           className="mb-6 inline-flex min-h-11 items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 text-xs font-bold text-primary shadow-sm transition-colors hover:bg-primary/10 active:scale-[0.98]">
           <BarChart3 size={15} />
           {showAnalysis ? "Hide workout analysis" : "Compare workouts with AI"}
+          {(tier === "free" || !tier) && <LockKeyhole size={13} />}
         </button>
       )}
       {showTemplates && !showForm && (
@@ -480,7 +506,8 @@ export default function WorkoutsPage() {
       )}
       {/* AI workout logger — inline, appears below button row */}
       {showAIChat && user && (
-        <AIWorkoutLogger
+        <div ref={aiLoggerRef}>
+          <AIWorkoutLogger
           onClose={() => setShowAIChat(false)}
           date={selDate}
           userId={user.uid}
@@ -503,7 +530,8 @@ export default function WorkoutsPage() {
             setShowAIChat(false);
             setShowAnalysis(false);
           }}
-        />
+          />
+        </div>
       )}
       {showForm && (
         <div className="mb-8">

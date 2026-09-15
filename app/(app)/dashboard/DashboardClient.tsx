@@ -8,9 +8,8 @@ import WeekStrip from "@/app/components/WeekStrip";
 import CalorieHero from "@/app/components/CalorieHero";
 import MacroPills from "@/app/components/MacroPills";
 import HydrationBar from "@/app/components/HydrationBar";
-import { Card, CardContent } from "@/app/components/ui/card";
+import { Card } from "@/app/components/ui/card";
 import { MEAL_ICONS } from "@/app/lib/constants";
-import { Utensils } from "lucide-react";
 import { TodaySections } from "@/app/components/TodaySections";
 import { useAuthStore } from "@/app/store/authStore";
 import { getIdToken } from "firebase/auth";
@@ -119,17 +118,7 @@ export default function DashboardPage() {
 
         {/* Hydration card */}
         <section>
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[17px] font-bold text-foreground">
-              Hydration
-            </span>
-            <span className="text-[13px] font-semibold text-muted-foreground">
-              {hydration.pct >= 1
-                ? "Goal reached! 💧"
-                : `${Math.round(hydration.pct * 100)}%`}
-            </span>
-          </div>
-          <Card className="p-5">
+          <Card className="overflow-hidden border-0 bg-transparent p-0">
             <HydrationBar
               totalMl={hydration.totalMl}
               goalMl={hydration.goalMl}
@@ -139,7 +128,6 @@ export default function DashboardPage() {
               onAdd={addHydration}
               onRemove={removeHydration}
               onSetGoal={setHydrationGoal}
-              goalReached={hydration.goalReached}
             />
           </Card>
         </section>

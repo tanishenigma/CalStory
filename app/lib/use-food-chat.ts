@@ -207,6 +207,17 @@ export function useFoodChat({
       p: pendingMeal.p,
       c: pendingMeal.c,
       f: pendingMeal.f,
+      ...(pendingMeal.fiber !== undefined || pendingMeal.sugar !== undefined ||
+      pendingMeal.saturatedFat !== undefined || pendingMeal.sodium !== undefined
+        ? {
+            nutrients: {
+              fiber: pendingMeal.fiber,
+              sugar: pendingMeal.sugar,
+              saturatedFat: pendingMeal.saturatedFat,
+              sodium: pendingMeal.sodium,
+            },
+          }
+        : {}),
     };
 
     await addMeal(meal);

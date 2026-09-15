@@ -28,7 +28,7 @@ const NAV: {
   { href: "/dashboard", label: "Home", Icon: Home },
   { href: "/nutrition", label: "Nutrition", Icon: UtensilsCrossed },
   { href: "/workouts", label: "Workouts", Icon: Dumbbell },
-  { href: "/calibra", label: "Ask Calibra", Icon: Sparkles },
+  { href: "/calibra", label: "Coach", Icon: Sparkles },
   { href: "/progress", label: "Progress", Icon: TrendingUp },
   { href: "/settings", label: "Settings", Icon: Settings },
 ];

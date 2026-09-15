@@ -9,6 +9,7 @@ import {
   Loader2,
   Plus,
   Send,
+  Trash2,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
@@ -16,8 +17,11 @@ import DOMPurify from "dompurify";
 import { UpgradePrompt } from "@/app/components/UpgradePrompt";
 import { useAuthStore } from "@/app/store/authStore";
 import { Spinner, useAuthGuard } from "@/app/hooks/useAuthGuard";
-import { useApp } from "@/app/context/AppContext";
+import { todayLocalKey, useApp } from "@/app/context/AppContext";
 import BrandLogo from "@/app/components/BrandLogo";
+import MealConfirmationCard from "@/app/components/nutrition/meal-confirmation-card";
+import WorkoutConfirmationCard from "@/app/components/nutrition/workout-confirmation-card";
+import { useAIFabChat, type FabMessage } from "@/app/lib/use-ai-fab-chat";
 
 type Role = "user" | "assistant";
 
@@ -46,7 +50,7 @@ const welcomeMessage: ChatMessage = {
   id: "welcome",
   role: "assistant",
   content:
-    "Hey — I’m Calibra, your CalStory coach. Ask me about lifting, eating habits, recovery, or share a meal or exercise photo for a quick read.",
+    "Hey — I’m Coach, your CalStory coach. Ask me about lifting, eating habits, recovery, or share a meal or exercise photo for a quick read.",
   createdAt: Date.now(),
 };
 
@@ -186,6 +190,57 @@ function SafeText({ text }: { text: string }) {
   return <span dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
+function CoachLogMessage({
+  message,
+  isLogging,
+  onConfirm,
+  onEdit,
+}: {
+  message: FabMessage;
+  isLogging: boolean;
+  onConfirm: (intent: "food" | "workout", saveAsTemplate?: boolean) => void;
+  onEdit: (intent: "food" | "workout") => void;
+}) {
+  if (message.role === "user") {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[85%] rounded-2xl rounded-tr-md bg-primary px-4 py-2.5 text-[15px] leading-6 text-primary-foreground">
+          {message.text}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-w-0 max-w-[95%] flex-col items-start gap-2">
+      <div className="text-[15px] leading-7 text-foreground">
+        <SafeText text={message.text} />
+      </div>
+      {message.meal && (
+        <div className="w-full max-w-md">
+          <MealConfirmationCard
+            meal={message.meal}
+            onConfirm={() => onConfirm("food")}
+            onEdit={() => onEdit("food")}
+            isLogging={isLogging}
+          />
+        </div>
+      )}
+      {message.workout && (
+        <div className="w-full max-w-md">
+          <WorkoutConfirmationCard
+            workout={message.workout}
+            askSaveTemplate={message.askSaveTemplate ?? false}
+            onConfirm={(saveAsTemplate) => onConfirm("workout", saveAsTemplate)}
+            onEdit={() => onEdit("workout")}
+            isLogging={isLogging}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AskAIAdvice() {
   const { profile, isLoading: authLoading } = useAuthGuard();
   const { state } = useApp();
@@ -204,6 +259,20 @@ export default function AskAIAdvice() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const {
+    messages: logMessages,
+    isLoading: isLogLoading,
+    sendMessage: logSendMessage,
+    confirmLog,
+    editPending,
+    sessions: logSessions,
+    reset: resetLogChat,
+    switchSession: switchLogSession,
+    deleteSession: deleteLogSession,
+  } = useAIFabChat({
+    date: todayLocalKey(),
+    userId: user?.uid ?? "anonymous",
+  });
 
   useEffect(() => {
     const update = () => setGreeting(timeGreeting(new Date().getHours()));
@@ -233,7 +302,7 @@ export default function AskAIAdvice() {
     const firstUserMessage = messages.find(
       (message) => message.role === "user",
     );
-    const title = (firstUserMessage?.content || "New Calibra chat").slice(
+      const title = (firstUserMessage?.content || "New Coach chat").slice(
       0,
       52,
     );
@@ -289,6 +358,19 @@ export default function AskAIAdvice() {
     event?.preventDefault();
     const trimmedQuestion = (promptOverride ?? question).trim();
     if ((!trimmedQuestion && !attachment) || !user || isLoading) return;
+
+    // Keep logging inside the Coach conversation. The shared quick-log hook
+    // coordinates food and workout agents, including mixed requests.
+    const isLogRequest =
+      !attachment &&
+      /\b(log|ate|eaten|had|drank|water|meal|breakfast|lunch|dinner|snack|workout|trained|training|reps?|sets?|run|ran|lift|squat|push[- ]?ups?|pull[- ]?ups?)\b/i.test(
+        trimmedQuestion,
+      );
+    if (isLogRequest) {
+      setQuestion("");
+      await sendCoachLog(trimmedQuestion);
+      return;
+    }
 
     const currentAttachment = attachment;
     const visibleQuestion =
@@ -369,6 +451,13 @@ export default function AskAIAdvice() {
     }
   }
 
+  async function sendCoachLog(text: string) {
+    // Accessed through the hook's stable callback exposed below via the
+    // closure; keeping this helper next to askQuestion makes the composer
+    // behavior explicit and testable.
+    await logSendMessage(text);
+  }
+
   function formatMessageTime(createdAt?: number): string {
     return new Date(createdAt ?? Date.now()).toLocaleTimeString([], {
       hour: "numeric",
@@ -377,6 +466,7 @@ export default function AskAIAdvice() {
   }
 
   function startNewChat() {
+    resetLogChat();
     setSessionId(newId());
     setMessages([welcomeMessage]);
     setQuestion("");
@@ -388,6 +478,7 @@ export default function AskAIAdvice() {
   }
 
   function openSavedChat(chat: SavedChat) {
+    resetLogChat();
     setSessionId(chat.id);
     setMessages(chat.messages);
     setQuestion("");
@@ -398,11 +489,32 @@ export default function AskAIAdvice() {
     setHistoryOpen(false);
   }
 
+  function openSavedLogChat(sessionId: string) {
+    switchLogSession(sessionId);
+    setMessages([welcomeMessage]);
+    setQuestion("");
+    setHistoryOpen(false);
+  }
+
+  function deleteSavedAdviceChat(chatId: string) {
+    setSavedChats((current) => {
+      const next = current.filter((chat) => chat.id !== chatId);
+      if (user?.uid) {
+        try {
+          localStorage.setItem(`calibra-chat-history:${user.uid}`, JSON.stringify(next));
+        } catch {
+          // The list remains updated in memory if storage is unavailable.
+        }
+      }
+      return next;
+    });
+  }
+
   const userName =
     state.profile?.name?.trim() || user?.displayName?.split(" ")[0] || "";
 
   // True only while the conversation has nothing but the welcome message.
-  const isEmptyState = messages.length === 1;
+  const isEmptyState = messages.length === 1 && logMessages.length <= 1;
 
   // Shared between the centered empty state and the bottom-pinned bar.
   const inputBar = (
@@ -447,7 +559,7 @@ export default function AskAIAdvice() {
           maxLength={2000}
           placeholder="Ask anything about your health and fitness…"
           className="max-h-36 min-h-10 w-full resize-none bg-transparent px-3 py-2 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground"
-          aria-label="Message Calibra"
+          aria-label="Message Coach"
         />
         <div className="flex items-center justify-between gap-2 px-1.5 pt-1">
           <div className="flex items-center gap-0.5">
@@ -510,7 +622,7 @@ export default function AskAIAdvice() {
           <button
             type="button"
             onClick={() => setHistoryOpen((open) => !open)}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+            className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:bg-muted hover:text-foreground">
             <HistoryIcon size={14} />
             <span className="hidden sm:inline">History</span>
           </button>
@@ -518,7 +630,7 @@ export default function AskAIAdvice() {
             type="button"
             onClick={startNewChat}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50">
+            className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:bg-muted hover:text-foreground disabled:opacity-50">
             <Plus size={14} />
             <span className="hidden sm:inline">New chat</span>
           </button>
@@ -532,7 +644,7 @@ export default function AskAIAdvice() {
             onClick={() => setHistoryOpen(false)}
             className="absolute inset-0 z-10 cursor-default bg-background/20 backdrop-blur-[1px]"
           />
-          <aside className="absolute inset-y-2 right-2 z-20 flex w-[calc(100%-1rem)] max-w-sm flex-col overflow-hidden rounded-3xl border border-border/70 bg-card/95 shadow-[0_12px_40px_oklch(0_0_0/_0.2)] backdrop-blur-xl sm:inset-y-4 sm:right-4 sm:w-[calc(100%-2rem)]">
+          <aside className="absolute inset-y-2 right-0 z-20 flex w-[min(94vw,380px)] max-w-sm flex-col overflow-hidden rounded-l-[2rem] rounded-r-none border border-r-0 border-border/70 bg-card/95 shadow-[0_12px_40px_oklch(0_0_0/_0.2)] backdrop-blur-xl sm:inset-y-4 sm:right-4 sm:w-[calc(100%-2rem)] sm:rounded-3xl sm:border-r">
             <div className="flex shrink-0 items-center justify-between border-b border-border/70 px-5 py-4">
               <div className="flex items-center gap-2">
                 <HistoryIcon size={15} className="text-primary" />
@@ -556,22 +668,50 @@ export default function AskAIAdvice() {
               ) : (
                 <div className="space-y-1">
                   {savedChats.map((chat) => (
-                    <button
+                    <div
                       key={chat.id}
-                      type="button"
-                      onClick={() => openSavedChat(chat)}
-                      className={`w-full rounded-xl px-3 py-3 text-left transition-colors hover:bg-background ${chat.id === sessionId ? "bg-background" : ""}`}>
-                      <p className="truncate text-sm font-semibold text-foreground">
-                        {chat.title}
-                      </p>
-                      <p className="mt-1 text-[11px] text-muted-foreground">
-                        {new Date(chat.updatedAt).toLocaleDateString()}
-                      </p>
-                    </button>
+                      className={`flex items-center gap-1 rounded-xl border border-transparent px-3 py-2 transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-primary/35 hover:bg-muted/70 hover:shadow-sm ${chat.id === sessionId ? "border-border bg-background" : ""}`}>
+                      <button type="button" onClick={() => openSavedChat(chat)} className="min-w-0 flex-1 px-0 py-1 text-left">
+                        <p className="truncate text-sm font-semibold text-foreground">{chat.title}</p>
+                        <p className="mt-1 text-[11px] text-muted-foreground">{new Date(chat.updatedAt).toLocaleDateString()}</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteSavedAdviceChat(chat.id)}
+                        aria-label={`Delete chat: ${chat.title}`}
+                        className="shrink-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
             </div>
+            {logSessions.length > 0 && (
+              <div className="border-t border-border/70 p-3">
+                <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                  Logging chats
+                </p>
+                <div className="space-y-1">
+                  {logSessions.slice(0, 8).map((session) => (
+                    <div
+                      key={session.id}
+                      className="flex items-center gap-1 rounded-xl border border-transparent px-3 py-2 transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-primary/35 hover:bg-muted/70 hover:shadow-sm">
+                      <button type="button" onClick={() => openSavedLogChat(session.id)} className="min-w-0 flex-1 truncate text-left text-xs font-semibold text-foreground">
+                        {session.label}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteLogSession(session.id)}
+                        aria-label={`Delete logging chat: ${session.label}`}
+                        className="shrink-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {savedChats.length > 0 && (
               <p className="shrink-0 border-t border-border/70 px-5 py-3 text-[11px] text-muted-foreground">
                 History is saved on this device.
@@ -587,7 +727,7 @@ export default function AskAIAdvice() {
               <BrandLogo />
             </div>
             <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-              I'm Calibra , your CalStory coach.
+              I'm  your CalStory Coach.
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
               Ask me about lifting, eating habits, recovery, or share a meal or
@@ -636,6 +776,21 @@ export default function AskAIAdvice() {
                 </div>
               ))}
 
+              {logMessages.filter((message) => message.id !== "greeting").map((message) => (
+                <CoachLogMessage
+                  key={message.id}
+                  message={message}
+                  isLogging={isLogLoading}
+                  onConfirm={(intent, saveAsTemplate) =>
+                    void confirmLog(intent, saveAsTemplate)
+                  }
+                  onEdit={(intent) => {
+                    editPending(intent, (prefill) => setQuestion(prefill));
+                    inputRef.current?.focus();
+                  }}
+                />
+              ))}
+
               {isLoading && (
                 <div className="flex gap-3">
                   <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
@@ -648,10 +803,17 @@ export default function AskAIAdvice() {
                 </div>
               )}
 
+              {isLogLoading && !isLoading && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 size={15} className="animate-spin text-primary" />
+                  Preparing your log…
+                </div>
+              )}
+
               {upgradeRequired && (
                 <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 ">
                   <p className="text-sm font-bold text-foreground">
-                    Ask Calibra is included with Plus and Pro.
+                    Ask Coach is included with Plus and Pro.
                   </p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     Upgrade for unlimited coach conversations and image reviews.

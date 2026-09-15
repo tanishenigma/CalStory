@@ -35,6 +35,7 @@ import {
   saveFitnessLog,
   saveHydrationLog,
   getHydrationLog,
+  getHydrationLogsInRange,
 } from "@/app/lib/db";
 import type {
   AppState,
@@ -104,6 +105,7 @@ const initial: AppState = {
   selDate: todayLocalKey(),
   fitnessLogs: {},
   hydrationLog: null,
+  hydrationLogs: {},
 };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -218,7 +220,13 @@ function reducer(state: AppState, action: Action): AppState {
         },
       };
     case "SET_HYDRATION_LOG":
-      return { ...state, hydrationLog: action.payload };
+      return {
+        ...state,
+        hydrationLog: action.payload,
+        hydrationLogs: action.payload
+          ? { ...state.hydrationLogs, [action.payload.date]: action.payload }
+          : state.hydrationLogs,
+      };
     case "ADD_HYDRATION_ENTRY": {
       const existing = state.hydrationLog ?? {
         date: todayLocalKey(),
@@ -231,16 +239,25 @@ function reducer(state: AppState, action: Action): AppState {
           ...existing,
           entries: [...existing.entries, action.payload],
         },
+        hydrationLogs: {
+          ...state.hydrationLogs,
+          [existing.date]: {
+            ...existing,
+            entries: [...existing.entries, action.payload],
+          },
+        },
       };
     }
     case "REMOVE_HYDRATION_ENTRY": {
       if (!state.hydrationLog) return state;
+      const updated = {
+        ...state.hydrationLog,
+        entries: state.hydrationLog.entries.filter((e) => e.id !== action.id),
+      };
       return {
         ...state,
-        hydrationLog: {
-          ...state.hydrationLog,
-          entries: state.hydrationLog.entries.filter((e) => e.id !== action.id),
-        },
+        hydrationLog: updated,
+        hydrationLogs: { ...state.hydrationLogs, [updated.date]: updated },
       };
     }
     case "SET_HYDRATION_GOAL": {
@@ -252,11 +269,21 @@ function reducer(state: AppState, action: Action): AppState {
             goalMl: action.goalMl,
             entries: [],
           },
+          hydrationLogs: {
+            ...state.hydrationLogs,
+            [todayLocalKey()]: {
+              date: todayLocalKey(),
+              goalMl: action.goalMl,
+              entries: [],
+            },
+          },
         };
       }
+      const updated = { ...state.hydrationLog, goalMl: action.goalMl };
       return {
         ...state,
-        hydrationLog: { ...state.hydrationLog, goalMl: action.goalMl },
+        hydrationLog: updated,
+        hydrationLogs: { ...state.hydrationLogs, [updated.date]: updated },
       };
     }
     default:
@@ -409,11 +436,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Runs in the background after the profile is known.
   const hydrateSecondary = useCallback(async (uid: string): Promise<void> => {
     try {
-      const [recents, templates, weightLogs, hydrationLog] = await Promise.all([
+      const [recents, templates, weightLogs] = await Promise.all([
         getRecentMeals(uid),
         getWorkoutTemplates(uid),
         getWeightLogs(uid),
-        getHydrationLog(uid, todayLocalKey()),
       ]);
       const today = todayLocalKey();
       const dateKeys: string[] = [];
@@ -426,10 +452,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const day = String(d.getDate()).padStart(2, "0");
         dateKeys.push(`${y}-${m}-${day}`);
       }
-      const [mealsMap, workoutsMap] = await Promise.all([
+      const [mealsMap, workoutsMap, hydrationLogs] = await Promise.all([
         getMealsInRange(uid, dateKeys),
         getWorkoutsInRange(uid, dateKeys),
+        getHydrationLogsInRange(uid, dateKeys),
       ]);
+      const hydrationLog = hydrationLogs[todayLocalKey()] ?? null;
       dispatch({
         type: "HYDRATE",
         payload: {
@@ -439,6 +467,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           recents,
           weightLogs,
           hydrationLog: hydrationLog ?? null,
+          hydrationLogs,
         },
       });
       void today; // suppress unused-var lint
@@ -449,19 +478,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // When selected date changes, load that day's data from Firestore
   useEffect(() => {
-    if (!user || !state.selDate || state.meals[state.selDate] !== undefined)
-      return;
+    if (!user || !state.selDate) return;
     async function loadDay() {
       if (!user) return;
-      const [meals, workouts] = await Promise.all([
-        getMeals(user.uid, state.selDate),
-        getWorkouts(user.uid, state.selDate),
+      const [meals, workouts, hydrationLog] = await Promise.all([
+        state.meals[state.selDate] !== undefined
+          ? Promise.resolve(state.meals[state.selDate])
+          : getMeals(user.uid, state.selDate),
+        state.workouts[state.selDate] !== undefined
+          ? Promise.resolve(state.workouts[state.selDate])
+          : getWorkouts(user.uid, state.selDate),
+        getHydrationLog(user.uid, state.selDate),
       ]);
       dispatch({
         type: "HYDRATE",
         payload: {
           meals: { ...state.meals, [state.selDate]: meals },
           workouts: { ...state.workouts, [state.selDate]: workouts },
+          hydrationLog: hydrationLog ?? null,
+          hydrationLogs: hydrationLog
+            ? { ...state.hydrationLogs, [state.selDate]: hydrationLog }
+            : state.hydrationLogs,
         },
       });
     }
@@ -781,9 +818,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // fact that dispatch is synchronous in useReducer, so state is stale.
       // Instead we'll persist based on the reducer's own output via a
       // derived local log object.
-      const today = todayLocalKey();
-      const currentLog = state.hydrationLog ?? {
-        date: today,
+      const currentLog = state.hydrationLogs[state.selDate] ??
+        (state.hydrationLog?.date === state.selDate ? state.hydrationLog : null) ?? {
+        date: state.selDate,
         goalMl: 2500,
         entries: [],
       };
@@ -793,7 +830,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
       await saveHydrationLog(user.uid, updatedLog);
     },
-    [user, state.hydrationLog],
+    [user, state.hydrationLog, state.hydrationLogs, state.selDate],
   );
 
   const removeHydration = useCallback(
@@ -813,15 +850,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     async (goalMl: number): Promise<void> => {
       dispatch({ type: "SET_HYDRATION_GOAL", goalMl });
       if (!user) return;
-      const today = todayLocalKey();
       const currentLog: HydrationLog = state.hydrationLog ?? {
-        date: today,
+        date: state.selDate,
         goalMl,
         entries: [],
       };
       await saveHydrationLog(user.uid, { ...currentLog, goalMl });
     },
-    [user, state.hydrationLog],
+    [user, state.hydrationLog, state.selDate],
   );
 
   return (

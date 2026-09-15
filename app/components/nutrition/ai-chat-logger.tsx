@@ -40,10 +40,9 @@ import { toast } from "sonner";
  * quick-action chips before the first message, an intent-free
  * message thread (this panel only ever talks food, so no pill is
  * needed), and the same pill-shaped input row with a disabled mic
- * and a gradient send button. Cards can be dismissed inline via a
- * hover-revealed discard button, mirroring the FAB chat pattern —
- * dismissal is local/visual only, since useFoodChat doesn't expose
- * a backing discard call.
+ * and a gradient send button. Meal cards can be adjusted in the same
+ * conversation before they are confirmed, so the food agent retains
+ * the original meal context.
  * ------------------------------------------------------------------ */
 
 /** Quick-start chips shown in the empty state. Each prefills the
@@ -79,14 +78,12 @@ interface Props {
   onClose: () => void;
   date: string;
   userId: string;
-  onEditMeal?: (meal: PendingMeal) => void;
 }
 
 export default function AIChatLogger({
   onClose,
   date,
   userId,
-  onEditMeal,
 }: Props) {
   const {
     messages,
@@ -163,8 +160,16 @@ export default function AIChatLogger({
   }
 
   function handleEdit(meal: PendingMeal) {
-    onEditMeal?.(meal);
-    handleClose();
+    const adjustmentPrompt = `Adjust the meal "${meal.name}" — `;
+    setInputValue(adjustmentPrompt);
+    requestAnimationFrame(() => {
+      const input = inputRef.current;
+      input?.focus();
+      input?.setSelectionRange(
+        adjustmentPrompt.length,
+        adjustmentPrompt.length,
+      );
+    });
   }
 
   function handleDismiss(id: string) {

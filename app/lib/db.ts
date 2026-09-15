@@ -20,7 +20,6 @@ import type {
   WeightLog,
   FitnessLog,
   HydrationLog,
-  HydrationEntry,
   Subscription,
 } from "@/app/types";
 
@@ -483,6 +482,21 @@ export async function getHydrationLog(
     logger.debug(`[API Response] getHydrationLog success`);
     return snap.data() as HydrationLog;
   }, null);
+}
+
+export async function getHydrationLogsInRange(
+  uid: string,
+  dateKeys: string[],
+): Promise<Record<string, HydrationLog>> {
+  return safe(async () => {
+    const logs = await Promise.all(dateKeys.map((date) => getHydrationLog(uid, date)));
+    const result: Record<string, HydrationLog> = {};
+    dateKeys.forEach((date, index) => {
+      const log = logs[index];
+      if (log) result[date] = log;
+    });
+    return result;
+  }, {} as Record<string, HydrationLog>);
 }
 
 // ── Subscription (Polar billing) ──────────────────────────

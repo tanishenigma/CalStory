@@ -35,7 +35,7 @@ function MealLogger() {
         <div>
           <Sparkles size={14} />
           <span>
-            <strong>Ask Calibra</strong>
+            <strong>Ask Coach</strong>
             <small>Advice for eating or lifting</small>
           </span>
         </div>
