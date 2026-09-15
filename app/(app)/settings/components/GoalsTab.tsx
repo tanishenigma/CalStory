@@ -180,7 +180,7 @@ function ActivitySection({
             max={30000}
             value={steps}
             onChange={(e) => setSteps(Number(e.target.value))}
-            className="w-full px-3.5 py-3 pr-14 border border-transparent rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
+            className="w-full rounded-lg border border-border bg-card/45 px-3.5 py-3 pr-14 text-sm font-mono outline-none backdrop-blur-md transition-all focus:bg-card/70 focus:border-primary/40 dark:bg-white/[0.04] dark:focus:bg-white/[0.08]"
           />
           <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
             steps
@@ -233,7 +233,7 @@ function ActivitySection({
             value={targetWeightInput}
             onChange={(e) => setTargetWeightInput(e.target.value)}
             placeholder="—"
-            className="w-full px-3.5 py-3 pr-14 border border-transparent rounded-lg text-sm bg-background focus:bg-card focus:border-border outline-none transition-all font-mono"
+            className="w-full rounded-lg border border-border bg-card/45 px-3.5 py-3 pr-14 text-sm font-mono outline-none backdrop-blur-md transition-all focus:bg-card/70 focus:border-primary/40 dark:bg-white/[0.04] dark:focus:bg-white/[0.08]"
           />
           <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
             {weightUnit}
@@ -348,7 +348,7 @@ function GoalDirectionCard({
         </>
       )}
 
-      <div className="bg-background rounded-xl p-5">
+      <div className="rounded-xl border border-border bg-card/45 p-5 backdrop-blur-md dark:bg-white/[0.04]">
         <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
           Estimated Target
         </div>

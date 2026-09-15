@@ -277,7 +277,7 @@ export default function AIFabChat({ onClose }: Props) {
         // Fixed total height — never shifts
         "h-[min(76dvh,600px)]",
         "rounded-3xl border border-border",
-        "bg-card",
+        "bg-card/60 backdrop-blur-xl",
         "shadow-[0_2px_8px_oklch(0_0_0/_0.05),0_12px_24px_oklch(0_0_0/_0.06)]",
         "hover:shadow-[0_4px_12px_oklch(0_0_0/_0.08),0_20px_40px_oklch(0_0_0/_0.10)]",
         "transition-shadow duration-200",
@@ -391,7 +391,7 @@ export default function AIFabChat({ onClose }: Props) {
                       onClick={() => handleQuickAction(action.prefill)}
                       className={cn(
                         "flex items-center gap-2 px-3 sm:px-3.5 py-2.5 rounded-2xl min-h-[44px]",
-                        "border border-border bg-subtle",
+                        "border border-border bg-card/35 backdrop-blur-md dark:bg-white/[0.03]",
                         "text-xs font-semibold text-foreground/80",
                         "hover:border-primary/30 hover:bg-primary/5 hover:text-foreground",
                         "active:scale-95 transition-all duration-150",
@@ -431,7 +431,7 @@ export default function AIFabChat({ onClose }: Props) {
 
               {isLoading && (
                 <div className="flex items-start">
-                  <div className="flex gap-1 px-4 py-3 bg-subtle border border-border rounded-xl rounded-tl-sm">
+                  <div className="flex gap-1 rounded-xl rounded-tl-sm border border-border bg-card/35 px-4 py-3 backdrop-blur-md dark:bg-white/[0.03]">
                     <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:0ms]" />
                     <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:150ms]" />
                     <span className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:300ms]" />
@@ -461,7 +461,7 @@ export default function AIFabChat({ onClose }: Props) {
       <div
         className="shrink-0 px-3 sm:px-3.5 pt-3"
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-        <div className="flex flex-col items-center gap-2 rounded-[28px] border border-border bg-subtle pl-4 pr-2 py-2.5 min-h-[52px]">
+        <div className="flex min-h-[52px] flex-col items-center gap-2 rounded-[28px] border border-border bg-card/45 pl-4 pr-2 py-2.5 backdrop-blur-md dark:bg-white/[0.04]">
           <div className="flex items-end gap-2 w-full">
             <textarea
               ref={inputRef}
@@ -531,7 +531,7 @@ export default function AIFabChat({ onClose }: Props) {
                 "touch-hitbox flex items-center gap-1.5 px-3 py-2 min-h-[36px] text-xs font-semibold rounded-full border transition-colors",
                 activeDrawer === "template"
                   ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-border bg-subtle text-foreground/80 hover:border-primary/30 hover:bg-primary/5 hover:text-foreground",
+                  : "border-border bg-card/35 text-foreground/80 backdrop-blur-md hover:border-primary/30 hover:bg-primary/5 hover:text-foreground dark:bg-white/[0.03]",
               )}>
               <FileText size={13} />
               Use template
@@ -545,7 +545,7 @@ export default function AIFabChat({ onClose }: Props) {
                 "touch-hitbox flex items-center gap-1.5 px-3 py-2 min-h-[36px] text-xs font-semibold rounded-full border transition-colors",
                 activeDrawer === "history"
                   ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-border bg-subtle text-foreground/80 hover:border-primary/30 hover:bg-primary/5 hover:text-foreground",
+                  : "border-border bg-card/35 text-foreground/80 backdrop-blur-md hover:border-primary/30 hover:bg-primary/5 hover:text-foreground dark:bg-white/[0.03]",
               )}>
               <History size={13} />
               Log history
@@ -989,7 +989,7 @@ function FabMessageBubble({
       <div
         className={cn(
           "max-w-[90%] sm:max-w-[88%] px-3.5 py-2.5 rounded-xl text-sm leading-relaxed",
-          "bg-subtle border border-border text-ink rounded-tl-sm",
+          "bg-card/35 border border-border text-foreground rounded-tl-sm backdrop-blur-md dark:bg-white/[0.03]",
           message.transient && "opacity-70 italic",
         )}>
         <SafeText text={message.text} />

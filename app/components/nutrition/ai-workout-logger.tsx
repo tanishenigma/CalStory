@@ -214,7 +214,7 @@ export default function AIWorkoutLogger({
       <div
       className={cn(
         "relative mb-8 flex min-h-[28rem] w-full flex-col sm:min-h-[32rem]",
-        "rounded-3xl border border-border/60 bg-card shadow-[0_12px_30px_oklch(0_0_0/_0.08)]",
+        "rounded-3xl border border-border/60 bg-card/60 shadow-[0_12px_30px_oklch(0_0_0/_0.08)] backdrop-blur-xl",
         "overflow-hidden",
       )}
       style={{ color: "var(--color-ink)" }}>
@@ -348,7 +348,7 @@ export default function AIWorkoutLogger({
       <div
         className="shrink-0 px-3 pt-3 space-y-2 sm:px-4"
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-        <div className="flex items-end gap-2 rounded-[28px] border border-border bg-subtle pl-4 pr-2 py-3 min-h-[60px]">
+        <div className="flex min-h-[60px] items-end gap-2 rounded-[28px] border border-border bg-card/45 pl-4 pr-2 py-3 backdrop-blur-md dark:bg-white/[0.04]">
           <textarea
             ref={inputRef}
             id="ai-workout-chat-input"
@@ -440,7 +440,7 @@ export default function AIWorkoutLogger({
 
       {/* ── Drawer overlays ───────────────────────────────────── */}
       {activeDrawer === "template" && (
-        <div className="absolute inset-0 z-20 flex flex-col bg-card">
+        <div className="absolute inset-0 z-20 flex flex-col bg-card/70 backdrop-blur-xl">
           <WorkoutTemplateDrawer
             templates={templates}
             onUse={handleUseTemplate}
@@ -449,7 +449,7 @@ export default function AIWorkoutLogger({
         </div>
       )}
       {activeDrawer === "history" && (
-        <div className="absolute inset-0 z-20 flex flex-col bg-card">
+        <div className="absolute inset-0 z-20 flex flex-col bg-card/70 backdrop-blur-xl">
           <WorkoutHistoryDrawer
             workouts={historyWorkouts}
             onRepeat={handleRepeatWorkout}
@@ -458,7 +458,7 @@ export default function AIWorkoutLogger({
         </div>
       )}
       {activeDrawer === "chat" && (
-        <div className="absolute inset-0 z-20 flex min-h-0 flex-col bg-card">
+        <div className="absolute inset-0 z-20 flex min-h-0 flex-col bg-card/70 backdrop-blur-xl">
           <WorkoutChatHistoryDrawer
             sessions={chatHistory}
             onSelect={(session) => {

@@ -479,7 +479,7 @@ export default function AskAIAdvice() {
             onClick={() => setHistoryOpen(false)}
             className="absolute inset-0 z-10 cursor-default bg-background/20 backdrop-blur-[1px]"
           />
-          <aside className="absolute inset-y-2 right-2 z-20 flex w-[calc(100%-1rem)] max-w-sm flex-col overflow-hidden rounded-3xl border border-border/70 bg-card/95 shadow-[0_12px_40px_oklch(0_0_0/_0.2)] backdrop-blur-xl sm:inset-y-4 sm:right-4 sm:w-[calc(100%-2rem)]">
+          <aside className="absolute inset-y-2 right-2 z-20 flex w-[calc(100%-1rem)] max-w-sm flex-col overflow-hidden rounded-3xl border border-border/70 bg-card/70 shadow-[0_12px_40px_oklch(0_0_0/_0.2)] backdrop-blur-xl sm:inset-y-4 sm:right-4 sm:w-[calc(100%-2rem)]">
             <div className="flex shrink-0 items-center justify-between border-b border-border/70 px-5 py-4">
               <div className="flex items-center gap-2">
                 <HistoryIcon size={15} className="text-primary" />

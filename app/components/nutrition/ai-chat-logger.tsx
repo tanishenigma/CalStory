@@ -205,7 +205,7 @@ export default function AIChatLogger({
       <div
         className={cn(
           "relative mb-8 flex min-h-[28rem] w-full flex-col sm:min-h-[32rem]",
-          "rounded-3xl border border-border/60 bg-card shadow-[0_12px_30px_oklch(0_0_0/_0.08)]",
+          "rounded-3xl border border-border/60 bg-card/60 shadow-[0_12px_30px_oklch(0_0_0/_0.08)] backdrop-blur-xl",
           "overflow-hidden",
         )}
         style={{ color: "var(--color-ink)" }}>
@@ -329,7 +329,7 @@ export default function AIChatLogger({
           style={{
             paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
           }}>
-          <div className="flex items-center gap-2 rounded-[28px] border border-border bg-subtle pl-4 pr-2 py-3.5 min-h-[60px]">
+          <div className="flex min-h-[60px] items-center gap-2 rounded-[28px] border border-border bg-card/45 pl-4 pr-2 py-3.5 backdrop-blur-md dark:bg-white/[0.04]">
             <input
               ref={inputRef}
               id="ai-food-chat-input"

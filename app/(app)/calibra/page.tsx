@@ -550,7 +550,7 @@ export default function AskAIAdvice() {
 
       <form
         onSubmit={(event) => void askQuestion(event)}
-        className="rounded-3xl border border-border bg-card p-2 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-colors focus-within:border-primary/50 focus-within:shadow-[0_2px_16px_rgba(0,0,0,0.09)]">
+        className="rounded-3xl border border-border bg-transparent p-2 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-colors focus-within:border-primary/50 focus-within:shadow-[0_2px_16px_rgba(0,0,0,0.09)]">
         <textarea
           ref={inputRef}
           value={question}

@@ -74,6 +74,7 @@ function stackedStyle(
       ? `translateY(${i * (cardHeight + gap)}px) scale(1)`
       : `translateY(${i * peekOffset}px) scale(${1 - i * 0.04})`,
     opacity: isExpanded ? 1 : 1 - i * 0.15,
+    filter: isExpanded || i === 0 ? "blur(0px)" : "blur(5px)",
   };
 }
 
@@ -117,7 +118,7 @@ export function TodaySections({
 
         {todayWorkouts.length === 0 ? (
           <Link href="/workouts" className="block ">
-            <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px] transition-opacity">
+            <Card className="flex flex-col items-center justify-center gap-1 bg-card py-12 text-center min-h-[200px] transition-opacity">
               <div className="text-3xl mb-1" aria-hidden="true">
                 🏋️
               </div>
@@ -145,7 +146,7 @@ export function TodaySections({
             {visibleWorkouts.map((w, i) => (
               <Card
                 key={w.id}
-                className={`absolute inset-x-0 top-0 flex items-center gap-4 p-4 origin-top ${
+                className={`absolute inset-x-0 top-0 flex items-center gap-4 bg-card p-4 origin-top ${
                   workoutStack.isFast
                     ? "transition-all duration-150 ease-out"
                     : "transition-all duration-300 ease-out"
@@ -190,7 +191,7 @@ export function TodaySections({
         </div>
 
         {todayMeals.length === 0 ? (
-          <Card className="flex flex-col items-center justify-center py-12 text-center gap-1 min-h-[200px]">
+          <Card className="flex flex-col items-center justify-center gap-1 bg-card py-12 text-center min-h-[200px]">
             <div className="text-3xl mb-1" aria-hidden="true">
               🍽️
             </div>
@@ -219,7 +220,7 @@ export function TodaySections({
               return (
                 <Card
                   key={m.id}
-                  className={`absolute inset-x-0 top-0 flex items-center gap-4 p-4 origin-top ${
+                  className={`absolute inset-x-0 top-0 flex items-center gap-4 bg-card p-4 origin-top ${
                     mealStack.isFast
                       ? "transition-all duration-150 ease-out"
                       : "transition-all duration-300 ease-out"
