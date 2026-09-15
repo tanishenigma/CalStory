@@ -1,136 +1,110 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { Dumbbell, Droplets, Flame, Wheat } from "lucide-react";
 
 interface Props {
-  macros: { p: number; c: number; f: number };
-  target: { p: number; c: number; f: number };
+  macros: { cal: number; p: number; c: number; f: number };
+  target: { cal: number; p: number; c: number; f: number };
 }
 
-function MeterRing({
-  pct,
-  colorClass,
-  children,
-}: {
-  pct: number;
-  colorClass: string;
-  children: React.ReactNode;
-}) {
-  const R = 18;
-  const C = 2 * Math.PI * R;
-  const offset = C * (1 - Math.min(pct, 1));
+type TargetRow = {
+  label: string;
+  consumed: number;
+  target: number;
+  unit: string;
+  Icon: typeof Wheat;
+  color: string;
+  iconClass: string;
+};
+
+function TargetProgress({ row }: { row: TargetRow }) {
+  const ratio = row.target > 0 ? row.consumed / row.target : 0;
+  const percent = Math.round(ratio * 100);
 
   return (
-    <div className="relative w-12 h-12">
-      <svg
-        width="48"
-        height="48"
-        viewBox="0 0 48 48"
-        className="absolute inset-0 transform -rotate-90">
-        <circle
-          cx="24"
-          cy="24"
-          r={R}
-          fill="none"
-          className="stroke-border dark:stroke-border"
-          strokeWidth="4"
-        />
-        <circle
-          cx="24"
-          cy="24"
-          r={R}
-          fill="none"
-          className={colorClass}
-          stroke="currentColor"
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeDasharray={C}
-          strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 1s ease-out" }}
-        />
-      </svg>
-      {/* 
-        Using absolute inset-0 guarantees it maps perfectly to the 48x48 box.
-        leading-none strips out invisible text padding that nudges emojis off-center.
-      */}
-      <div className="absolute inset-0 flex items-center justify-center z-10 text-xl leading-none">
-        {children}
+    <div className="flex items-center gap-3 rounded-xl bg-muted/45 px-3 py-2.5 dark:bg-white/[0.035]">
+      <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${row.iconClass}`}>
+        <row.Icon size={17} strokeWidth={2.2} />
       </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+          <span className="font-medium text-foreground">{row.label}</span>
+          <span className="shrink-0 tabular-nums text-muted-foreground">
+            {row.consumed} / {row.target} {row.unit}
+          </span>
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-muted dark:bg-white/[0.12]">
+          <div
+            className={`h-full rounded-full ${row.color}`}
+            style={{ width: `${Math.min(Math.max(percent, 0), 100)}%` }}
+          />
+        </div>
+      </div>
+
+      <span className="w-8 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+        {percent}%
+      </span>
     </div>
   );
 }
 
 export default function MacroPills({ macros, target }: Props) {
-  const cLeft = Math.max(0, target.c - macros.c);
-  const pLeft = Math.max(0, target.p - macros.p);
-  const fLeft = Math.max(0, target.f - macros.f);
-
-  const cPct = target.c > 0 ? macros.c / target.c : 0;
-  const pPct = target.p > 0 ? macros.p / target.p : 0;
-  const fPct = target.f > 0 ? macros.f / target.f : 0;
+  const rows: TargetRow[] = [
+    {
+      label: "Carbohydrates",
+      consumed: macros.c,
+      target: target.c,
+      unit: "g",
+      Icon: Wheat,
+      color: "bg-green-500",
+      iconClass: "bg-green-500/15 text-green-500",
+    },
+    {
+      label: "Protein",
+      consumed: macros.p,
+      target: target.p,
+      unit: "g",
+      Icon: Dumbbell,
+      color: "bg-red-500",
+      iconClass: "bg-red-500/15 text-red-500",
+    },
+    {
+      label: "Fats",
+      consumed: macros.f,
+      target: target.f,
+      unit: "g",
+      Icon: Droplets,
+      color: "bg-yellow-500",
+      iconClass: "bg-yellow-500/15 text-yellow-500",
+    },
+    {
+      label: "Energy",
+      consumed: macros.cal,
+      target: target.cal,
+      unit: "kcal",
+      Icon: Flame,
+      color: "bg-blue-500",
+      iconClass: "bg-blue-500/15 text-blue-500",
+    },
+  ];
 
   return (
-    <div className="flex flex-col gap-4 h-full min-w-0">
-      {/* Carbs Pill */}
-      <Link
-        href="/nutrition"
-        className="card-glass flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
-        <div className="flex items-center gap-4 sm:gap-5 min-w-0">
-          <div className="w-12 h-12 rounded-full flex bg-amber-50/50 items-center justify-center relative shrink-0">
-            <MeterRing pct={cPct} colorClass="text-amber-500">
-              🍞
-            </MeterRing>
-          </div>
-          <span className="text-base font-bold text-foreground truncate">
-            {cLeft}g Carbs Left
-          </span>
-        </div>
-        <ChevronRight
-          size={20}
-          className="text-muted-foreground shrink-0 ml-2"
-        />
-      </Link>
+    <div className="flex h-full min-w-0 flex-col rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="text-base font-bold tracking-tight text-foreground">
+          Macronutrient Targets
+        </h2>
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Consumed / Target
+        </span>
+      </div>
 
-      {/* Protein Pill */}
-      <Link
-        href="/nutrition"
-        className="card-glass flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
-        <div className="flex items-center gap-4 sm:gap-5 min-w-0">
-          <div className="w-12 h-12 rounded-full bg-red-50/50 flex items-center justify-center relative shrink-0">
-            <MeterRing pct={pPct} colorClass="text-red-500">
-              🫘
-            </MeterRing>
-          </div>
-          <span className="text-base font-bold text-foreground truncate">
-            {pLeft}g Protein Left
-          </span>
-        </div>
-        <ChevronRight
-          size={20}
-          className="text-muted-foreground shrink-0 ml-2"
-        />
-      </Link>
-
-      {/* Fat Pill */}
-      <Link
-        href="/nutrition"
-        className="card-glass flex-1 min-w-0 bg-card rounded-[24px] px-5 sm:px-6 py-5 flex items-center justify-between border border-border dark:border-border shadow-[0_2px_8px_oklch(0_0_0/_0.02)] hover:shadow-[0_4px_12px_oklch(0_0_0/_0.05)] transition-all active:scale-[0.98]">
-        <div className="flex items-center gap-4 sm:gap-5 min-w-0">
-          <div className="w-12 h-12 rounded-full bg-yellow-50/50 flex items-center justify-center relative shrink-0">
-            <MeterRing pct={fPct} colorClass="text-yellow-500">
-              🧈
-            </MeterRing>
-          </div>
-          <span className="text-base font-bold text-foreground truncate">
-            {fLeft}g Fats Left
-          </span>
-        </div>
-        <ChevronRight
-          size={20}
-          className="text-muted-foreground shrink-0 ml-2"
-        />
-      </Link>
+      <div className="flex min-h-0 flex-1 flex-col justify-between gap-2">
+        {rows.map((row) => (
+          <TargetProgress key={row.label} row={row} />
+        ))}
+      </div>
     </div>
   );
 }

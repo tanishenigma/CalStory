@@ -8,7 +8,6 @@ import WeekStrip from "@/app/components/WeekStrip";
 import CalorieHero from "@/app/components/CalorieHero";
 import MacroPills from "@/app/components/MacroPills";
 import HydrationBar from "@/app/components/HydrationBar";
-import { Card } from "@/app/components/ui/card";
 import { MEAL_ICONS } from "@/app/lib/constants";
 import { TodaySections } from "@/app/components/TodaySections";
 import { useAuthStore } from "@/app/store/authStore";
@@ -93,6 +92,7 @@ export default function DashboardPage() {
   const targetKcal = profile.calTarget || DEFAULT_CAL_TARGET;
 
   const targetMacros = {
+    cal: targetKcal,
     p:
       profile.protein ||
       Math.round((targetKcal * PROTEIN_CAL_RATIO) / PROTEIN_CAL_PER_GRAM),
@@ -118,18 +118,16 @@ export default function DashboardPage() {
 
         {/* Hydration card */}
         <section>
-          <Card className="overflow-hidden border-0 bg-transparent p-0">
-            <HydrationBar
-              totalMl={hydration.totalMl}
-              goalMl={hydration.goalMl}
-              pct={hydration.pct}
-              entries={hydration.entries}
-              volumeUnit={profile?.volumeUnit ?? "ml"}
-              onAdd={addHydration}
-              onRemove={removeHydration}
-              onSetGoal={setHydrationGoal}
-            />
-          </Card>
+          <HydrationBar
+            totalMl={hydration.totalMl}
+            goalMl={hydration.goalMl}
+            pct={hydration.pct}
+            entries={hydration.entries}
+            volumeUnit={profile?.volumeUnit ?? "ml"}
+            onAdd={addHydration}
+            onRemove={removeHydration}
+            onSetGoal={setHydrationGoal}
+          />
         </section>
         {/* Bottom Row: Workout & Meals */}
         <TodaySections

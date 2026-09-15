@@ -13,11 +13,16 @@ import AIChatLogger from "@/app/components/nutrition/ai-chat-logger";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { MEAL_ICONS } from "@/app/lib/constants";
 import {
+  Dumbbell,
+  Droplets,
+  Flame,
+  ArrowRight,
   LockKeyhole,
   Repeat2,
   Sliders,
   Sparkles,
   Utensils,
+  Wheat,
 } from "lucide-react";
 import { useSubscriptionTier } from "@/app/lib/use-subscription-tier";
 import type {
@@ -79,31 +84,6 @@ export default function NutritionPage() {
       }),
     );
   }, [showAIChat]);
-  const [showTargetPercent, setShowTargetPercent] = React.useState(false);
-
-  React.useEffect(() => {
-    try {
-      setShowTargetPercent(
-        sessionStorage.getItem("calstory-target-display-percent") === "1",
-      );
-    } catch {
-      // Memory-only fallback is fine when storage is unavailable.
-    }
-  }, []);
-
-  function toggleTargetDisplay() {
-    setShowTargetPercent((current) => {
-      const next = !current;
-      try {
-        sessionStorage.setItem(
-          "calstory-target-display-percent",
-          next ? "1" : "0",
-        );
-      } catch {}
-      return next;
-    });
-  }
-
   if (isLoading || !profile) return <Spinner variant="nutrition" />;
 
   const dayMeals = meals[selDate] || [];
@@ -257,30 +237,43 @@ export default function NutritionPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Energy Summary */}
-        <Card className="p-6">
-          <h2 className="text-sm font-bold text-ink mb-6 flex items-center gap-2">
-            Energy Summary
-            <span className="text-[10px] uppercase text-muted-foreground opacity-60 tracking-wider ml-auto">
-              Target
-            </span>
-          </h2>
-          <div className="flex justify-between items-center gap-2 overflow-x-hidden pb-2 px-2 sm:px-4 md:px-0 md:gap-0">
+        <Card className="rounded-2xl bg-card p-4 shadow-sm sm:p-5">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="flex items-center gap-2 text-base font-bold text-foreground">
+                Energy Summary
+              </h2>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                Your daily energy balance
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push("/settings")}
+              className="flex items-center gap-2 rounded-full bg-muted/60 px-3 py-2 text-right transition-colors hover:bg-muted dark:bg-white/[0.06] dark:hover:bg-white/[0.1]"
+              aria-label="Edit calorie target in Settings">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Target
+              </span>
+              <span className="text-xs font-bold tabular-nums text-foreground">
+                {calTarget.toLocaleString()} kcal
+              </span>
+            </button>
+          </div>
+          <div className="flex items-start justify-center gap-12 overflow-x-hidden pb-1 px-1 sm:gap-24 md:px-0">
             <EnergyRing
               label="Consumed"
+              sublabel={`${Math.round((agg.cal / Math.max(calTarget, 1)) * 100)}% of target`}
+              chip={`${Math.round(agg.cal).toLocaleString()} / ${calTarget.toLocaleString()} kcal`}
               value={agg.cal}
               max={calTarget}
               ringColor="var(--color-primary)"
               trackColor="rgb(255 137 4 / 0.18)"
             />
             <EnergyRing
-              label="Expenditure"
-              value={profile.tdee || calTarget}
-              max={profile.tdee || calTarget}
-              ringColor="#3b82f6"
-              trackColor="rgba(59, 130, 246, 0.18)"
-            />
-            <EnergyRing
               label="Remaining"
+              sublabel="To reach your target"
+              chip={`${Math.max(0, calTarget - agg.cal).toLocaleString()} kcal`}
               value={Math.max(0, calTarget - agg.cal)}
               max={calTarget}
               ringColor="var(--color-border)"
@@ -290,52 +283,73 @@ export default function NutritionPage() {
               invert
             />
           </div>
+          <button
+            type="button"
+            onClick={() => setShowDetailedBreakdown(true)}
+            className="mt-4 flex w-full items-center justify-between gap-3 rounded-xl bg-blue-500/10 px-3 py-2.5 text-left transition-colors hover:bg-blue-500/15"
+            aria-label="View detailed nutrition breakdown">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-blue-500/15 text-blue-500">
+                <ArrowRight size={16} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground">
+                  {agg.cal <= calTarget ? "You're in a deficit" : "You're over target"}
+                </p>
+                <p className="truncate text-[10px] text-muted-foreground">
+                  {agg.cal <= calTarget
+                    ? `Keep going! You're ${Math.max(0, calTarget - agg.cal).toLocaleString()} kcal below your target.`
+                    : `You're ${(agg.cal - calTarget).toLocaleString()} kcal above your target.`}
+                </p>
+              </div>
+            </div>
+          </button>
         </Card>
 
         {/* Targets */}
-        <Card className="p-6">
-          <h2 className="text-sm font-bold text-ink mb-6 flex items-center gap-2">
+        <Card className="rounded-2xl bg-card p-4 shadow-sm sm:p-5">
+          <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-foreground">
             Targets
-            <span className="text-[10px] uppercase text-muted-foreground opacity-60 tracking-wider ml-auto">
-              Consumed
+            <span className="ml-auto text-[10px] uppercase tracking-wider text-muted-foreground">
+              Consumed / Target
             </span>
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-2">
             <TargetRow
-              label="Energy"
-              current={agg.cal}
-              max={calTarget}
-              unit="kcal"
-              color="bg-blue-500"
-              showPercent={showTargetPercent}
-              onToggle={toggleTargetDisplay}
+              label="Carbohydrates"
+              icon={Wheat}
+              current={agg.c}
+              max={cTarget}
+              unit="g"
+              color="bg-green-500"
+              iconClass="bg-green-500/15 text-green-500"
             />
             <TargetRow
               label="Protein"
+              icon={Dumbbell}
               current={agg.p}
               max={pTarget}
               unit="g"
               color="bg-red-500"
-              showPercent={showTargetPercent}
-              onToggle={toggleTargetDisplay}
+              iconClass="bg-red-500/15 text-red-500"
             />
             <TargetRow
-              label="Carbs"
-              current={agg.c}
-              max={cTarget}
-              unit="g"
-              color="bg-primary"
-              showPercent={showTargetPercent}
-              onToggle={toggleTargetDisplay}
-            />
-            <TargetRow
-              label="Fat"
+              label="Fats"
+              icon={Droplets}
               current={agg.f}
               max={fTarget}
               unit="g"
               color="bg-yellow-500"
-              showPercent={showTargetPercent}
-              onToggle={toggleTargetDisplay}
+              iconClass="bg-yellow-500/15 text-yellow-500"
+            />
+            <TargetRow
+              label="Energy"
+              icon={Flame}
+              current={agg.cal}
+              max={calTarget}
+              unit="kcal"
+              color="bg-blue-500"
+              iconClass="bg-blue-500/15 text-blue-500"
             />
           </div>
         </Card>
@@ -374,8 +388,10 @@ export default function NutritionPage() {
                   <div className="text-xs text-muted-foreground capitalize mt-0.5">
                     {m.time}
                   </div>
-                  <div className="text-[11px] text-muted-foreground font-medium mt-1">
-                    P {m.p}g · C {m.c}g · F {m.f}g
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    <MacroTag label={`${m.p}g P`} color="bg-red-500" />
+                    <MacroTag label={`${m.c}g C`} color="bg-green-500" />
+                    <MacroTag label={`${m.f}g F`} color="bg-yellow-500" />
                   </div>
                 </div>
                 <div className="text-right">
@@ -650,45 +666,55 @@ export default function NutritionPage() {
 
 function TargetRow({
   label,
+  icon: Icon,
   current,
   max,
   unit,
   color,
-  fill,
-  showPercent,
-  onToggle,
+  iconClass,
 }: {
   label: string;
+  icon: typeof Wheat;
   current: number;
   max: number;
   unit: string;
-  color?: string;
-  fill?: string;
-  showPercent: boolean;
-  onToggle: () => void;
+  color: string;
+  iconClass: string;
 }) {
   const pct = max > 0 ? Math.min(100, Math.round((current / max) * 100)) : 0;
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      title="Toggle target display"
-      className="flex w-full items-center gap-4 text-left transition-opacity hover:opacity-80">
-      <div className="w-16 sm:w-20 text-xs font-bold text-foreground">
-        {label}
+    <div
+      className="flex w-full items-center gap-3 rounded-xl bg-muted/45 px-3 py-2.5 text-left transition-opacity hover:opacity-80 dark:bg-white/[0.035]">
+      <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${iconClass}`}>
+        <Icon size={17} strokeWidth={2.2} />
       </div>
-      <div className="flex-1 h-3 bg-muted dark:bg-muted rounded-full overflow-hidden relative">
+      <div className="min-w-0 flex-1">
+        <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+          <span className="font-medium text-foreground">{label}</span>
+          <span className="shrink-0 tabular-nums text-muted-foreground">
+            {Math.round(current)} / {max} {unit}
+          </span>
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-muted dark:bg-white/[0.12]">
         <div
-          className={`absolute top-0 left-0 h-full ${fill || color} rounded-full`}
+          className={`h-full rounded-full ${color}`}
           style={{ width: `${pct}%` }}
         />
+        </div>
       </div>
-      <div className="w-24 sm:w-32 text-right text-xs">
-        <span className="font-bold text-foreground">
-          {showPercent ? `${pct}%` : `${Math.round(current)} / ${max} ${unit}`}
-        </span>
+      <div className="w-8 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+        {pct}%
       </div>
-    </button>
+    </div>
+  );
+}
+
+function MacroTag({ label, color }: { label: string; color: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground dark:bg-white/[0.07]">
+      <span className={`h-1.5 w-1.5 rounded-full ${color}`} />
+      {label}
+    </span>
   );
 }
 
@@ -744,6 +770,8 @@ function NutrientRow({
  * ------------------------------------------------------------------ */
 function EnergyRing({
   label,
+  sublabel,
+  chip,
   value,
   max,
   ringColor,
@@ -751,6 +779,8 @@ function EnergyRing({
   invert = false,
 }: {
   label: string;
+  sublabel: string;
+  chip: string;
   value: number;
   max: number;
   ringColor: string;
@@ -768,7 +798,7 @@ function EnergyRing({
 
   return (
     <div className="flex flex-col items-center shrink-0">
-      <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+      <div className="relative h-24 w-24 sm:h-28 sm:w-28">
         <svg
           className="absolute inset-0 -rotate-90"
           viewBox="0 0 100 100"
@@ -795,7 +825,7 @@ function EnergyRing({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-bold text-base sm:text-xl text-foreground leading-none">
+          <span className="text-xl font-bold leading-none text-foreground sm:text-2xl">
             {Math.round(value)}
           </span>
           <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold mt-0.5">
@@ -803,7 +833,13 @@ function EnergyRing({
           </span>
         </div>
       </div>
-      <span className="text-xs font-bold text-ink mt-3">{label}</span>
+      <span className="mt-2 text-xs font-bold text-foreground">{label}</span>
+      <span className="mt-0.5 min-h-7 text-center text-[9px] leading-3 text-muted-foreground">
+        {sublabel}
+      </span>
+      <span className="mt-1 rounded-full bg-muted/60 px-2 py-1 text-[9px] font-semibold tabular-nums text-muted-foreground dark:bg-white/[0.06]">
+        {chip}
+      </span>
     </div>
   );
 }

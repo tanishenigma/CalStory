@@ -33,6 +33,11 @@ import type {
  * ------------------------------------------------------------------ */
 export type FabIntent = "food" | "workout";
 
+export type LogImage = {
+  dataUrl: string;
+  mimeType: "image/jpeg" | "image/png" | "image/webp";
+};
+
 interface PromptUsageSnapshot {
   used: number;
   limit: number | null;
@@ -96,6 +101,10 @@ function sessionsKey(userId: string) {
   return `ql_sessions_${userId}`;
 }
 
+function activeSessionKey(userId: string, scope: "fab" | "coach") {
+  return `ql_active_session_${scope}_${userId}`;
+}
+
 function loadSessions(userId: string): ChatSession[] {
   if (typeof window === "undefined") return [];
   try {
@@ -125,9 +134,13 @@ function uid2() {
 export function useAIFabChat({
   date,
   userId,
+  scope = "fab",
+  startFresh = false,
 }: {
   date: string;
   userId: string;
+  scope?: "fab" | "coach";
+  startFresh?: boolean;
 }) {
   const { addMeal, addWorkout, addHydration, saveTemplate } = useApp();
   const { user } = useAuthStore();
@@ -138,18 +151,34 @@ export function useAIFabChat({
   );
   const [currentSessionId, setCurrentSessionId] = useState<string>(() => {
     const existing = loadSessions(userId);
-    return existing[0]?.id ?? uid2();
+    if (!startFresh && typeof window !== "undefined") {
+      const activeId = sessionStorage.getItem(activeSessionKey(userId, scope));
+      if (activeId && existing.some((session) => session.id === activeId)) {
+        return activeId;
+      }
+    }
+    return uid2();
   });
+
+  const initialSessionId = currentSessionId;
 
   // Persist sessions to localStorage whenever they change.
   useEffect(() => {
     saveSessions(userId, sessions);
   }, [sessions, userId]);
 
+  // Keep the FAB's active thread across closing/reopening its panel and
+  // navigation within the current tab. sessionStorage is cleared when the
+  // tab/window is closed, so the next visit starts a fresh thread.
+  useEffect(() => {
+    if (startFresh || typeof window === "undefined") return;
+    sessionStorage.setItem(activeSessionKey(userId, scope), currentSessionId);
+  }, [currentSessionId, scope, startFresh, userId]);
+
   // ── Active thread ─────────────────────────────────────────────────
   const [messages, setMessages] = useState<FabMessage[]>(() => {
     const existing = loadSessions(userId);
-    const active = existing.find((s) => s.id === existing[0]?.id);
+    const active = existing.find((s) => s.id === initialSessionId);
     return active?.messages ?? [makeGreeting()];
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -572,7 +601,7 @@ export function useAIFabChat({
   );
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, image?: LogImage) => {
       const trimmed = text.trim();
       if (!trimmed) return;
 
@@ -650,7 +679,7 @@ export function useAIFabChat({
         // 1. Classify intent(s). May return 1 or 2 intents so that
         //    mixed messages like "I ate 100g chicken and did 10
         //    pushups" run BOTH pipelines in parallel.
-        const intents = await classify(trimmed, snapshot);
+        const intents = image ? ["food" as const] : await classify(trimmed, snapshot);
 
         if (intents === null) {
           setMessages((prev) => [
@@ -684,6 +713,7 @@ export function useAIFabChat({
               body: JSON.stringify({
                 message: trimmed,
                 conversationHistory: toFoodHistory(snapshot),
+                image,
                 userId,
                 date,
               }),

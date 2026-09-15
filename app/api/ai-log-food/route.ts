@@ -65,6 +65,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     message: string;
     conversationHistory: ChatMessage[];
     date: string;
+    image?: { dataUrl?: string; mimeType?: string };
   };
 
   try {
@@ -85,6 +86,37 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return NextResponse.json({ error: "date must be YYYY-MM-DD" }, { status: 400 });
+  }
+
+  let imagePart:
+    | {
+        inlineData: {
+          mimeType: "image/jpeg" | "image/png" | "image/webp";
+          data: string;
+        };
+      }
+    | undefined;
+  if (body.image?.dataUrl) {
+    const match = body.image.dataUrl.match(
+      /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/,
+    );
+    const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+    if (
+      !match ||
+      !allowedMimeTypes.has(body.image.mimeType ?? match[1]) ||
+      match[2].length > 2_500_000
+    ) {
+      return NextResponse.json(
+        { error: "Please attach a smaller JPG, PNG, or WebP image." },
+        { status: 400 },
+      );
+    }
+    imagePart = {
+      inlineData: {
+        mimeType: match[1] as "image/jpeg" | "image/png" | "image/webp",
+        data: match[2],
+      },
+    };
   }
 
   let promptUsage;
@@ -141,7 +173,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // Append the current user turn
   const contents = [
     ...priorContents,
-    { role: "user" as const, parts: [{ text: message }] },
+    {
+      role: "user" as const,
+      parts: [{ text: message }, ...(imagePart ? [imagePart] : [])],
+    },
   ];
 
   // ── 3. Call Gemini ─────────────────────────────────────────────

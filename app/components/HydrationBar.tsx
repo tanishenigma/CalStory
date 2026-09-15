@@ -70,22 +70,22 @@ export default function HydrationBar({
   const fillPct = Math.round(pct * 100);
 
   return (
-    <div className="flex flex-col gap-6 rounded-[1.75rem] border border-white/10 bg-[#101112] p-5 text-white shadow-[0_20px_60px_rgba(0,0,0,0.24)] sm:p-7">
+    <div className="flex flex-col gap-6 rounded-[1.75rem] border border-border bg-card p-5 text-foreground shadow-[0_20px_60px_oklch(0_0%_0%_/_0.12)] sm:p-7 dark:shadow-[0_20px_60px_oklch(0_0%_0%_/_0.24)]">
       {/* Header and progress */}
       <div className="relative">
         <div className="mb-7 flex items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-blue-400/15 bg-blue-400/10 text-blue-400">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-blue-400/20 bg-blue-400/10 text-blue-500 dark:text-blue-400">
               <Droplets size={25} />
             </div>
             <div className="ml-2">
               <p className="text-xl font-bold tracking-tight">Hydration</p>
-              <p className="text-sm text-slate-400">Keep going. Small sips add up.</p>
+              <p className="text-sm text-muted-foreground">Keep going. Small sips add up.</p>
             </div>
           </div>
           <button
             onClick={handleEditToggle}
-            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:border-blue-400/50 hover:text-white"
+            className="flex items-center gap-2 rounded-full border border-border bg-muted/40 px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-blue-400/50 hover:text-foreground"
             aria-label="Edit hydration goal">
             <Settings2 size={17} />
             {editGoal ? "Cancel" : "Edit goal"}
@@ -99,7 +99,7 @@ export default function HydrationBar({
               animate={{ opacity: 1, transform: "translateY(0)" }}
               exit={{ opacity: 0, transform: "translateY(-6px)" }}
               transition={{ duration: 0.2, ease: [0.165, 0.84, 0.44, 1] }}
-              className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+              className="mb-5 rounded-2xl border border-border bg-muted/30 p-4 sm:p-5">
               <div className="mb-3 flex items-end justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -112,7 +112,7 @@ export default function HydrationBar({
                 <button
                   type="button"
                   onClick={handleGoalSave}
-                  className="rounded-full bg-white px-5 py-2.5 text-sm font-bold text-black transition-transform hover:scale-[1.02] active:scale-95">
+                  className="rounded-full bg-foreground px-5 py-2.5 text-sm font-bold text-background transition-transform hover:scale-[1.02] active:scale-95">
                   Save
                 </button>
               </div>
@@ -130,7 +130,7 @@ export default function HydrationBar({
                 aria-label="Daily hydration goal"
                 aria-valuetext={`${displayVolume(Number(goalInput) || GOAL_MIN_ML, volumeUnit)} per day`}
               />
-              <div className="mt-2 flex justify-between text-xs text-slate-400">
+              <div className="mt-2 flex justify-between text-xs text-muted-foreground">
                 <span>{displayVolume(GOAL_MIN_ML, volumeUnit)}</span>
                 <span>{displayVolume(GOAL_MAX_ML, volumeUnit)}</span>
               </div>
@@ -141,7 +141,7 @@ export default function HydrationBar({
         {/* Animated progress bar */}
         <div className="flex items-center gap-4">
         <div
-          className="h-4 min-w-0 flex-1 overflow-hidden rounded-full bg-white/10"
+          className="h-4 min-w-0 flex-1 overflow-hidden rounded-full bg-muted"
           role="progressbar"
           aria-valuenow={fillPct}
           aria-valuemin={0}
@@ -164,11 +164,11 @@ export default function HydrationBar({
           <span className="block text-3xl font-bold tabular-nums">
             {displayVolume(totalMl, volumeUnit)}
           </span>
-          <span className="text-base text-slate-400">
+          <span className="text-base text-muted-foreground">
             of {displayVolume(goalMl, volumeUnit)}
           </span>
           </div>
-          <span className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-slate-300">
+          <span className="flex items-center gap-2 rounded-full border border-border bg-muted/40 px-4 py-2 text-sm font-medium text-muted-foreground">
             <Trophy size={17} className="text-blue-400" />
             {displayVolume(Math.max(0, goalMl - totalMl), volumeUnit)} to go
           </span>
@@ -177,16 +177,16 @@ export default function HydrationBar({
 
       {/* Quick-add buttons */}
       <div>
-      <p className="mb-3 text-base font-semibold text-slate-300">Quick add</p>
+      <p className="mb-3 text-base font-semibold text-foreground/80">Quick add</p>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {QUICK_ADDS_ML.map((ml) => (
           <button
             key={ml}
             onClick={() => onAdd(ml)}
             id={`hydration-quick-add-${ml}`}
-            className="flex min-h-16 items-center justify-center gap-3 rounded-2xl border border-white/10 bg-transparent px-3 py-3 text-sm font-semibold transition-colors hover:border-blue-400 hover:bg-blue-400/10"
+            className="flex min-h-16 items-center justify-center gap-3 rounded-2xl border border-border bg-transparent px-3 py-3 text-sm font-semibold transition-colors hover:border-blue-400 hover:bg-blue-400/10"
             aria-label={`Add ${displayVolume(ml, volumeUnit)}`}>
-            <GlassWater size={25} className="text-slate-200" />
+            <GlassWater size={25} className="text-muted-foreground" />
             +{displayVolume(ml, volumeUnit)}
           </button>
         ))}
@@ -195,7 +195,7 @@ export default function HydrationBar({
 
       {/* Bottom activity stack — expands like Today's Meals on hover/focus. */}
       <div
-        className="group relative max-h-[76px] overflow-hidden rounded-2xl border border-white/10 transition-[max-height] duration-300 ease-out focus-within:max-h-[32rem] hover:max-h-[32rem]"
+        className="group relative max-h-[76px] overflow-hidden rounded-2xl border border-border transition-[max-height] duration-300 ease-out focus-within:max-h-[32rem] hover:max-h-[32rem]"
         style={isLogExpanded ? { maxHeight: 512 } : undefined}
         >
         <div
@@ -215,7 +215,7 @@ export default function HydrationBar({
             <GlassWater size={23} className="text-blue-400" />
             <span>
               <span className="block text-base font-bold">Today&apos;s Log</span>
-              <span className="block text-xs text-slate-400">{entries.length} {entries.length === 1 ? "entry" : "entries"}</span>
+              <span className="block text-xs text-muted-foreground">{entries.length} {entries.length === 1 ? "entry" : "entries"}</span>
             </span>
           </span>
           <span className="flex items-center gap-3">
@@ -247,27 +247,27 @@ export default function HydrationBar({
               placeholder="Enter custom amount (ml)"
               min={MANUAL_ADD_MIN_ML}
               max={MANUAL_ADD_MAX_ML}
-              className="min-h-14 flex-1 rounded-2xl border border-white/10 bg-transparent px-4 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+              className="min-h-14 flex-1 rounded-2xl border border-border bg-transparent px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-400/50"
               aria-label="Custom amount in ml"
               id="hydration-manual-input"
             />
           </div>
 
           {entries.length > 0 && (
-            <div className="max-h-0 -translate-y-2 overflow-hidden rounded-2xl border border-white/10 px-4 opacity-0 transition-[max-height,opacity,transform] duration-250 ease-out group-hover:max-h-96 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:max-h-96 group-focus-within:translate-y-0 group-focus-within:opacity-100 sm:px-6">
+            <div className="max-h-0 -translate-y-2 overflow-hidden rounded-2xl border border-border px-4 opacity-0 transition-[max-height,opacity,transform] duration-250 ease-out group-hover:max-h-96 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:max-h-96 group-focus-within:translate-y-0 group-focus-within:opacity-100 sm:px-6">
               {[...entries]
                 .sort((a, b) => b.loggedAt - a.loggedAt)
                 .slice(0, 5)
                 .map((e) => (
                   <div
                     key={e.id}
-                    className="group flex items-center justify-between border-b border-white/10 py-4 last:border-0">
+                    className="group flex items-center justify-between border-b border-border py-4 last:border-0">
                     <span className="flex items-center gap-4 text-base">
-                      <GlassWater size={23} className="text-slate-200" />
+                      <GlassWater size={23} className="text-muted-foreground" />
                       {displayVolume(e.ml, volumeUnit)}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-400">
+                      <span className="text-sm text-muted-foreground">
                         {new Date(e.loggedAt).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",

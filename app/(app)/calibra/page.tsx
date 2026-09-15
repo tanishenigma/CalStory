@@ -21,7 +21,7 @@ import { todayLocalKey, useApp } from "@/app/context/AppContext";
 import BrandLogo from "@/app/components/BrandLogo";
 import MealConfirmationCard from "@/app/components/nutrition/meal-confirmation-card";
 import WorkoutConfirmationCard from "@/app/components/nutrition/workout-confirmation-card";
-import { useAIFabChat, type FabMessage } from "@/app/lib/use-ai-fab-chat";
+import { useAIFabChat, type FabMessage, type LogImage } from "@/app/lib/use-ai-fab-chat";
 
 type Role = "user" | "assistant";
 
@@ -272,6 +272,8 @@ export default function AskAIAdvice() {
   } = useAIFabChat({
     date: todayLocalKey(),
     userId: user?.uid ?? "anonymous",
+    scope: "coach",
+    startFresh: true,
   });
 
   useEffect(() => {
@@ -361,14 +363,18 @@ export default function AskAIAdvice() {
 
     // Keep logging inside the Coach conversation. The shared quick-log hook
     // coordinates food and workout agents, including mixed requests.
-    const isLogRequest =
-      !attachment &&
-      /\b(log|ate|eaten|had|drank|water|meal|breakfast|lunch|dinner|snack|workout|trained|training|reps?|sets?|run|ran|lift|squat|push[- ]?ups?|pull[- ]?ups?)\b/i.test(
-        trimmedQuestion,
-      );
+    const isLogRequest = /\b(log|add|ate|eaten|had|drank|water|meal|breakfast|lunch|dinner|snack|workout|trained|training|reps?|sets?|run|ran|lift|squat|push[- ]?ups?|pull[- ]?ups?)\b/i.test(
+      trimmedQuestion,
+    );
     if (isLogRequest) {
       setQuestion("");
-      await sendCoachLog(trimmedQuestion);
+      const logImage: LogImage | undefined = attachment
+        ? { dataUrl: attachment.dataUrl, mimeType: attachment.mimeType }
+        : undefined;
+      await sendCoachLog(
+        trimmedQuestion || "Please log this meal from the attached image.",
+        logImage,
+      );
       return;
     }
 
@@ -451,11 +457,11 @@ export default function AskAIAdvice() {
     }
   }
 
-  async function sendCoachLog(text: string) {
+  async function sendCoachLog(text: string, image?: LogImage) {
     // Accessed through the hook's stable callback exposed below via the
     // closure; keeping this helper next to askQuestion makes the composer
     // behavior explicit and testable.
-    await logSendMessage(text);
+    await logSendMessage(text, image);
   }
 
   function formatMessageTime(createdAt?: number): string {
